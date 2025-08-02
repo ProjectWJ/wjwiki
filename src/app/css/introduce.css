@@ -1,0 +1,15 @@
+.bgImageCSS {
+  background-image: url(../images/homebg.jpg);
+}
+
+/* 페이지 반응형 */
+.pagePaddingCSS {
+  padding-left: 15%;
+  padding-right: 15%;
+}
+@media screen and (min-width: 80rem) {
+  .pagePaddingCSS {
+    padding-left: 25%;
+    padding-right: 25%;
+  }
+}
