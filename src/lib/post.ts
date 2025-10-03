@@ -35,7 +35,7 @@ export async function getPublishedPosts() {
 }
 
 // id를 이용해 개별 게시물을 조회하는 함수 (동적 라우팅용)
-export async function getPostById(id: string) {
+export async function getPostById(id: number) {
   try {
     const post = await prisma.post.findUnique({
       where: {

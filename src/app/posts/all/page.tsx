@@ -46,7 +46,7 @@ export default async function HomePage() {
                     />
                 )}
 
-                {/* 동적 URL slug 사용 */}
+                {/* 동적 URL id 사용 */}
                 <a href={`/posts/${post.id}`} className="text-xl font-semibold hover:underline">
                     {post.title}
                 </a>
