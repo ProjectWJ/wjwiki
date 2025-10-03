@@ -1,5 +1,6 @@
-import { Analytics } from "@vercel/analytics/next"
+"use client";
 
+import { Analytics } from "@vercel/analytics/next"
 import { useEffect, useState } from "react";
 import NavigationBar from "./navigationbar";
 import "../app/css/page.css";
