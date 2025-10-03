@@ -52,10 +52,6 @@ li a {
   align-items: center;
 }
 
-li a:hover {
-  background-color: #f1f3f5;
-}
-
 li a img {
   width: 10%;
   height: 10%;

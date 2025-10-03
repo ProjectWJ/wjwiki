@@ -30,7 +30,7 @@ export default function NavigationBar() {
           >
             <li>
               <a href={"/"} className={`hover:bg-transparent`}>
-                <span>뭐가문제지</span>
+                <span>WJWIKI</span>
               </a>
             </li>
           </ul>

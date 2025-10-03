@@ -1,4 +1,4 @@
-"use client";
+import { Analytics } from "@vercel/analytics/next"
 
 import { useEffect, useState } from "react";
 import NavigationBar from "./navigationbar";
@@ -105,6 +105,7 @@ export default function Home() {
           ))}
         </div>
       </div>
+      <Analytics />
     </>
   );
 }
