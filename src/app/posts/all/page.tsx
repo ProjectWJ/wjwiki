@@ -1,0 +1,62 @@
+// src/app/page.tsx
+import { getPublishedPosts } from '@/lib/post'; // 2번에서 작성한 DB 조회 함수
+import Image from 'next/image';
+
+// async 키워드를 사용하면 이 컴포넌트는 Server Component로 동작함
+export default async function HomePage() {
+  // 1. DB 조회 함수 호출
+  const posts = await getPublishedPosts(); 
+
+  // 2. 데이터가 없는 경우
+  if (!posts || posts.length === 0) {
+    return (
+      <main className="container mx-auto p-4">
+        <h1 className="text-3xl font-bold">블로그</h1>
+        <p className="mt-4 text-gray-500">아직 작성된 게시물이 없습니다.</p>
+      </main>
+    );
+  }
+
+  // Post 타입 정의 (DB 스키마에 맞게 조정)
+  interface Post {
+      id: string;
+      title: string;
+      summary: string;
+      created_at: string | number | Date;
+      thumbnail_url?: string;
+  }
+
+  // 3. 게시물 목록 렌더링
+  return (
+    <main className="container mx-auto p-4">
+      <h1 className="text-3xl font-bold mb-8">최신 게시물</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+
+        {posts.map((post: Post) => (
+            <div key={post.id} className="border p-4 rounded-lg shadow-md">
+                {post.thumbnail_url && (
+                    <Image
+                        src={post.thumbnail_url}
+                        alt={post.title}
+                        width={400}
+                        height={160}
+                        className="w-full h-40 object-cover rounded-md mb-4"
+                        style={{ objectFit: 'cover' }}
+                    />
+                )}
+
+                {/* 동적 URL slug 사용 */}
+                <a href={`/posts/${post.id}`} className="text-xl font-semibold hover:underline">
+                    {post.title}
+                </a>
+                <p className="text-gray-600 mt-2">{post.summary}</p>
+                <p className="text-sm text-gray-400 mt-4">
+                    작성일: {new Date(post.created_at).toLocaleDateString('ko-KR')}
+                </p>
+            </div>
+        ))}
+      </div>
+    </main>
+  );
+}
