@@ -3,8 +3,21 @@
 import { getPostById } from '@/lib/post';
 import { notFound } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
+import type { Metadata, ResolvingMetadata } from "next"; 
 
-export default async function PostDetailPage({ params }: { params: { id: string } }) {
+// PostParams 타입 정의는 유지하되 컴포넌트 매개변수를 Next.js 표준 타입으로 변경
+interface PostParams {
+    id: string;
+}
+
+// Next.js가 컴포넌트에 전달하는 표준 타입을 따름
+// searchParams를 명시적으로 undefined로 처리하여 타입 충돌을 방지
+type PostDetailPageProps = {
+    params: PostParams;
+    searchParams?: { [key: string]: string | string[] | undefined }; // Next.js 표준
+}
+
+export default async function PostDetailPage({ params }: PostDetailPageProps) {
 
     // 1. params에서 id 속성을 즉시 꺼내 사용합니다. (await 사용하지 않음)
     const { id } = params; 
