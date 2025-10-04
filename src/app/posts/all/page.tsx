@@ -2,6 +2,8 @@
 import { getPublishedPosts } from '@/lib/post'; // 2번에서 작성한 DB 조회 함수
 import Image from 'next/image';
 
+// prisma 설정 변경
+
 // async 키워드를 사용하면 이 컴포넌트는 Server Component로 동작함
 export default async function HomePage() {
   // 1. DB 조회 함수 호출
@@ -19,9 +21,9 @@ export default async function HomePage() {
 
   // Post 타입 정의 (DB 스키마에 맞게 조정)
   interface Post {
-      id: string;
+      id: number;
       title: string;
-      summary: string;
+      summary?: string | null;
       created_at: string | number | Date;
       thumbnail_url?: string;
   }
@@ -34,13 +36,14 @@ export default async function HomePage() {
 
 
         {posts.map((post: Post) => (
+          console.log(post.thumbnail_url),
             <div key={post.id} className="border p-4 rounded-lg shadow-md">
                 {post.thumbnail_url && (
                     <Image
                         src={post.thumbnail_url}
                         alt={post.title}
-                        width={400}
-                        height={160}
+                        width={250}
+                        height={250}
                         className="w-full h-40 object-cover rounded-md mb-4"
                         style={{ objectFit: 'cover' }}
                     />

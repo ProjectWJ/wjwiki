@@ -8,6 +8,7 @@
 */
 
 import { PrismaClient } from '@prisma/client'; // 일반 환경용 Prisma
+// import { preconnect } from 'react-dom';
 // import { Pool } from '@neondatabase/serverless'; // Neon Serverless 드라이버 (필요시)
 
 // Neon B 연결을 위한 싱글톤 객체(단일 인스턴스) 생성
@@ -18,6 +19,7 @@ declare global {
 }
 
 // 데이터베이스 연결 URL은 .env.local 및 Vercel 환경 변수에서 가져옴
+// 전역적으로 prisma 인스턴스를 사용하거나 없으면 새로 생성
 const prisma = global.prisma || new PrismaClient({
   datasources: {
     db: {
@@ -26,6 +28,7 @@ const prisma = global.prisma || new PrismaClient({
   },
 });
 
+// 개발 환경이 아니면 전역 객체에 저장
 if (process.env.NODE_ENV !== 'production') global.prisma = prisma;
 
 export { prisma };

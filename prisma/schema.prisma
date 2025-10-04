@@ -1,0 +1,52 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Post {
+  // 1. id (Primary Key, Auto-Increment)
+  // GENERATED ALWAYS AS IDENTITY는 Prisma에서 @default(autoincrement())로 표현됩니다.
+  id              Int       @id @default(autoincrement())
+  
+  // 2. 제목 (필수, NOT NULL)
+  title           String    @db.VarChar(255)
+  
+  // 3. 본문 (TEXT) - 길이 제한 없음.
+  // TEXT는 Prisma에서 String으로 표현됩니다.
+  content         String
+  
+  // 4. 작성 시각 (TIMESTAMP WITH TIME ZONE, 기본값 now())
+  // DB에 DEFAULT NOW() 설정이 되어 있다면, Prisma에서는 @default(now())로 표현됩니다.
+  created_at      DateTime  @default(now()) @map("created_at")
+  
+  // 5. 수정 시각 (TIMESTAMP WITH TIME ZONE, 업데이트 시 자동 갱신)
+  updated_at      DateTime  @updatedAt @map("updated_at")
+  
+  // 6. 공개 여부 (BOOLEAN DEFAULT 'false')
+  // Prisma는 'false' 대신 불리언 값인 false를 사용합니다.
+  is_published    Boolean   @default(false) @map("is_published")
+  
+  // 7. 요약 (VARCHAR(500))
+  // DB 구조에 summary가 NULL 허용이라면 String? (선택 사항)으로 정의하세요.
+  // 여기서는 VARCHAR(500)에 맞게 String으로 정의합니다.
+  summary         String?   @db.VarChar(500) 
+  
+  // 8. 썸네일 URL (필수, NOT NULL, 기본값 설정)
+  // DB에서 "URL"을 쌍따옴표가 아닌 홑따옴표로 감싸서 DEFAULT 값을 설정했는지 확인하세요.
+  // Prisma에서는 기본값 설정 시 작은따옴표로 감싼 문자열을 사용합니다.
+  thumbnail_url   String    @db.VarChar(255) @default("https://hyamwcz838h4ikyf.public.blob.vercel-storage.com/default_thumbnail.png") @map("thumbnail_url")
+  
+  // 9. 실제 DB 테이블 이름 지정 (테이블 이름이 'posts'라고 가정)
+  @@map("posts") 
+}

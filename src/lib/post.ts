@@ -1,11 +1,9 @@
 // src/lib/post.ts
-
-import { prisma } from './db';
+import { prisma } from '@/lib/db';
 
 // 게시물 목록을 조회하는 함수
 export async function getPublishedPosts() {
   // 이 함수는 Server Component나 Server Action에서만 호출됩니다.
-
   try {
     // published(공개) 상태인 글들을 최신 순으로 정렬하여 조회
     const posts = await prisma.post.findMany({
