@@ -4,6 +4,52 @@ import { getPostById } from '@/lib/post';
 import { notFound } from 'next/navigation';
 import ReactMarkdown from 'react-markdown'; 
 import type { Metadata } from 'next';
+import Image from 'next/image';
+
+// <img> 렌더러 컴포넌트 정의. 영상 나오게 하려고 추가
+const components = {
+    // img 태그 렌더링하는 부분 재정의
+    // 미사용 width, height 경고 제거 위한 아래 주석 추가
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    img: ({ alt, src, width, height, ...props }: React.ImgHTMLAttributes<HTMLImageElement>) => {
+
+        // alt 텍스트에 "video:"가 포함되어 있는지 확인
+        if (alt?.startsWith('video:')) {
+            // 영상이면 <video> 태그 반환
+            const videoTitle = alt.substring('video:'.length);
+            return (
+                <video
+                    controls 
+                    src={src} 
+                    title={videoTitle} 
+                    style={{ maxWidth: '100%', height: 'auto', display: 'block', margin: '15px auto' }}
+                >
+                {/* <source> 추가할 수도 있지만 src로 대부분 작동 */}
+                </video>
+            );
+        }
+
+        // 이미지인 경우 next.js의 Image 컴포넌트 사용해서 최적화
+        if (src) {
+            return (
+                <Image
+                    src={src as string}
+                    alt={alt || ''}
+                    width={800} // 원하는 너비
+                    height={600} // 원하는 높이
+                    style={{ width: '100%', height: 'auto' }}
+                    objectFit="contain"
+                    {...props}
+                />
+            );
+        }
+
+        // 기본 <img />태그 반환 (fallback).
+        // eslint 경고 해제를 위해 아래 주석 추가
+        // eslint-disable-next-line @next/next/no-img-element
+        return <img src={src} alt={alt} {...props} />;
+    }
+}
 
 // Type error: Type '{ params: { id: string; }; }' does not satisfy the constraint 'PageProps'.
 // 이 에러 해결하려면 이렇게 Promise로 감싸야 한다.
@@ -84,7 +130,11 @@ export default async function PostDetailPage({ params } : { params: PageParams }
                 </p>
                 <hr className="mb-8" />
                 <div className="prose max-w-none">
-                    <ReactMarkdown>{post.content}</ReactMarkdown>
+                    <ReactMarkdown
+                        // 사용자 정의 컴포넌트를 렌더러에 전달.
+                        components={components}
+                        >{post.content}
+                    </ReactMarkdown>
                 </div>
             </article>
         </main>

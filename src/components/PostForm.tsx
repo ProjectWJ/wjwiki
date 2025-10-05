@@ -51,8 +51,9 @@ export default function PostForm() {
             mediaTag = `\n![${file.name}](${url})\n`;
         }
         else if (mimeType.startsWith('video/')) {
-            // 영상 파일인 경우 HTML <video> 태그 사용
-            mediaTag = `\n\n<div><video controls src="${url}" title="${file.name}" style="max-width: 100%; height: auto; display: block; margin: 15px auto;"></video></div>\n\n`;
+            // 영상 파일인 경우 video: 표식 사용
+            const videoTitle = `video:${file.name}`;
+            mediaTag = `\n![${videoTitle}](${url})\n`;
         } 
         else {
             // 기타 파일 (예: PDF나 오디오 등)은 단순 링크로 처리
