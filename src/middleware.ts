@@ -1,7 +1,10 @@
 // src/middleware.ts
-
-import { auth } from '@/auth'; // 🚨 src/auth.ts에서 auth 함수 임포트
+import NextAuth from "next-auth";
+import { middlewareAuthConfig } from './auth.middleware.config'; // 🚨 미들웨어 전용 설정 임포트
 import { NextResponse } from 'next/server';
+
+// 🚨 DB 의존성이 없는 미니멀한 설정으로 NextAuth 인스턴스를 생성하고 auth 함수를 가져옵니다.
+const { auth } = NextAuth(middlewareAuthConfig);
 
 // NextAuth의 auth 함수를 미들웨어로 사용합니다.
 export default auth((req) => {
