@@ -50,3 +50,58 @@ model Post {
   // 9. 실제 DB 테이블 이름 지정 (테이블 이름이 'posts'라고 가정)
   @@map("posts") 
 }
+
+model User {
+  // 기본 NextAuth 요구사항
+  id            String @id @default(uuid())
+  email         String @unique
+  emailVerified DateTime?
+  
+  // 비밀번호 인증을 위한 필드
+  hashedPassword String? // bcrypt로 해시된 비밀번호를 저장합니다.
+
+  // 🚨 2FA(TOTP)를 위한 필드 (미리 추가해 둡니다)
+  twoFactorSecret String? // TOTP 비밀 키 저장
+  isTwoFactorEnabled Boolean @default(false)
+
+  // NextAuth 세션 및 계정 관리를 위한 필드 (선택 사항이지만 안전을 위해 추가)
+  name          String?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+
+  @@map("User")
+}
+
+// NextAuth.js 어댑터가 요구하는 모델들 (ID/PW 인증에는 필수 아님, OAuth 시 필요)
+// 하지만 나중에 확장성을 위해 추가해 두는 것이 좋습니다.
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+
+  @@map("Account")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("Session")
+}
