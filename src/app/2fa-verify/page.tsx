@@ -1,64 +1,76 @@
 // app/2fa-verify/page.tsx
-'use client';
+import { cookies } from 'next/headers';
+import { prisma } from '@/lib/db';
+import TwoFaVerifyClient from './TwoFaVerifyClient';
 
-import { useActionState } from 'react';
-import { authenticate } from '@/lib/auth.actions'; // 기존 Server Action 임포트
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+/*
+    /2fa-verify는 직접 접근 불가 (쿠키 없거나 만료 시 강제 /login)
 
-export default function TwoFaVerifyPage() {
-    const router = useRouter();
+    DB 내 임시 토큰 유효기간도 검사
 
-    // Server Action의 상태와 오류 메시지를 관리합니다.
-    const [errorMessage, dispatch] = useActionState(authenticate, undefined);
+    브라우저 개발자 도구로 쿠키 조작해도 DB 유효성 검증에서 막힘
 
-    useEffect(() => {
-        // 💡 2단계 로그인 성공 후의 처리: 
-        // authenticate가 성공하면 (errorMessage가 undefined로 초기화되거나 빈 문자열이면) 홈으로 이동합니다.
-        if (errorMessage === '') {
-            router.push('/');
-        }
-    }, [errorMessage, router]);
+    2FA 과정 완료 시 authenticate 서버 액션이 DB에서 토큰을 삭제하면,
+    /2fa-verify 재접근 시 바로 로그인 페이지로 튕김 (완벽한 일회성 흐름)
+*/
 
-    return (
-        <div className="flex justify-center items-center min-h-screen">
-            <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-lg">
-                <h1 className="text-3xl font-bold text-center">2단계 인증</h1>
-                <p className="text-center text-gray-600">
-                    휴대폰의 Microsoft Authenticator 앱에서 6자리 코드를 입력해주세요.
-                </p>
-                
-                {/* 폼 액션에 Server Action dispatch를 연결 */}
-                <form action={dispatch} className="space-y-4">
+function renderForbiddenHtml() {
+  return `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>403 Forbidden</title>
+  <style>
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial}
+    body{display:flex;align-items:center;justify-content:center;background:#f3f4f6;color:#111}
+    .card{max-width:720px;padding:32px;border-radius:12px;background:#fff;box-shadow:0 10px 30px rgba(2,6,23,0.08);text-align:center}
+    .title{font-size:28px;margin:0 0 8px}
+    .desc{color:#6b7280;margin:0 0 18px}
+    .actions a{display:inline-block;padding:10px 16px;border-radius:8px;background:#4f46e5;color:#fff;text-decoration:none}
+  </style>
+</head>
+<body>
+  <div class="card" role="alert" aria-labelledby="title">
+    <h1 id="title" class="title">403 — 접근 불가</h1>
+    <p class="desc">잘못된 접근입니다.</p>
+    <div class="actions">
+      <a href="/login">로그인 페이지로 이동</a>
+    </div>
+  </div>
+</body>
+</html>`;
+}
 
-                    <div>
-                        <label htmlFor="totpCode" className="block text-sm font-medium text-gray-700">인증 코드 (6자리)</label>
-                        <input
-                            id="totpCode"
-                            type="text"
-                            name="totpCode"
-                            placeholder="123456"
-                            maxLength={6}
-                            required
-                            className="mt-1 block w-full text-center text-2xl tracking-widest px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                        />
-                    </div>
-                    
-                    {/* 오류 메시지 표시 */}
-                    <div className="h-6">
-                        {errorMessage && errorMessage !== "2FA_REQUIRED_FLAG" && (
-                            <p className="text-sm text-red-500 text-center">{errorMessage}</p>
-                        )}
-                    </div>
+export default async function TwoFaVerifyPage() {
+  const cookieStore = await cookies();
+  const tempToken = cookieStore.get('2fa-temp-token')?.value;
 
-                    <button
-                        type="submit"
-                        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                    >
-                        인증 및 로그인
-                    </button>
-                </form>
-            </div>
-        </div>
-    );
+  // 1) 쿠키가 없으면 403
+  if (!tempToken) {
+    throw new Response(renderForbiddenHtml(), {
+      status: 403,
+      headers: { 'Content-Type': 'text/html; charset=utf-8' },
+    });
+  }
+
+  // 2) DB에서 임시 토큰 유효성 검사
+  const user = await prisma.user.findFirst({
+    where: {
+      temp2FaToken: tempToken,
+      tempTokenExpiresAt: { gt: new Date() }, // 만료 검사
+    },
+    select: { id: true }, // 필요한 필드만 선택
+  });
+
+  // DB에 없거나 만료되었으면 403
+  if (!user) {
+    throw new Response(renderForbiddenHtml(), {
+      status: 403,
+      headers: { 'Content-Type': 'text/html; charset=utf-8' },
+    });
+  }
+
+  // 통과하면 클라이언트 컴포넌트 렌더링 (폼)
+  return <TwoFaVerifyClient />;
 }
