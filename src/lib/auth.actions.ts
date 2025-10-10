@@ -1,6 +1,6 @@
 'use server';
 import { signIn } from '@/auth';
-import { redirect } from 'next/navigation';
+// import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 
 /**
@@ -37,6 +37,13 @@ export async function authenticate(prevState: string | undefined,
           totpCode,
           redirectTo: '/posts/all'
       });
+
+      // 로그인 성공 시 임시 쿠키 삭제
+      (await cookies()).delete('2fa-temp-token'); 
+
+      // signIn 호출이 리다이렉션을 발생시키므로 여기에 도달하지 않을 수 있지만, 
+      // 만약을 위해 명시적 리다이렉트 제거
+      // return redirect('/posts/all'); 
     } catch (error) {
       if (error instanceof Error && error.message.includes('NEXT_REDIRECT')) {
         throw error; // Next.js가 리다이렉트 처리를 완료하도록 다시 throw 해주는 것이 일반적입니다.
@@ -61,18 +68,13 @@ export async function authenticate(prevState: string | undefined,
         password,
         totpCode: '',     
         tempToken: '',
-        redirect: false,
-        // redirectTo: '/posts/all', // 로그인 성공 후 리다이렉트
+        // redirect: false, NextAuth가 리다이렉트를 관리하도록 함
+        redirectTo: '/posts/all', // 2FA 비활성화 시 로그인 성공 후 리다이렉트
       });
 
-      return redirect('/2fa-verify');
+      // return redirect('/2fa-verify');
 
     } catch (error) {
-      if (error instanceof Error && error.message === "TwoFactorRequired") {
-        // 2FA 인증 페이지로 리디렉션합니다. 이메일을 쿼리 파라미터로 넘겨줄 수 있습니다.
-        redirect(`/2fa-verify`);
-      }
-
       // 1. NextAuth가 리다이렉트를 시도했을 때 (성공)
       //    이 경우 'NEXT_REDIRECT' 예외를 잡고, 추가 코드 없이 함수가 종료됩니다.
       if (error instanceof Error && error.message.includes('NEXT_REDIRECT')) {
@@ -84,6 +86,7 @@ export async function authenticate(prevState: string | undefined,
         console.log(error);
         return '이메일이나 비밀번호가 일치하지 않습니다.';
       }
+
       // 다른 오류 처리
       console.log(error);
       return '로그인 중 알 수 없는 오류가 발생했습니다.';
