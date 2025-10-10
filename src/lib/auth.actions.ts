@@ -1,5 +1,6 @@
 'use server';
 import { signIn } from '@/auth';
+import { redirect } from 'next/navigation';
 
 /**
  * NextAuth의 signIn 함수를 래핑하여 서버 액션으로 사용합니다.
@@ -11,6 +12,7 @@ export async function authenticate(prevState: string | undefined,
     // 폼 데이터에서 email과 password를 추출합니다.
     const email = formData.get('email');
     const password = formData.get('password');
+    const totpCode = formData.get('totpCode') as string | undefined;
 
     if (!email || !password) {
       // 오류 발생 시 오류 문자열을 반환합니다.
@@ -21,11 +23,11 @@ export async function authenticate(prevState: string | undefined,
     await signIn('credentials', {
       email,
       password,
-      redirectTo: '/posts/all', // 로그인 성공 후 리다이렉트
+      ...(totpCode && { totpCode }),
+      // redirectTo: '/posts/all', // 로그인 성공 후 리다이렉트
     });
 
-    // 성공 시 NextAuth가 redirect를 처리하므로, 여기에 도달하지 않습니다.
-    return undefined;
+    return redirect('/posts/all');
 
   } catch (error) {
     // 1. NextAuth가 리다이렉트를 시도했을 때 (성공)

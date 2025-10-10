@@ -20,10 +20,13 @@ export const authConfig: NextAuthConfig = {
             credentials: {
                 email: { label: "이메일", type: "email" },
                 password: { label: "비밀번호", type: "password" },
+                totpCode: { label: "2FA 인증코드", type: "text", required: false }
             },
 
             // 🚨 인증 함수 (핵심 로직)
             async authorize(credentials, req) {
+                const { email, password, totpCode } = credentials;
+
                 if (!credentials?.email || !credentials?.password) {
                     return null; // 이메일 또는 비밀번호 누락
                 }
@@ -44,6 +47,30 @@ export const authConfig: NextAuthConfig = {
 
                 if (!isValid) {
                     return null; // 비밀번호 불일치
+                }
+
+                // 4. 🚨 2FA 로직 분기 시작
+
+                // 4-1. 2FA가 활성화된 경우
+                if (user.isTwoFactorEnabled && user.twoFactorSecret) {
+                    
+                    // B) 1단계: 비밀번호만 검증된 경우 (totpCode가 전달되지 않음)
+                    if (!totpCode) {
+                        // 🚨 throw 대신 임시 객체를 반환합니다. (이 객체가 signIn 콜백으로 전달됨)
+                        console.log("여기까진 도달");
+                        return { 
+                            id: user.id, 
+                            email: user.email, 
+                            is2FaRequired: true, // 🚨 이 플래그가 signIn 콜백으로 전달됨
+                            name: user.name
+                        };
+                    } 
+                    
+                    // ... (여기에 2단계 totpCode 검증 로직이 들어갈 예정)
+                }
+                else {
+                    console.log("2FA 비활성화됨");
+                    return null;
                 }
 
                 // 🚨 추가: 이메일 전송을 위해 요청 헤더에서 IP와 User-Agent 정보를 추출합니다.
@@ -70,41 +97,49 @@ export const authConfig: NextAuthConfig = {
 
     // 4. 콜백 설정: 세션에 사용자 ID 포함 (필수)
     callbacks: {
-        // 🚨 로그인 성공 시 실행될 signIn 콜백을 추가합니다.
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        async signIn({ user, account, profile }) {
+        // 🚨 2FA 중단 로직 및 로그인 알림 발송 분기
+        async signIn({ user, account }) {
+            
             // Credentials Provider를 통해서만 실행
-            if (account?.provider === "credentials" && user.email) {
+            if (account?.provider === "credentials" && user) {
                 
-                // 1. 필요한 정보 추출 (authorize에서 넘겨받은 임시 필드를 사용)
-                // TypeScript 오류를 피하기 위해 user 객체에 임시 필드 타입 단언 (Type Assertion)
-                const extendedUser = user as typeof user & { ipAddress?: string, userAgent?: string };
-                
-                const loginTime = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
-                const userAgentString = extendedUser.userAgent || '';
-                
-                // 2. User-Agent 파싱
-                const { os, browser } = parseUserAgent(userAgentString); 
-
-                const alertData = {
-                    loginTime,
-                    os: os || '알 수 없음',
-                    browser: browser || '알 수 없음',
-                    ip: extendedUser.ipAddress || '알 수 없음',
-                };
-
-                // 3. 🚨 이메일 알림 발송 (비동기 처리)
-                // 알림 실패가 로그인 실패로 이어지지 않도록 반드시 try-catch로 감쌉니다.
-                try {
-                    await sendLoginAlertEmail(extendedUser.email as string, alertData);
-                } catch (error) {
-                    console.error("로그인 알림 이메일 발송 실패:", error);
+                // 🚨 핵심: 2FA 필요 플래그 확인
+                if ((user as { is2FaRequired?: boolean }).is2FaRequired === true) { 
+                    // 💡 세션 생성을 막는 대신, 리다이렉트 URL을 반환합니다.
+                    // NextAuth는 signIn 콜백에서 문자열 URL이 반환되면 그곳으로 리다이렉트합니다.
+                    
+                    // 리다이렉트 url 리턴
+                    return `/2fa-verify`;
                 }
 
-                // 4. (선택적) DB에 최종 로그인 정보 업데이트
-                // ... (여기에 DB 업데이트 로직 추가 가능)
+                // 2. 🚨 최종 로그인 성공 시 (2FA 완료 또는 2FA 비활성화 사용자)
+                if (user.email) {
+                    // 이메일 알림 발송 로직은 최종 로그인 성공 시에만 실행됩니다.
+
+                    // IP 및 User-Agent 정보를 포함한 타입 확장 (authorize에서 반환된 임시 필드)
+                    const extendedUser = user as typeof user & { ipAddress?: string, userAgent?: string };
+                    
+                    const loginTime = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
+                    const userAgentString = extendedUser.userAgent || '';
+                    
+                    // User-Agent 파싱
+                    const { os, browser } = parseUserAgent(userAgentString); 
+
+                    const alertData = {
+                        loginTime,
+                        os: os || '알 수 없음',
+                        browser: browser || '알 수 없음',
+                        ip: extendedUser.ipAddress || '알 수 없음',
+                    };
+
+                    // 이메일 알림 발송 (비동기 처리)
+                    try {
+                        await sendLoginAlertEmail(extendedUser.email as string, alertData);
+                    } catch (error) {
+                        console.error("로그인 알림 이메일 발송 실패:", error);
+                    }
+                }
             }
-            
             return true; // 로그인 계속 진행
         },
         async jwt({ token, user }) {

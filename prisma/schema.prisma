@@ -70,6 +70,10 @@ model User {
   accounts      Account[]
   sessions      Session[]
 
+  // 🚨 2FA 시도 중 임시 토큰 저장 필드
+  temp2FaToken  String?     // 임시 토큰 (UUID 등)
+  tempTokenExpiresAt DateTime? // 토큰 만료 시간
+
   @@map("User")
 }
 
