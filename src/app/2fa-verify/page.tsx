@@ -1,25 +1,15 @@
 // app/2fa-verify/page.tsx
 'use client';
 
-import { useSearchParams } from 'next/navigation';
 import { useActionState } from 'react';
 import { authenticate } from '@/lib/auth.actions'; // 기존 Server Action 임포트
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 export default function TwoFaVerifyPage() {
-    const searchParams = useSearchParams();
     const router = useRouter();
 
-    // 💡 1단계 로그인 시 임시로 저장/전달된 이메일 (세션 스토리지 또는 쿼리 파라미터에서 가져와야 함)
-    // 여기서는 쿼리 파라미터에서 가져왔다고 가정합니다.
-    const email = searchParams.get('email'); 
-
-    // **가장 좋은 방법은 1단계 로그인 후 서버가 임시 세션 토큰을 발행하여 비밀번호 대신 사용하는 것입니다.**
-    const [password, setPassword] = useState(''); // 🚨 실제 비밀번호를 저장할 State (임시)
-
     // Server Action의 상태와 오류 메시지를 관리합니다.
-    // authenticate 함수는 이제 email, password, totpCode를 모두 받도록 수정되어야 합니다.
     const [errorMessage, dispatch] = useActionState(authenticate, undefined);
 
     useEffect(() => {
@@ -28,7 +18,7 @@ export default function TwoFaVerifyPage() {
         if (errorMessage === '') {
             router.push('/');
         }
-    }, [email, errorMessage, router]);
+    }, [errorMessage, router]);
 
     return (
         <div className="flex justify-center items-center min-h-screen">
@@ -40,11 +30,7 @@ export default function TwoFaVerifyPage() {
                 
                 {/* 폼 액션에 Server Action dispatch를 연결 */}
                 <form action={dispatch} className="space-y-4">
-                    
-                    {/* 🚨 숨겨진 필드: 이메일과 비밀번호를 서버로 다시 전송합니다. */}
-                    <input type="hidden" name="email" value={email || ''} />
-                    <input type="hidden" name="password" value={password} /> {/* 🚨 보안 주의 */}
-                    
+
                     <div>
                         <label htmlFor="totpCode" className="block text-sm font-medium text-gray-700">인증 코드 (6자리)</label>
                         <input

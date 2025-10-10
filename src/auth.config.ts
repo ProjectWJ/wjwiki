@@ -6,6 +6,9 @@ import { prisma } from '@/lib/db'; // 기존 prisma 임포트 유지
 import bcrypt from 'bcryptjs';
 import { sendLoginAlertEmail } from '@/lib/email'; // 🚨 (새로 생성한 파일)
 import { parseUserAgent } from '@/lib/utils'; // 🚨 (User-Agent 파싱 함수)
+import crypto from 'crypto'; // Node.js 기본 모듈 (토큰 생성을 위해)
+import { cookies } from 'next/headers';
+import { verifyTotpCode } from '@/lib/totp';
 
 // 🚨 로그인 검증 로직을 포함한 NextAuth 설정 (authOptions 대신 authConfig 사용)
 export const authConfig: NextAuthConfig = {
@@ -20,20 +23,61 @@ export const authConfig: NextAuthConfig = {
             credentials: {
                 email: { label: "이메일", type: "email" },
                 password: { label: "비밀번호", type: "password" },
-                totpCode: { label: "2FA 인증코드", type: "text", required: false }
+                totpCode: { label: "2FA 인증코드", type: "text", required: false },
+                tempToken: { label: "임시 토큰", type: "text", required: false },
             },
 
             // 🚨 인증 함수 (핵심 로직)
             async authorize(credentials, req) {
-                const { email, password, totpCode } = credentials;
+                const { email, password, totpCode, tempToken } = credentials;
 
-                if (!credentials?.email || !credentials?.password) {
+                // **********************************
+                // 🚨 2단계 로그인 (TOTP 코드 + 임시 토큰)
+                // **********************************
+                if (tempToken && totpCode) {
+                    // 1. 임시 토큰으로 사용자 찾기 (DB 쿼리)
+                    const user = await prisma.user.findFirst({
+                        where: { 
+                            temp2FaToken: tempToken as string,
+                            tempTokenExpiresAt: {
+                                gt: new Date() // 만료 시간이 현재 시간보다 큰지 확인 (토큰 유효성)
+                            }
+                        }
+                    });
+
+                    if (!user || !user.isTwoFactorEnabled || !user.twoFactorSecret) {
+                        return null; // 사용자 없음, 2FA 비활성화, 또는 토큰 만료
+                    }
+                    
+                    // 2. TOTP 코드 검증
+                    const is2faValid = verifyTotpCode(user.twoFactorSecret, totpCode as string);
+
+                    if (is2faValid) {
+                        // 3. 🚨 최종 성공: DB에서 임시 토큰 삭제 후 사용자 객체 반환
+                        await prisma.user.update({
+                            where: { id: user.id },
+                            data: { temp2FaToken: null, tempTokenExpiresAt: null },
+                        });
+                        return {
+                            id: user.id,
+                            email: user.email,
+                            name: user.name,
+                            is2FaVerified: true, // 최종 인증 완료 플래그
+                        };
+                    }
+                    return null; // TOTP 코드 불일치
+                }
+
+                // **********************************
+                // 🚨 1단계 로그인 (Email + Password)
+                // **********************************
+                if (!email || !password) {
                     return null; // 이메일 또는 비밀번호 누락
                 }
 
                 // 1. DB에서 사용자 조회
                 const user = await prisma.user.findUnique({
-                    where: { email: credentials.email as string },
+                    where: { email: email as string },
                 });
 
                 if (!user || !user.hashedPassword) {
@@ -42,7 +86,7 @@ export const authConfig: NextAuthConfig = {
 
                 // 2. 비밀번호 검증 (DB의 해시된 비밀번호와 입력된 비밀번호 비교)
                 const isValid = await bcrypt.compare(
-                    credentials.password as string,
+                    password as string,
                     user.hashedPassword);
 
                 if (!isValid) {
@@ -50,14 +94,34 @@ export const authConfig: NextAuthConfig = {
                 }
 
                 // 4. 🚨 2FA 로직 분기 시작
-
                 // 4-1. 2FA가 활성화된 경우
                 if (user.isTwoFactorEnabled && user.twoFactorSecret) {
-                    
+                    // 1. 🚨 임시 토큰 생성 (UUID 또는 강력한 난수)
+                    const tempToken = crypto.randomBytes(32).toString('hex');
+                    const expiryDate = new Date(Date.now() + 5 * 60 * 1000); // 5분 만료 설정
+
+                    // 2. 🚨 DB에 토큰 저장 (Prisma 사용)
+                    await prisma.user.update({
+                        where: { id: user.id },
+                        data: { 
+                            temp2FaToken: tempToken,
+                            tempTokenExpiresAt: expiryDate,
+                        },
+                    });
+
                     // B) 1단계: 비밀번호만 검증된 경우 (totpCode가 전달되지 않음)
                     if (!totpCode) {
+                        // 3. 🚨 핵심: 임시 토큰을 HTTP-Only 쿠키로 설정하여 클라이언트에게 전달
+                        (await
+                            // 3. 🚨 핵심: 임시 토큰을 HTTP-Only 쿠키로 설정하여 클라이언트에게 전달
+                            cookies()).set('2fa-temp-token', tempToken, {
+                            httpOnly: true, // 🚨 JavaScript 접근 불가 (가장 중요)
+                            secure: process.env.NODE_ENV === 'production', // HTTPS에서만 전송
+                            maxAge: 5 * 60, // 5분
+                            path: '/2fa-verify', // /2fa-verify 페이지에서만 쿠키 접근 가능
+                            sameSite: 'lax',
+                        });
                         // 🚨 throw 대신 임시 객체를 반환합니다. (이 객체가 signIn 콜백으로 전달됨)
-                        console.log("여기까진 도달");
                         return { 
                             id: user.id, 
                             email: user.email, 
@@ -65,8 +129,6 @@ export const authConfig: NextAuthConfig = {
                             name: user.name
                         };
                     } 
-                    
-                    // ... (여기에 2단계 totpCode 검증 로직이 들어갈 예정)
                 }
                 else {
                     console.log("2FA 비활성화됨");
@@ -99,20 +161,20 @@ export const authConfig: NextAuthConfig = {
     callbacks: {
         // 🚨 2FA 중단 로직 및 로그인 알림 발송 분기
         async signIn({ user, account }) {
-            
+
             // Credentials Provider를 통해서만 실행
             if (account?.provider === "credentials" && user) {
-                
+
                 // 🚨 핵심: 2FA 필요 플래그 확인
                 if ((user as { is2FaRequired?: boolean }).is2FaRequired === true) { 
                     // 💡 세션 생성을 막는 대신, 리다이렉트 URL을 반환합니다.
                     // NextAuth는 signIn 콜백에서 문자열 URL이 반환되면 그곳으로 리다이렉트합니다.
-                    
                     // 리다이렉트 url 리턴
                     return `/2fa-verify`;
                 }
 
                 // 2. 🚨 최종 로그인 성공 시 (2FA 완료 또는 2FA 비활성화 사용자)
+                // 자꾸 이메일 날아와서 일단 비활성화
                 if (user.email) {
                     // 이메일 알림 발송 로직은 최종 로그인 성공 시에만 실행됩니다.
 
