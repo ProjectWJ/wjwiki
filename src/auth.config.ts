@@ -58,11 +58,18 @@ export const authConfig: NextAuthConfig = {
                             where: { id: user.id },
                             data: { temp2FaToken: null, tempTokenExpiresAt: null },
                         });
+
+                        // 🚨 추가: 이메일 전송을 위해 요청 헤더에서 IP와 User-Agent 정보를 추출합니다.
+                        const ip = req?.headers.get('x-forwarded-for') || req?.headers.get('x-real-ip') || ''; 
+                        const userAgent = req?.headers.get('user-agent') || '';
+
                         return {
                             id: user.id,
                             email: user.email,
                             name: user.name,
                             is2FaVerified: true, // 최종 인증 완료 플래그
+                            ipAddress: ip,       
+                            userAgent: userAgent 
                         };
                     }
                     return null; // TOTP 코드 불일치
