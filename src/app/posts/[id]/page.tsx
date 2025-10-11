@@ -7,6 +7,7 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import { auth } from '@/auth';
 import Link from 'next/link';
+import DeleteButton from '@/components/DeleteButton';
 
 // <img> 렌더러 컴포넌트 정의. 영상 나오게 하려고 추가
 const components = {
@@ -133,9 +134,12 @@ export default async function PostDetailPage({ params } : { params: PageParams }
                     작성일: {new Date(post.created_at).toLocaleDateString('ko-KR')}
                 </p>
                 {session?.user ? (
-                    <Link href={`/posts/${postId}/edit`} className="px-3 py-1 text-sm text-white bg-indigo-500 rounded hover:bg-indigo-600 transition-colors">
-                    수정
-                    </Link>
+                    <>
+                        <Link href={`/posts/${postId}/edit`} className="px-3 py-1 text-sm text-white bg-indigo-500 rounded hover:bg-indigo-600 transition-colors">
+                        수정
+                        </Link>
+                        <DeleteButton postId={postId} />
+                    </>
                 ) : (
                     <></>
                 )}

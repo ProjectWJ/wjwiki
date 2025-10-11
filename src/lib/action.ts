@@ -113,3 +113,33 @@ export async function handleUpdatePost(formData: FormData): Promise<void> {
       redirect('/posts/all');
     }
 }
+
+/**
+ * 특정 ID의 게시글을 삭제하는 Server Action
+ * @param id 삭제할 게시글의 ID (문자열)
+ * @returns {void}
+ */
+export async function deletePost(id: string): Promise<void> {
+    const postId = parseInt(id, 10);
+
+    if (isNaN(postId)) {
+        throw new Error("유효하지 않은 게시글 ID입니다.");
+    }
+    
+    // 1. DB 삭제 로직
+    try {
+        await prisma.post.delete({
+            where: { id: postId },
+        });
+    } catch (error) {
+        console.error("게시글 삭제 실패:", error);
+        throw new Error("게시글을 삭제하는 도중 오류가 발생했습니다.");
+    }
+
+    // 2. 캐시 갱신 (목록 페이지와 삭제된 상세 페이지 경로 모두 갱신)
+    revalidatePath('/posts/all');
+    revalidatePath(`/posts/${id}`); // 상세 페이지 캐시 무효화
+
+    // 3. 리다이렉션: 삭제 후 게시글 목록으로 이동
+    redirect('/posts/all'); 
+}
