@@ -41,10 +41,18 @@ export async function getPostById(id: number) {
         is_published: true, // 공개된 게시물만 조회
       },
     });
-    return post;
+
+    if(post) {
+      return {
+        ...post,
+        id: String(post.id),
+      }
+    }
+
+    return null;
   } catch (error) {
     console.error('Failed to fetch post by id:', error);
-    return null;
+    throw new Error('게시글 불러오기 실패');
   }
 }
 

@@ -5,6 +5,8 @@ import { notFound } from 'next/navigation';
 import ReactMarkdown from 'react-markdown'; 
 import type { Metadata } from 'next';
 import Image from 'next/image';
+import { auth } from '@/auth';
+import Link from 'next/link';
 
 // <img> 렌더러 컴포넌트 정의. 영상 나오게 하려고 추가
 const components = {
@@ -37,8 +39,8 @@ const components = {
                     alt={alt || ''}
                     width={800} // 원하는 너비
                     height={600} // 원하는 높이
-                    style={{ width: '100%', height: 'auto' }}
-                    objectFit="contain"
+                    style={{ width: '100%', height: 'auto', objectFit: "contain" }}
+                    priority={true}
                     {...props}
                 />
             );
@@ -103,6 +105,8 @@ export async function generateMetadata(
 export default async function PostDetailPage({ params } : { params: PageParams }) {
     // 1. URL에서 id 추출
     const { id } = await params;
+    const session = await auth(); // 🚨 서버 컴포넌트에서 세션 정보 가져오기
+
 
     // 2. id를 number로 변환
     const postId = parseInt(id, 10); 
@@ -128,6 +132,13 @@ export default async function PostDetailPage({ params } : { params: PageParams }
                 <p className="text-gray-500 mb-8">
                     작성일: {new Date(post.created_at).toLocaleDateString('ko-KR')}
                 </p>
+                {session?.user ? (
+                    <Link href={`/posts/${postId}/edit`} className="px-3 py-1 text-sm text-white bg-indigo-500 rounded hover:bg-indigo-600 transition-colors">
+                    수정
+                    </Link>
+                ) : (
+                    <></>
+                )}
                 <hr className="mb-8" />
                 <div className="prose max-w-none">
                     <ReactMarkdown
