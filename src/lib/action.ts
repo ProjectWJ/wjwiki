@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { createPost } from '@/lib/post';
 import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache'; // 데이터 갱신을 위해 필요
+import { extractFirstMediaUrl, generateThumbnailUrl } from '@/lib/utils' // 썸네일 생성
 
 // 게시물 생성 폼 제출을 처리하는 서버 액션
 // @param formData 폼 데이터를 포함하는 객체
@@ -15,8 +16,16 @@ export async function handleCreatePost(formData: FormData) {
   const content = formData.get('content') as string;
   const is_published = formData.get('is_published') === 'on' ? false : true; // 체크박스가 off일 때 true
   const summary = content.substring(0, 50); // 요약은 내용의 앞 50자로 자동 생성
-  const thumbnail_url = "";
-  
+  const firstMedia = extractFirstMediaUrl(content); // 첫 번째 미디어
+  let thumbnail_url;
+
+  if(firstMedia) {
+    thumbnail_url = generateThumbnailUrl(firstMedia);
+  }
+  else {
+    thumbnail_url = "";
+  }
+
   let newPostId: number;
 
   // 필수 필드 검증
@@ -63,7 +72,15 @@ export async function handleUpdatePost(formData: FormData): Promise<void> {
     const content = formData.get('content') as string;
     const is_published = formData.get('is_published') === 'on' ? false : true; // 체크박스가 off일 때 true
     const summary = content.substring(0, 50); // 요약은 내용의 앞 50자로 자동 생성
-    let thumbnail_url = ""; // 썸네일 나중에 작업하기
+    const firstMedia = extractFirstMediaUrl(content); // 첫 번째 미디어
+    let thumbnail_url;
+
+    if(firstMedia) {
+      thumbnail_url = generateThumbnailUrl(firstMedia);
+    }
+    else {
+      thumbnail_url = "";
+    }
 
     if (!id || !title || !content) {
         // 더 상세한 오류 처리 필요
@@ -119,7 +136,7 @@ export async function handleUpdatePost(formData: FormData): Promise<void> {
  * @param id 삭제할 게시글의 ID (문자열)
  * @returns {void}
  */
-export async function deletePost(id: string): Promise<void> {
+export async function handleDeletePost(id: string): Promise<void> {
     const postId = parseInt(id, 10);
 
     if (isNaN(postId)) {

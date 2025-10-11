@@ -1,7 +1,7 @@
 // components/DeleteButton.tsx
 
 'use client';
-import { deletePost } from '@/lib/action'; 
+import { handleDeletePost } from '@/lib/action'; 
 import { useFormStatus } from 'react-dom';
 
 interface DeleteButtonProps {
@@ -24,7 +24,7 @@ function SubmitButton() {
 
 export default function DeleteButton({ postId }: DeleteButtonProps) {
     // 1. Server Action 바인딩 (postId를 첫 번째 인자로 고정)
-    const handleDelete = deletePost.bind(null, postId.toString());
+    const handleDelete = handleDeletePost.bind(null, postId.toString());
 
     return (
         <form 

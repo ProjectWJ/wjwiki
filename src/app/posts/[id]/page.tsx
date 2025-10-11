@@ -133,6 +133,9 @@ export default async function PostDetailPage({ params } : { params: PageParams }
                 <p className="text-gray-500 mb-8">
                     작성일: {new Date(post.created_at).toLocaleDateString('ko-KR')}
                 </p>
+                <Link href={`/posts/all`} className="px-3 py-1 text-sm text-white bg-gray-700 rounded hover:bg-black transition-colors">
+                목록
+                </Link>
                 {session?.user ? (
                     <>
                         <Link href={`/posts/${postId}/edit`} className="px-3 py-1 text-sm text-white bg-indigo-500 rounded hover:bg-indigo-600 transition-colors">
