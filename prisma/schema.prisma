@@ -109,3 +109,42 @@ model Session {
 
   @@map("Session")
 }
+
+// 미디어 관리 총괄 테이블
+model Media {
+  id              Int      @id @default(autoincrement())
+  
+  // Blob 스토리지에 저장된 실제 파일 URL (고유값)
+  blob_url        String   @unique
+  
+  // 파일의 원래 이름 (UUID로 저장했더라도, 사용자에게 보여줄 이름)
+  original_name   String
+  
+  // 파일의 MIME 타입 (image/jpeg, video/mp4 등)
+  mime_type       String
+  
+  // 파일을 업로드한 사용자 ID (인증 구현 시 필수)
+  uploaded_by     String?  // 현재는 임시로 String?으로 두고, 인증 구현 후 User 모델과 연결
+  
+  // 파일의 현재 상태: 
+  // - PENDING: 업로드만 되고 아직 게시글에 사용되지 않은 임시 파일 (정리 대상)
+  // - USED: 현재 게시글 본문 또는 썸네일에 사용 중인 파일
+  // - SCHEDULED_FOR_DELETION: 게시글에서 삭제/게시글 자체가 삭제되어 정리 대기 중인 파일
+  status          MediaStatus @default(PENDING)
+  
+  // 파일 생성 시점
+  created_at      DateTime @default(now())
+  
+  // 마지막으로 사용된 시점 또는 업데이트 시점 (Clean-up 기준)
+  updated_at      DateTime @updatedAt
+  
+  // 삭제가 예약된 시점 (Cron Job이 이 시간을 보고 삭제)
+  scheduled_delete_at DateTime?
+}
+
+// 미디어 상태 ENUM
+enum MediaStatus {
+  PENDING // 업로드 완료, 아직 사용되지 않음
+  USED    // 게시글 본문/썸네일에서 사용 중
+  SCHEDULED_FOR_DELETION // 게시글에서 삭제되었거나 게시글 자체가 삭제됨 (청소 대기)
+}

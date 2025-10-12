@@ -121,4 +121,15 @@ export function generateThumbnailUrl(url: string): string {
     return `${url}?w=300&fit=cover&format=webp`;
 }
 
+// 본문 URL 목록 추출
+export function howManyMedia(content: string) {
 
+    const markdownRegex = /!\[.*?\]\((https?:\/\/[^\s\)]+)\)/g;
+    const match = Array.from(content.matchAll(markdownRegex), mat => mat[1]);
+
+    if(match){
+        return match;
+    }
+
+    return null;
+}
