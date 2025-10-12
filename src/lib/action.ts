@@ -198,6 +198,7 @@ export async function handleDeletePost(id: string): Promise<void> {
             const scheduledDeleteTime = new Date();
             // scheduledDeleteTime.setDate(scheduledDeleteTime.getDate() + 7); // 7일 후
             // 테스트용
+            console.log("테스트 중입니다...");
             scheduledDeleteTime.setTime(scheduledDeleteTime.getTime() + 60 * 1000); // 1분 후
 
             await prisma.media.updateMany({
