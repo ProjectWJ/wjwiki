@@ -1,36 +1,39 @@
 // src/lib/post.ts
+import { auth } from '@/auth';
 import { prisma } from '@/lib/db';
 
 // all에서 사용하는 게시물 목록을 조회하는 함수
 export async function getPublishedPosts() {
-  // 이 함수는 Server Component나 Server Action에서만 호출됩니다.
   try {
-    // published(공개) 상태인 글들을 최신 순으로 정렬하여 조회
+    // 로그인 세션 확인
+    const session = await auth();
+
+    // 로그인 상태면 전체 글, 비로그인 상태면 공개 글만
+    const where = session ? {} : { is_published: true };
+
+    // 게시물 조회
     const posts = await prisma.post.findMany({
-      where: {
-        is_published: true,
-      },
-      select: { // 필요한 필드만 선택하여 네트워크 오버헤드 최소화
+      where,
+      select: {
         id: true,
         title: true,
         summary: true,
         thumbnail_url: true,
         created_at: true,
+        is_published: true
       },
       orderBy: {
-        created_at: 'desc', // 최신순 정렬
+        created_at: 'desc',
       },
     });
-    
-    // DB에서 조회한 데이터를 반환
+
     return posts;
-    
   } catch (error) {
     console.error('Failed to fetch posts:', error);
-    // 에러 발생 시 빈 배열 반환 또는 에러 처리
-    return []; 
+    return [];
   }
 }
+
 
 // [id]에서 사용하는 id를 이용해 개별 게시물을 조회하는 함수 (동적 라우팅용)
 export async function getPostById(id: number) {

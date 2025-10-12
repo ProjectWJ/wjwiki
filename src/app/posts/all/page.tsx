@@ -27,6 +27,7 @@ export default async function HomePage() {
       summary?: string | null;
       created_at: string | number | Date;
       thumbnail_url?: string;
+      is_published: boolean
   }
 
   // 3. 게시물 목록 렌더링
@@ -55,6 +56,9 @@ export default async function HomePage() {
                 {/* 동적 URL id 사용 */}
                 <a href={`/posts/${post.id}`} className="text-xl font-semibold hover:underline">
                     {post.title}
+                    {!post.is_published && (
+                      <span className="ml-2 text-sm text-gray-500">(비공개 상태)</span>
+                    )}
                 </a>
                 <p className="text-gray-600 mt-2">{post.summary}</p>
                 <p className="text-sm text-gray-400 mt-4">

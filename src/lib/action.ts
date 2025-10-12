@@ -55,12 +55,25 @@ export async function handleCreatePost(formData: FormData) {
   // 컨텐츠에 써진 모든 미디어 찾기
   const mediaArray = howManyMedia(content);
   if(mediaArray) {
-    await prisma.media.updateMany ({
-      where: { blob_url: { in: mediaArray }, status: 'PENDING'},
-      data: {
-        status: "USED"
-      }
-    })
+    // 비공개 상태인지에 따라 다른 쿼리
+    if(is_published === false){
+      await prisma.media.updateMany ({
+        where: { blob_url: { in: mediaArray }, status: 'PENDING'},
+        data: {
+          status: "USED",
+          is_public: false
+        }
+      })
+    }
+    else{
+      await prisma.media.updateMany ({
+        where: { blob_url: { in: mediaArray }, status: 'PENDING'},
+        data: {
+          status: "USED",
+          is_public: true
+        }
+      })
+    }
   }
 
   // 공개 게시물이면 거기로, 아니면 전체 게시물로 이동
@@ -128,12 +141,25 @@ export async function handleUpdatePost(formData: FormData): Promise<void> {
     // 컨텐츠에 써진 모든 미디어 찾기
     const mediaArray = howManyMedia(content);
     if(mediaArray) {
-      await prisma.media.updateMany ({
-        where: { blob_url: { in: mediaArray } },
-        data: {
-          status: "USED"
-        }
-      })
+      // 비공개 상태인지에 따라 다른 쿼리
+      if(is_published === false){
+        await prisma.media.updateMany ({
+          where: { blob_url: { in: mediaArray } },
+          data: {
+            status: "USED",
+            is_public: false
+          }
+        })
+      }
+      else{
+        await prisma.media.updateMany ({
+          where: { blob_url: { in: mediaArray } },
+          data: {
+            status: "USED",
+            is_public: true
+          }
+        })
+      }
     }
 
     // 3. 캐시 갱신 (선택 사항: 캐시된 목록 페이지를 갱신)
