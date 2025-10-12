@@ -4,13 +4,13 @@ import { NextResponse } from "next/server";
 import { generateUUID, getFileExtension } from '@/lib/utils'; // 🚨 새로 만든 유틸리티 임포트
 import { prisma } from '@/lib/db' // model
 
-type mediaStatus = "PENDING" | "USED" | "SCHEDULED_FOR_DELETION";
+// type mediaStatus = "PENDING" | "USED" | "SCHEDULED_FOR_DELETION";
 
 /**
  * Media 테이블에 새 레코드를 생성(Create)할 때 필요한 데이터 구조
  * Prisma 스키마 (prisma/schema.prisma)를 기반으로 작성됨.
  */
-interface mediaCreateData {
+/* interface mediaCreateData {
     // 필수 필드
     blob_url: string;        // Blob 스토리지 URL (unique)
     original_name: string;   // 파일의 원본 이름
@@ -19,12 +19,12 @@ interface mediaCreateData {
     // 선택 필드 (DB에서 default 값을 가지거나, 필수가 아님)
     uploaded_by?: string;      // 파일 업로더 ID (인증 후 사용)
     status?: mediaStatus;      // 파일 상태 ("PENDING"이 default)
-}
+} */
 
 /**
  * Media 레코드를 업데이트(Update)할 때 사용하는 데이터 구조
  */
-interface mediaUpdateData {
+/* interface mediaUpdateData {
     // 모든 필드는 업데이트 시 선택 사항임
     blob_url?: string;
     original_name?: string;
@@ -32,7 +32,7 @@ interface mediaUpdateData {
     uploaded_by?: string;
     status?: mediaStatus;
     scheduled_delete_at?: Date | null; // 삭제 예약 시점 (Date 타입)
-}
+} */
 
 export async function POST(request: Request) {
     const { searchParams } = new URL(request.url);

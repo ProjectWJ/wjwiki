@@ -193,8 +193,8 @@ export async function handleDeletePost(id: string): Promise<void> {
             // 🚨 일주일 후 삭제되도록 예약 시간을 설정합니다.
             const scheduledDeleteTime = new Date();
             // scheduledDeleteTime.setDate(scheduledDeleteTime.getDate() + 7); // 7일 후
-            // 테스트용
-            scheduledDeleteTime.setTime(scheduledDeleteTime.getTime() + 60 * 1000); // 1분 후
+            scheduledDeleteTime.setDate(scheduledDeleteTime.getDate() + 1); // 1일 후
+            // 위는 테스트용!!! 실제로는 7일 뒤로 설정하자.
 
             await prisma.media.updateMany({
                 where: {

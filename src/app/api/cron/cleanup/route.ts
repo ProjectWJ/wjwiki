@@ -6,7 +6,7 @@ export const runtime = 'nodejs'; // Node.js 런타임에서 안정적으로 실�
 
 /**
  * 미사용 미디어를 정리하는 Cron Job API Route입니다.
- * 1. PENDING (고아 파일) 정리: 1시간 이상 된 파일 삭제
+ * 1. PENDING (고아 파일) 정리: 24시간 이상 된 파일 삭제
  * 2. SCHEDULED_FOR_DELETION (삭제 예약) 정리: 예약 시간이 지난 파일 삭제
  */
 export async function GET() {
@@ -16,8 +16,7 @@ export async function GET() {
     // -----------------------------------------------------------
     // 1. 고아 파일 (PENDING) 정리: 1시간 이상 된 PENDING 파일
     // -----------------------------------------------------------
-    // const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000); // 현재 시각 - 1시간
-    const oneHourAgo = new Date(now.getTime() - 60 * 1000); // 테스트용으로 1분
+    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 24000); // 24시간 제한
 
     const pendingFiles = await prisma.media.findMany({
         where: {
