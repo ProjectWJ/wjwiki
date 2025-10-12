@@ -1,10 +1,10 @@
 // 본문에 삽입한 미디어 파일 업로드 api
 import { put } from "@vercel/blob";
 import { NextResponse } from "next/server";
-import { generateUUID, getFileExtension } from '@/lib/utils'; // 🚨 새로 만든 유틸리티 임포트
+import { getFileExtension } from '@/lib/utils'; // 🚨 새로 만든 유틸리티 임포트
 import { prisma } from '@/lib/db' // model
 
-// type mediaStatus = "PENDING" | "USED" | "SCHEDULED_FOR_DELETION";
+//type mediaStatus = "PENDING" | "USED" | "SCHEDULED_FOR_DELETION";
 
 /**
  * Media 테이블에 새 레코드를 생성(Create)할 때 필요한 데이터 구조
@@ -48,15 +48,16 @@ export async function POST(request: Request) {
     const extension = getFileExtension(originalFilename);
     
     // 2. UUID로 새로운 파일 이름 생성
-    const newFilename = generateUUID() + extension; 
+    // const newFilename = generateUUID() + extension; 
 
     let resBlob;
     // put 함수를 사용해 vercel blob storage에 파일 업로드
     try {
         // blob에 파일 업로드
-        const blob = await put(newFilename, request.body, {
-            access: "public" // 초기 접근 권한 설정 (나중에 Signed URL로 변경 가능)
+        const blob = await put(originalFilename, request.body, {
+            access: "public", // 초기 접근 권한 설정 (나중에 Signed URL로 변경 가능)
             // contentType은 자동으로 설정되지만, 필요하면 지정 가능
+            addRandomSuffix: true // 자체 지원하는 랜덤 이름
         });
 
         resBlob = blob;

@@ -132,34 +132,31 @@ export async function handleUpdatePost(formData: FormData): Promise<void> {
         });
 
     } catch (error) {
-        console.error("게시글 수정 실패:", error);
+        console.error("게시글 수정 실패: ", error);
         // 사용자에게 상세 오류 메시지를 전달하지 않고 일반적인 오류를 던집니다.
         throw new Error("게시글을 수정하는 도중 오류가 발생했습니다.");
     }
 
     // media가 있고, createPost가 성공하면 본문에 포함된 모든 미디어를 USED로 변경
-    // 컨텐츠에 써진 모든 미디어 찾기
-    const mediaArray = howManyMedia(content);
-    if(mediaArray) {
-      // 비공개 상태인지에 따라 다른 쿼리
-      if(is_published === false){
-        await prisma.media.updateMany ({
-          where: { blob_url: { in: mediaArray } },
+    try {
+      // 컨텐츠에 써진 모든 미디어 찾기
+      const mediaArray = howManyMedia(content);
+
+      if (mediaArray && mediaArray.length > 0) {
+        await prisma.media.updateMany({
+          where: {
+            blob_url: { in: mediaArray },
+          },
           data: {
             status: "USED",
-            is_public: false
-          }
-        })
+            is_public: is_published ? true : false, // 기본값 true
+            updated_at: new Date(),
+          },
+        });
       }
-      else{
-        await prisma.media.updateMany ({
-          where: { blob_url: { in: mediaArray } },
-          data: {
-            status: "USED",
-            is_public: true
-          }
-        })
-      }
+    } catch (error) {
+      console.error("Media 테이블 수정 실패: ", error);
+      throw new Error("Media 테이블을 수정하는 도중 오류가 발생했습니다.")
     }
 
     // 3. 캐시 갱신 (선택 사항: 캐시된 목록 페이지를 갱신)
@@ -230,6 +227,7 @@ export async function handleDeletePost(id: string): Promise<void> {
                 data: {
                     status: 'SCHEDULED_FOR_DELETION',
                     scheduled_delete_at: scheduledDeleteTime,
+                    is_public: false // 비공개로 전환
                 },
             });
         }

@@ -68,11 +68,11 @@ export function getFileExtension(filename: string): string {
  * 암호학적으로 안전한 UUID를 생성합니다. (RFC4122 v4)
  * @returns 고유 식별자 문자열
  */
-export function generateUUID(): string {
+/* export function generateUUID(): string {
     // node:crypto 모듈을 사용하여 UUID v4를 생성
     // Next.js Server Component 또는 API Route 환경에서 사용 가능
     return crypto.randomUUID();
-}
+} */
 
 // 이 아래 아직 미사용
 
