@@ -38,11 +38,15 @@ export async function getPublishedPosts() {
 // [id]에서 사용하는 id를 이용해 개별 게시물을 조회하는 함수 (동적 라우팅용)
 export async function getPostById(id: number) {
   try {
+    // 로그인 세션 확인
+    const session = await auth();
+
+    // 로그인 상태면 전체 글, 비로그인 상태면 공개 글만
+    const where = session ? { id: id } : { id: id, is_published: true };
+
+    // 개별 게시물 조회
     const post = await prisma.post.findUnique({
-      where: {
-        id: id,
-        is_published: true, // 공개된 게시물만 조회
-      },
+      where
     });
 
     if(post) {

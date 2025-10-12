@@ -142,6 +142,9 @@ export default async function PostDetailPage({ params } : { params: PageParams }
                         수정
                         </Link>
                         <DeleteButton postId={postId} />
+                        {!post.is_published && (
+                        <span className="ml-2 text-sm text-gray-500">(비공개 상태)</span>
+                        )}
                     </>
                 ) : (
                     <></>
