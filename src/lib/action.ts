@@ -91,7 +91,7 @@ export async function handleUpdatePost(formData: FormData): Promise<void> {
       thumbnail_url = generateThumbnailUrl(firstMedia);
     }
     else {
-      thumbnail_url = "";
+      thumbnail_url = "https://hyamwcz838h4ikyf.public.blob.vercel-storage.com/default_thumbnail.png";
     }
 
     if (!id || !title || !content) {
@@ -102,10 +102,6 @@ export async function handleUpdatePost(formData: FormData): Promise<void> {
     const postId = parseInt(id, 10);
     if (isNaN(postId)) {
         throw new Error("유효하지 않은 게시글 ID입니다.");
-    }
-
-    if(thumbnail_url === ""){
-      thumbnail_url = "https://hyamwcz838h4ikyf.public.blob.vercel-storage.com/default_thumbnail.png"
     }
 
     // 2. DB 업데이트 로직
@@ -198,7 +194,6 @@ export async function handleDeletePost(id: string): Promise<void> {
             const scheduledDeleteTime = new Date();
             // scheduledDeleteTime.setDate(scheduledDeleteTime.getDate() + 7); // 7일 후
             // 테스트용
-            console.log("테스트 중입니다...");
             scheduledDeleteTime.setTime(scheduledDeleteTime.getTime() + 60 * 1000); // 1분 후
 
             await prisma.media.updateMany({
