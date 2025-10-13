@@ -9,12 +9,20 @@ export const runtime = 'nodejs'; // Node.js 런타임에서 안정적으로 실�
  * 1. PENDING (고아 파일) 정리: 24시간 이상 된 파일 삭제
  * 2. SCHEDULED_FOR_DELETION (삭제 예약) 정리: 예약 시간이 지난 파일 삭제
  */
-export async function GET() {
+export async function GET(req: Request) {
+
+    // Vercel에서는 Cron 호출 시 x-vercel-cron 헤더 자동 첨부
+    // 정식 Cron에서 온 요청만 처리하도록 보호
+    // 필요시 환경변수 토큰 병행
+    if (!req.headers.get("x-vercel-cron")) {
+        return NextResponse.json({ success: false, message: "Forbidden" }, { status: 403 });
+    }
+
     console.log('--- Starting Media Clean-up Cron Job ---');
     const now = new Date();
     
     // -----------------------------------------------------------
-    // 1. 고아 파일 (PENDING) 정리: 1시간 이상 된 PENDING 파일
+    // 1. 고아 파일 (PENDING) 정리: 24시간 이상 된 PENDING 파일
     // -----------------------------------------------------------
     const oneHourAgo = new Date(now.getTime() - 60 * 60 * 24000); // 24시간 제한
 
@@ -22,7 +30,7 @@ export async function GET() {
         where: {
             status: 'PENDING',
             created_at: {
-                lt: oneHourAgo, // created_at이 1시간 전보다 작은(오래된) 파일
+                lt: oneHourAgo, // created_at이 24시간 전보다 작은(오래된) 파일
             },
         },
     });

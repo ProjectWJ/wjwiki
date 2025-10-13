@@ -49,7 +49,7 @@ export async function authenticate(prevState: string | undefined,
         throw error; // Next.js가 리다이렉트 처리를 완료하도록 다시 throw 해주는 것이 일반적입니다.
       }
 
-      console.log(error);
+      console.error(error);
       return '인증 코드가 정확하지 않습니다.';
     }
   }
@@ -83,12 +83,12 @@ export async function authenticate(prevState: string | undefined,
       
       // 인증 실패 시 오류 처리
       if (error instanceof Error && error.message.includes('CredentialsSignin')) {
-        console.log(error);
+        console.error(error);
         return '이메일이나 비밀번호가 일치하지 않습니다.';
       }
 
       // 다른 오류 처리
-      console.log(error);
+      console.error(error);
       return '로그인 중 알 수 없는 오류가 발생했습니다.';
     }
   }

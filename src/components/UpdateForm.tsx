@@ -18,7 +18,6 @@ async function uploadFile(file: File): Promise<string | null> {
         }
 
         const result = await response.json();
-        console.log("업로드 성공 URL: ", result.url);
 
         // vercel blob에서 반환된 최종 url 리턴
         return result.url;

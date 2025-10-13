@@ -58,7 +58,7 @@ export async function handleCreatePost(formData: FormData) {
     // 비공개 상태인지에 따라 다른 쿼리
     if(is_published === false){
       await prisma.media.updateMany ({
-        where: { blob_url: { in: mediaArray }, status: 'PENDING'},
+        where: { id: { in: mediaArray }, status: 'PENDING'},
         data: {
           status: "USED",
           is_public: false
@@ -67,7 +67,7 @@ export async function handleCreatePost(formData: FormData) {
     }
     else{
       await prisma.media.updateMany ({
-        where: { blob_url: { in: mediaArray }, status: 'PENDING'},
+        where: { id: { in: mediaArray }, status: 'PENDING'},
         data: {
           status: "USED",
           is_public: true
@@ -145,7 +145,7 @@ export async function handleUpdatePost(formData: FormData): Promise<void> {
       if (mediaArray && mediaArray.length > 0) {
         await prisma.media.updateMany({
           where: {
-            blob_url: { in: mediaArray },
+            id: { in: mediaArray }
           },
           data: {
             status: "USED",
@@ -207,11 +207,11 @@ export async function handleDeletePost(id: string): Promise<void> {
         });
         
         // 3. 미디어 정리 예약: 본문에 사용된 모든 파일의 상태를 변경합니다.
-        const usedUrls = howManyMedia(content);
+        const mediaArray = howManyMedia(content);
 
-        if (usedUrls) {
-            // 쿼리 파라미터 제거: DB의 blob_url과 일치시켜야 함
-            const cleanUrls = usedUrls.map(url => url.split('?')[0]);
+        if (mediaArray) {
+            // 쿼리 파라미터 제거: DB의 id과 일치시켜야 함
+            // const cleanUrls = usedUrls.map(url => url.split('?')[0]);
             
             // 🚨 일주일 후 삭제되도록 예약 시간을 설정합니다.
             const scheduledDeleteTime = new Date();
@@ -219,7 +219,7 @@ export async function handleDeletePost(id: string): Promise<void> {
 
             await prisma.media.updateMany({
                 where: {
-                    blob_url: { in: cleanUrls },
+                    id: { in: mediaArray },
                     status: 'USED', // USED 상태인 파일만 정리 대상으로 삼습니다.
                 },
                 data: {

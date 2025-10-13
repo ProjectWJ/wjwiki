@@ -37,7 +37,7 @@ import { prisma } from '@/lib/db' // model
 export async function POST(request: Request) {
     const { searchParams } = new URL(request.url);
     const originalFilename = searchParams.get('filename');
-
+    let fileIdURL;
 
     // request.body를 stream으로 직접 처리해 blob에 업로드
     if (!request.body || !originalFilename){
@@ -64,15 +64,20 @@ export async function POST(request: Request) {
 
         // media 테이블에 업데이트
         // const mediaPrisma = await prisma.media.create({
-        await prisma.media.create({
+        const originalFileId = await prisma.media.create({
             data: {
                 blob_url: resBlob.url,
                 original_name: originalFilename,
                 mime_type: extension,
                 uploaded_by: "", // 나중에 수정
                 status: "PENDING"
+            },
+            select: {
+                id: true,
             }
         })
+
+        fileIdURL = `/api/media/${originalFileId.id}`;
     }
     catch (error) {
         console.error("파일 업로드 중 오류 발생:", error);
@@ -82,7 +87,8 @@ export async function POST(request: Request) {
     // return NextResponse.json(resBlob);
     // 3. 응답에 원본 파일 이름 포함 (DB 저장을 위해)
     return NextResponse.json({ 
-        url: resBlob.url, 
+        url: fileIdURL, 
         originalFilename: originalFilename, // 원본 이름은 DB 저장을 위해 클라이언트에 반환
+        // 여기를 프록시 api url을 반환해야 함
     });
 }

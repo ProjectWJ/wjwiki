@@ -46,7 +46,6 @@ export default async function HomePage() {
 
 
         {posts.map((post: Post) => (
-          console.log(post.thumbnail_url),
             <div key={post.id} className="border p-4 rounded-lg shadow-md">
                 {post.thumbnail_url && (
                     <Image
