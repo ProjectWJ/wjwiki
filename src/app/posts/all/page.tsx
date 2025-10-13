@@ -1,4 +1,10 @@
 // src/app/page.tsx
+
+// getPublishedPosts로 인해 posts는 동적인 값이 된다.
+// Dynamic server usage: Route /posts/all couldn't be rendered statically because it used headers.
+// 이 오류를 해결하기 위해 이 페이지는 동적으로 나오게 설정
+export const dynamic = "force-dynamic";
+
 import Header from '@/components/Header';
 import { getPublishedPosts } from '@/lib/post'; // 2번에서 작성한 DB 조회 함수
 import Image from 'next/image';
