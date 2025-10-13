@@ -35,16 +35,22 @@ const components = {
         // 이미지인 경우 next.js의 Image 컴포넌트 사용해서 최적화
         if (src) {
             return (
-                <Image
-                    src={src as string}
-                    alt={alt || ''}
-                    width={800} // 원하는 너비
-                    height={600} // 원하는 높이
-                    style={{ width: '100%', height: 'auto', objectFit: "contain" }}
-                    priority={true}
-                    unoptimized={true} // 비공개 게시글 보안을 위해 최적화 비활성화..
-                    {...props}
-                />
+                <a
+                    href={`${src}?original=true`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    >
+                    <Image
+                        src={`${src as string}?w=800&q=75`}
+                        alt={alt || ''}
+                        width={800} // 원하는 너비
+                        height={600} // 원하는 높이
+                        style={{ width: '100%', height: 'auto', objectFit: "contain" }}
+                        priority={true}
+                        unoptimized={true} // 비공개 게시글 보안을 위해 최적화 비활성화..
+                        {...props}
+                    />
+                </a>
             );
         }
 

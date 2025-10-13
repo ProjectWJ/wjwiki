@@ -142,6 +142,9 @@ export async function handleUpdatePost(formData: FormData): Promise<void> {
       // 컨텐츠에 써진 모든 미디어 찾기
       const mediaArray = howManyMedia(content);
 
+      // 기존에 쓰인 모든 미디어 찾기
+      // 미사용된 미디어는 삭제 예정으로 변경하기
+
       if (mediaArray && mediaArray.length > 0) {
         await prisma.media.updateMany({
           where: {

@@ -47,16 +47,27 @@ export default async function HomePage() {
 
         {posts.map((post: Post) => (
             <div key={post.id} className="border p-4 rounded-lg shadow-md">
-                {post.thumbnail_url && (
-                    <Image
-                        src={post.thumbnail_url}
-                        alt={post.title}
-                        width={250}
-                        height={250}
-                        className="w-full h-40 object-cover rounded-md mb-4"
-                        style={{ objectFit: 'cover' }}
-                    />
-                )}
+                {post.thumbnail_url && post.thumbnail_url.startsWith("https://hyamwcz838h4ikyf.public.blob.vercel-storage.com/") ? (
+                  <Image
+                    src={`${post.thumbnail_url}?w=800&q=25`}
+                    alt={post.title}
+                    width={250}
+                    height={250}
+                    className="w-full h-40 object-cover rounded-md mb-4"
+                    unoptimized={true}
+                    style={{ objectFit: 'cover' }}
+                    priority
+                  />
+                ) : 
+                  <Image
+                    src={`${post.thumbnail_url}?w=800&q=25`}
+                    alt={post.title}
+                    width={250}
+                    height={250}
+                    className="w-full h-40 object-cover rounded-md mb-4"
+                    unoptimized={true}
+                    style={{ objectFit: 'cover' }}
+                  />}
 
                 {/* 동적 URL id 사용 */}
                 <a href={`/posts/${post.id}`} className="text-xl font-semibold hover:underline">

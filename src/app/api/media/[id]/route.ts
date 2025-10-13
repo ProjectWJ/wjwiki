@@ -4,6 +4,8 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { auth } from '@/auth';
 import { head } from '@vercel/blob';
+import { NextRequest } from 'next/server';
+import sharp from 'sharp';
 
 export const runtime = 'nodejs'; // Node.js 환경에서 실행
 
@@ -13,12 +15,9 @@ export const runtime = 'nodejs'; // Node.js 환경에서 실행
  * @param context Next.js 라우트 컨텍스트 (params 포함)
  */
 export async function GET(
-  request: Request,
+  request: NextRequest,
   context: { params: Promise<{ id: string }> }
-): Promise<NextResponse> {
-
-  console.log("✅ [ROUTE ENTERED] /api/media endpoint hit");
-  console.log("🔹 request.url:", request.url);
+): Promise<Response> {
 
   const params = await context.params;
   
@@ -61,15 +60,15 @@ export async function GET(
   // 3. Vercel Blob에서 실제 파일 가져오기
   try {
     const blobUrl = mediaRecord.blob_url;
-    const blobMetadata = await head(blobUrl);
-
     // head()를 사용해 파일의 메타데이터(콘텐츠 타입, 크기 등)를 먼저 가져옵니다.
-    if (!blobMetadata) {
-      return new NextResponse('Not Found', { status: 404 });
-    }
+    const blobMetadata = await head(blobUrl);
 
     // 실제 파일 데이터를 가져옵니다
     const blobResponse = await fetch(blobUrl);
+
+    if (!blobMetadata || !blobResponse) {
+      return new NextResponse('Not Found', { status: 404 });
+    }
 
     if (!blobResponse.ok) {
         console.error(`Failed to fetch from Blob Storage: ${blobUrl}`, blobResponse.status);
@@ -78,26 +77,62 @@ export async function GET(
 
     // 4. 클라이언트에게 파일 스트리밍 반환 (프록시 역할)
     // 원본 응답의 헤더를 복사하여 캐싱 및 MIME 타입 정보를 유지합니다.
-    const headers = new Headers(blobResponse.headers);
+    // const headers = new Headers(blobResponse.headers);
 
-    // 캐싱 헤더 최적화: 공개 파일은 캐시를 길게, 비공개 파일은 짧게 (또는 캐시 안 함)
+    // =========== 최적화 로직 ===========
+
+    // 1. 원본 이미지 데이터를 ArrayBuffer로 변환합니다.
+    const imageArrayBuffer = await blobResponse.arrayBuffer();
+
+    // 프론트엔드에서 요청받은 파라미터
+    const width = request.nextUrl.searchParams.get('w');
+    const quality = request.nextUrl.searchParams.get('q');
+
+    // 주소창으로 직접 접근했다면 원본 제공
+    const original = request.nextUrl.searchParams.get('original') === 'true';
+
+    // 2. sharp를 이용해 버퍼를 직접 최적화하고, 결과를 새로운 버퍼로 받습니다.
+    const optimizedBuffer = original
+        ? imageArrayBuffer
+        : await sharp(Buffer.from(imageArrayBuffer)) // sharp는 Buffer로 작업합니다.
+        .resize(width ? parseInt(width) : undefined)
+        .webp({ quality: quality ? parseInt(quality) : 75 })
+        .toBuffer(); // 최적화된 결과물을 다시 Buffer로 출력
+
+    // =========== 헤더 설정 ===========
+    const headers = new Headers();
+
+    // 캐싱 헤더 최적화
     if (!isPublic) {
-        // 비공개 파일은 캐시를 짧게 설정 (보안 유지)
-        headers.set('Cache-Control', 'public, max-age=60'); 
+        // 비공개 파일은 캐시 안 함 또는 매우 짧게 설정
+        headers.set('Cache-Control', 'private, no-store, must-revalidate'); 
     } else {
-        // 공개 파일은 캐시를 길게 설정 (성능 최적화)
+        // 공개 파일은 길게(1년) 설정하여 CDN 성능 극대화
         headers.set('Cache-Control', 'public, max-age=31536000, immutable'); 
     }
-    
-    // Content-Type을 DB에 저장된 타입으로 설정 (blobResponse에서 가져와도 무방)
-    headers.set('Content-Type', blobMetadata.contentType || 'application/octet-stream');
-    headers.set('Content-Length', blobMetadata.size.toString());
 
-    console.log("✅ [ROUTE ENDED]")
-    return new NextResponse(blobResponse.body, {
+    // 🔥 중요: Content-Length를 원본이 아닌, '최적화된 버퍼'의 크기로 설정해야 합니다.
+    if(original === true) {
+      // Content-Type을 DB에 저장된 타입으로 설정 (blobResponse에서 가져와도 무방)
+      headers.set('Content-Type', blobMetadata.contentType || 'application/octet-stream');
+      headers.set('Content-Length', optimizedBuffer.byteLength.toString());
+    }
+    else {
+      // Content-Type을 webp로 설정
+      headers.set('Content-Type', 'image/webp');
+      headers.set('Content-Length', (optimizedBuffer as Buffer<ArrayBufferLike>).length.toString());
+    }
+
+    // 3. 최종적으로 최적화된 버퍼를 담아 응답합니다.
+    return new Response(optimizedBuffer as unknown as BodyInit, {
+        status: 200,
+        headers: headers,
+    });
+
+/*     return new NextResponse(blobResponse.body, {
       status: 200,
       headers: headers,
-    });
+    }); */
 
   } catch (error) {
     console.error('Error serving media proxy:', error);
