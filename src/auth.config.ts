@@ -32,6 +32,7 @@ export const authConfig: NextAuthConfig = {
             async authorize(credentials, req) {
 
                 // 입력값 검증
+                // 1차 인증에선 이메일, 비밀번호만
                 if(!credentials.totpCode){
                     const validationResult = LoginSchema.safeParse({email: credentials.email, password: credentials.password});
 
@@ -46,6 +47,7 @@ export const authConfig: NextAuthConfig = {
                         return null; // NextAuth 표준: 인증 실패
                     }
                 } else {
+                // 2차 로그인에서는 otp 번호 검증 
                     const validationResult = OTPSchema.safeParse({otpCode: credentials.totpCode});
                     
                     if (!validationResult.success) {
@@ -57,7 +59,7 @@ export const authConfig: NextAuthConfig = {
                     }
                 }
 
-                
+
                 const { email, password, totpCode, tempToken } = credentials;
 
 
@@ -189,9 +191,26 @@ export const authConfig: NextAuthConfig = {
         }),
     ],
 
-    // 3. 페이지 설정
+    // 페이지 설정
     pages: {
         signIn: "/login",
+    },
+
+    // 🚨 1. 세션(Session) 설정: 쿠키 기반 세션 정책 정의
+    session: {
+        strategy: "jwt", // JWT 기반 세션 사용
+        // 세션 만료 시간 (로그인 유지 기간)
+        maxAge: 2 * 60 * 60, // 2시간
+
+        // 사용자가 활동 중일 때 세션을 갱신하는 주기: 24시간 (초 단위)
+        // 이 시간 내에 활동하면 maxAge가 리셋됩니다.
+        updateAge: 30 * 60, // 30분
+    },
+
+    // 🚨 2. JWT (JSON Web Token) 설정
+    jwt: {
+        // JWT의 만료 시간을 세션과 동일하게 설정합니다. (기본값은 session.maxAge와 동일)
+        maxAge: 2 * 60 * 60, // 2시간
     },
 
     // 4. 콜백 설정: 세션에 사용자 ID 포함 (필수)
