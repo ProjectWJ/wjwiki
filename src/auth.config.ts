@@ -9,6 +9,7 @@ import { parseUserAgent } from '@/lib/utils'; // 🚨 (User-Agent 파싱 함수)
 import crypto from 'crypto'; // Node.js 기본 모듈 (토큰 생성을 위해)
 import { cookies } from 'next/headers';
 import { verifyTotpCode } from '@/lib/totp';
+import { LoginSchema, OTPSchema } from '@/lib/validation-schemas'; // Zod 스키마 임포트
 
 // 🚨 로그인 검증 로직을 포함한 NextAuth 설정 (authOptions 대신 authConfig 사용)
 export const authConfig: NextAuthConfig = {
@@ -29,7 +30,36 @@ export const authConfig: NextAuthConfig = {
 
             // 🚨 인증 함수 (핵심 로직)
             async authorize(credentials, req) {
+
+                // 입력값 검증
+                if(!credentials.totpCode){
+                    const validationResult = LoginSchema.safeParse({email: credentials.email, password: credentials.password});
+
+                    if (!validationResult.success) {
+                        // Zod 검증 실패 시, NextAuth는 null을 반환하면 자동으로 로그인 실패로 처리합니다.
+                        // 오류 메시지를 던져 클라이언트에게 전달할 수도 있습니다.
+                        const firstError = validationResult.error.issues[0].message;
+                        console.error("Login validation failed:", firstError);
+                        
+                        // NextAuth는 여기서 Error를 throw하면 인증 실패 메시지로 클라이언트에게 전달합니다.
+                        // throw new Error(firstError); // 사용자에게 구체적인 메시지를 보여주려면 활성화
+                        return null; // NextAuth 표준: 인증 실패
+                    }
+                } else {
+                    const validationResult = OTPSchema.safeParse({otpCode: credentials.totpCode});
+                    
+                    if (!validationResult.success) {
+
+                        const firstError = validationResult.error.issues[0].message;
+                        console.error("Login validation failed:", firstError);
+
+                        return null; 
+                    }
+                }
+
+                
                 const { email, password, totpCode, tempToken } = credentials;
+
 
                 // **********************************
                 // 🚨 2단계 로그인 (TOTP 코드 + 임시 토큰)

@@ -30,7 +30,6 @@ export async function authenticate(prevState: string | undefined,
     
     // 🚨 authorize 함수에 토큰을 전달하는 것이 중요합니다.
     // credentials 객체에 totpCode 외에 임시 토큰을 전달하도록 auth.config.ts의 credentials 정의를 수정해야 합니다.
-    
     try {
       await signIn('credentials', { 
           tempToken, // 🚨 임시 토큰을 전달 (credentials에 추가해야 함)
@@ -49,6 +48,7 @@ export async function authenticate(prevState: string | undefined,
         throw error; // Next.js가 리다이렉트 처리를 완료하도록 다시 throw 해주는 것이 일반적입니다.
       }
 
+      console.error("2FA 실패: ");
       console.error(error);
       return '인증 코드가 정확하지 않습니다.';
     }
@@ -83,11 +83,13 @@ export async function authenticate(prevState: string | undefined,
       
       // 인증 실패 시 오류 처리
       if (error instanceof Error && error.message.includes('CredentialsSignin')) {
+        console.error("로그인 실패: ");
         console.error(error);
         return '이메일이나 비밀번호가 일치하지 않습니다.';
       }
 
       // 다른 오류 처리
+      console.error("로그인 실패: ");
       console.error(error);
       return '로그인 중 알 수 없는 오류가 발생했습니다.';
     }
