@@ -94,6 +94,7 @@ export async function handleUpdatePost(formData: FormData): Promise<void> {
     // 1. 데이터 추출 및 유효성 검사
     const id = formData.get('id') as string;
     const title = formData.get('title') as string;
+    const legacyContent = formData.get("legacy_content") as string;
     const content = formData.get('content') as string;
     const is_published = formData.get('is_published') === 'on' ? false : true; // 체크박스가 off일 때 true
     const summary = content.substring(0, 50); // 요약은 내용의 앞 50자로 자동 생성
@@ -142,9 +143,18 @@ export async function handleUpdatePost(formData: FormData): Promise<void> {
       // 컨텐츠에 써진 모든 미디어 찾기
       const mediaArray = howManyMedia(content);
 
-      // 기존에 쓰인 모든 미디어 찾기
-      // 미사용된 미디어는 삭제 예정으로 변경하기
+      // 기존에 쓰인 모든 미디어 목록
+      const legacyMediaArray = howManyMedia(legacyContent);
+      let scheduledDeleteMedia = new Array(0);
 
+      if (legacyMediaArray) {
+        // 현재 미디어 배열이 없으면 전체 삭제 예정
+        scheduledDeleteMedia = !mediaArray
+          ? legacyMediaArray
+          : legacyMediaArray.filter(item => !mediaArray.includes(item));
+      }
+
+      // 사용하는 미디어를 USED로 업데이트
       if (mediaArray && mediaArray.length > 0) {
         await prisma.media.updateMany({
           where: {
@@ -157,6 +167,21 @@ export async function handleUpdatePost(formData: FormData): Promise<void> {
           },
         });
       }
+
+      // 더 이상 사용하지 않는 미디어를 SCHEDULED_FOR_DELETION로 업데이트
+      if (scheduledDeleteMedia && scheduledDeleteMedia.length > 0) {
+        await prisma.media.updateMany({
+          where: {
+            id: { in: scheduledDeleteMedia }
+          },
+          data: {
+            status: "SCHEDULED_FOR_DELETION",
+            is_public: false,
+            updated_at: new Date(),
+          },
+        });
+      }
+
     } catch (error) {
       console.error("Media 테이블 수정 실패: ", error);
       throw new Error("Media 테이블을 수정하는 도중 오류가 발생했습니다.")
