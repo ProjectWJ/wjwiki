@@ -3,6 +3,7 @@
 import { getPostById } from '@/lib/post';
 import { notFound } from 'next/navigation';
 import ReactMarkdown from 'react-markdown'; 
+import rehypeSanitize from "rehype-sanitize";
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import { auth } from '@/auth';
@@ -161,6 +162,7 @@ export default async function PostDetailPage({ params } : { params: PageParams }
                     <ReactMarkdown
                         // 사용자 정의 컴포넌트를 렌더러에 전달.
                         components={components}
+                        rehypePlugins={[rehypeSanitize]}
                         >{post.content}
                     </ReactMarkdown>
                 </div>
