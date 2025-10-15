@@ -175,9 +175,6 @@ export async function handleUpdatePost(formData: FormData): Promise<void> {
         const legacyMediaArray = howManyMedia(legacyContent);
         let scheduledDeleteMedia;
 
-        // 삭제해야 할 미디어 목록
-        // 디버깅해야함====================================
-
         if (legacyMediaArray) {
           // 현재 미디어 배열이 없으면 전체 삭제 예정
           scheduledDeleteMedia = !mediaArray

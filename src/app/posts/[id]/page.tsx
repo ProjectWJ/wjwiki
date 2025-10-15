@@ -48,7 +48,6 @@ const components = {
                         height={600} // 원하는 높이
                         style={{ width: '100%', height: 'auto', objectFit: "contain" }}
                         priority={true}
-                        unoptimized={true} // 비공개 게시글 보안을 위해 최적화 비활성화..
                         {...props}
                     />
                 </a>

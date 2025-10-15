@@ -54,7 +54,6 @@ export default async function HomePage() {
                     width={250}
                     height={250}
                     className="w-full h-40 object-cover rounded-md mb-4"
-                    unoptimized={true}
                     style={{ objectFit: 'cover' }}
                     priority
                   />
@@ -65,7 +64,6 @@ export default async function HomePage() {
                     width={250}
                     height={250}
                     className="w-full h-40 object-cover rounded-md mb-4"
-                    unoptimized={true}
                     style={{ objectFit: 'cover' }}
                   />}
 
