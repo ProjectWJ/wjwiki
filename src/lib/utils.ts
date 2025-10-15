@@ -68,11 +68,11 @@ export function getFileExtension(filename: string): string {
  * 암호학적으로 안전한 UUID를 생성합니다. (RFC4122 v4)
  * @returns 고유 식별자 문자열
  */
-/* export function generateUUID(): string {
+export function generateUUID(): string {
     // node:crypto 모듈을 사용하여 UUID v4를 생성
     // Next.js Server Component 또는 API Route 환경에서 사용 가능
     return crypto.randomUUID();
-} */
+}
 
 /**
  * 게시글 내용에서 첫 번째 이미지 또는 비디오 URL을 추출합니다.
@@ -81,23 +81,31 @@ export function getFileExtension(filename: string): string {
  * @returns 첫 번째 미디어 URL 문자열 또는 null
  */
 export function extractFirstMediaUrl(content: string): string | null {
-  // ![video:파일명.확장자](/api/media/숫자)
-  // ![파일명.확장자](/api/media/숫자)
-  const markdownRegex = /!\[(video:)?([^\]]+)\]\((\/api\/media\/\d+)\)/;
+    // 마크다운 이미지/링크 패턴 (Markdown Link/Image Pattern)
+    // ![...](URL) 형태를 찾습니다.
+    const markdownRegex = /!\[.*?\]\((https?:\/\/[^\s\)]+)\)/;
+    
+    const match = content.match(markdownRegex);
+    
+    if (match && match.length > 0) {
+        // match[1]은 괄호 안의 URL입니다.
 
-  const match = content.match(markdownRegex);
-  if (!match) return null;
-
-  const isVideo = Boolean(match[1]); // "video:" 있으면 true
-  const path = match[3]; // /api/media/숫자
-
-  if (isVideo) {
-    // 동영상 기본 썸네일
-    return "https://hyamwcz838h4ikyf.public.blob.vercel-storage.com/default_thumbnail_video%20%282%29%20%282%29.png";
-  } else {
-    // 이미지 경로 그대로 반환
-    return path;
-  }
+        // 동영상이면 동영상 기본 썸네일
+        const isVideo = getFileExtension(match[1]);
+        
+        if(isVideo === ".mp4" || isVideo === ".mov" || isVideo === ".avi" ||
+            isVideo === ".wmv" || isVideo === ".asf" || isVideo === ".mkv" ||
+            isVideo === ".flv" || isVideo === ".f4v" || isVideo === ".ts" ||
+            isVideo === ".mpeg") {
+            
+            return "https://hyamwcz838h4ikyf.public.blob.vercel-storage.com/default_thumbnail_video%20%282%29%20%282%29.png"
+        } else {
+            // 이미지면 이미지 썸네일
+            return match[1];
+        }
+    }
+    
+    return null;
 }
 
 
@@ -116,14 +124,10 @@ export function generateThumbnailUrl(url: string): string {
 // 본문 URL 목록 추출해서 id만 넘겨주기
 export function howManyMedia(content: string) {
 
-    // const markdownRegex = /!\[.*?\]\((https?:\/\/[^\s\)]+)\)/g;
-    // const markdownRegex = /!\[.*?\]\((https?:\/\/[^\s)]+|\/[^\s)]+)\)/g; // https, /api/media/ 모두 인식
-    const markdownRegex = /\/api\/media\/\d+/g;
+    const markdownRegex = /!\[.*?\]\((https?:\/\/[^\s\)]+)\)/g;
+    const match = Array.from(content.matchAll(markdownRegex), mat => mat[1]);
 
-    const match = Array.from(content.matchAll(markdownRegex), mat => 
-        parseInt(mat[0].substring(11, mat[0].length)));
-
-    if(match){
+    if(match.length > 0){
         return match;
     }
 

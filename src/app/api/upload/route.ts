@@ -20,7 +20,7 @@ import { prisma } from '@/lib/db' // model
 export async function POST(request: Request) {
     const { searchParams } = new URL(request.url);
     const originalFilename = searchParams.get('filename');
-    let fileIdURL;
+    let fileURL;
 
     // 가상의 사용자 ID 설정 (🚨 메타데이터 및 DB 저장을 위해 추가)
     const currentUserId = "projectwj"; 
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
         
         // 3. Media 테이블에 메타데이터 저장
         // (Prisma의 id는 자동 생성되는 숫자형 PK)
-        const originalFileId = await prisma.media.create({
+        const originalFile = await prisma.media.create({
             data: {
                 blob_url: resBlob.url,
                 original_name: originalFilename,
@@ -59,12 +59,12 @@ export async function POST(request: Request) {
                 is_public: true,
             },
             select: {
-                id: true,
+                blob_url: true
             }
         })
 
-        // 4. 프록시 URL 생성: 숫자형 PK를 사용하여 URL을 만듭니다.
-        fileIdURL = `/api/media/${originalFileId.id}`;
+        // 4. 파일의 원본 URL 반환
+        fileURL = `${originalFile.blob_url}`;
     }
     catch (error) {
         console.error("파일 업로드 중 오류 발생:", error);
@@ -74,7 +74,7 @@ export async function POST(request: Request) {
     // return NextResponse.json(resBlob);
     // 3. 응답에 원본 파일 이름 포함 (DB 저장을 위해)
     return NextResponse.json({ 
-        url: fileIdURL, // 프록시 API URL 반환
+        url: fileURL, // 원본 URL 반환
         originalFilename: originalFilename, // 원본 이름은 DB 저장을 위해 반환
     });
 }

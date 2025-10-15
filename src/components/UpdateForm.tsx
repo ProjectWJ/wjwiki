@@ -84,6 +84,7 @@ export default function PostForm(postProps: PostEditProps) {
         <form action={handleUpdatePost} className='space-y-4'>
             <input type="hidden" name="id" defaultValue={postProps.post.id} /> 
             <input type="hidden" name="legacy_content" defaultValue={postProps.post.content} />
+            <input type="hidden" name="legacy_is_published" defaultChecked={postProps.post.is_published} />
             {/* 제목 */}
             <div>
                 <label htmlFor="title" className="block text-sm font-medium text-gray-700">제목</label>
