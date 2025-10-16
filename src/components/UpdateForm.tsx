@@ -4,8 +4,18 @@ import { useState } from 'react';
 import { useFormStatus } from 'react-dom'; // server action의 상태를 알기 위해 사용
 import { handleUpdatePost } from '@/lib/action'; // 기존의 서버 액션 함수 임포트
 
+type UploadedFileResponse = {
+  url: {
+    thumbnailUrl: string;
+    mediumUrl: string;
+    originalUrl: string;
+  };
+  originalFilename: string;
+};
+
+
 // 실제 업로드 로직을 담을 함수
-async function uploadFile(file: File): Promise<string | null> {
+async function uploadFile(file: File): Promise<UploadedFileResponse | null> {
     try {
         // api route 호출
         const response = await fetch(`/api/upload?filename=${file.name}`, {
@@ -17,10 +27,10 @@ async function uploadFile(file: File): Promise<string | null> {
             throw new Error('파일 업로드 API 호출 실패');
         }
 
-        const result = await response.json();
+        const result: UploadedFileResponse = await response.json();
 
         // vercel blob에서 반환된 최종 url 리턴
-        return result.url;
+        return result;
     } catch (error) {
         console.error('파일 업로드 중 오류 발생:', error);
         alert("파일 업로드에 실패했습니다. 콘솔을 확인하세요.");
@@ -51,8 +61,8 @@ export default function PostForm(postProps: PostEditProps) {
         if(!file) return;
 
         // 파일 업로드 실행
-        const url = await uploadFile(file);
-        if (!url) return;
+        const uploadedFileUrl = await uploadFile(file);
+        if (!uploadedFileUrl) return;
 
         // 파일 타입에 따라 다른 마크다운/HTML 구문 생성(이미지냐 영상이냐)
         let mediaTag = '';
@@ -60,16 +70,16 @@ export default function PostForm(postProps: PostEditProps) {
 
         if (mimeType.startsWith('image/')) {
             // 이미지 파일인 경우 표준 마크다운 링크 사용
-            mediaTag = `\n![${file.name}](${url})\n`;
+            mediaTag = `\n![${file.name}](${uploadedFileUrl.url.mediumUrl})\n`;
         }
         else if (mimeType.startsWith('video/')) {
             // 영상 파일인 경우 video: 표식 사용
             const videoTitle = `video:${file.name}`;
-            mediaTag = `\n![${videoTitle}](${url})\n`;
+            mediaTag = `\n![${videoTitle}](${uploadedFileUrl.url.mediumUrl})\n`;
         } 
         else {
             // 기타 파일 (예: PDF나 오디오 등)은 단순 링크로 처리
-            mediaTag = `\n[${file.name}](${url})\n`;
+            mediaTag = `\n[${file.name}](${uploadedFileUrl.url.mediumUrl})\n`;
         }
         
         // 기존 내용에 마크다운 링크 추가

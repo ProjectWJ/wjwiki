@@ -112,20 +112,10 @@ export function extractFirstMediaUrl(content: string): string | null {
     return null;
 }
 
-
-
 /**
- * Vercel Blob URL에 썸네일 파라미터를 추가하여 반환합니다.
- * @param url 원본 Blob URL
- * @returns 썸네일 최적화 파라미터가 추가된 URL
+ * medium_url을 받아 thumbnail_url을 찾아줍니다.
+ * 
  */
-export function generateThumbnailUrl(url: string): string {
-    // Vercel Blob의 이미지 변환 기능을 활용하여 썸네일 파라미터 추가
-    // 300px 너비, WebP 포맷으로 변환
-    return `${url}?w=300&fit=cover&format=webp`;
-}
-
-
 export async function findThumbnailUrl(medium_url: string | null): Promise<string> {
 
     if (!medium_url)

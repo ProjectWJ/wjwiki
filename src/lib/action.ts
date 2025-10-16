@@ -6,7 +6,7 @@ import { createPost } from '@/lib/post';
 import { del, copy } from '@vercel/blob';
 import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache'; // 데이터 갱신을 위해 필요
-import { extractFirstMediaUrl, findThumbnailUrl, generateThumbnailUrl, generateUUID, getFileExtension, howManyMedia } from '@/lib/utils' // 썸네일 생성
+import { extractFirstMediaUrl, findThumbnailUrl, ResizedImages, generateResizedImagesSharp, generateUUID, getFileExtension, howManyMedia } from '@/lib/utils' // 썸네일 생성
 
 
 // 게시물 생성 폼 제출을 처리하는 서버 액션
@@ -99,10 +99,9 @@ export async function handleUpdatePost(formData: FormData): Promise<void> {
     const content = formData.get('content') as string;
     const legacyIs_published = formData.get('legacy_is_published') === 'on' ? false: true;
     const is_published = formData.get('is_published') === 'on' ? false : true; // 체크박스가 off일 때 true
-    const summary = content.substring(0, 50); // 요약은 내용의 앞 50자로 자동 생성
+/*     const summary = content.substring(0, 50); // 요약은 내용의 앞 50자로 자동 생성
     const firstMedia = extractFirstMediaUrl(content); // 첫 번째 미디어
-    const thumbnail_url = firstMedia ? generateThumbnailUrl(firstMedia) : "https://hyamwcz838h4ikyf.public.blob.vercel-storage.com/default_thumbnail.png";
-
+ */
     if (!id || !title || !content) {
         // 더 상세한 오류 처리 필요
         throw new Error("필수 정보(ID, 제목, 내용)가 누락되었습니다.");
@@ -117,21 +116,24 @@ export async function handleUpdatePost(formData: FormData): Promise<void> {
     // 게시글을 비공개로 전환하는 경우
     if (legacyIs_published === true && is_published === false){
       // 미디어 전체를 새 URL로 갈아끼우고 변경
-      const replicateResult = await replicateMediaAndGetNewUrls(content);
+      const replicateResult = await replicateMediaAndGetNewUrls(postId, content);
 
       // 새 썸네일 생성
       const newFirstMedia = extractFirstMediaUrl(replicateResult);
-      const newThumbnailUrl = newFirstMedia ? generateThumbnailUrl(newFirstMedia) : "https://hyamwcz838h4ikyf.public.blob.vercel-storage.com/default_thumbnail.png";
+      const newThumbnailUrl = newFirstMedia ? await findThumbnailUrl(newFirstMedia) : "https://hyamwcz838h4ikyf.public.blob.vercel-storage.com/default_thumbnail.png";
+      console.log("replicateResult: " + replicateResult);
+      console.log("newFirestMedia: " + newFirstMedia);
+      console.log("newThumbnailUrl: " + newThumbnailUrl);
 
       await prisma.post.update({
         where: { id: postId },
         data: {
           title,
           content: replicateResult,
+          updated_at: new Date(),
           is_published: false,
           summary: replicateResult.substring(0, 50),
           thumbnail_url: newThumbnailUrl,
-          updated_at: new Date(),
         }
       });
 
@@ -147,16 +149,19 @@ export async function handleUpdatePost(formData: FormData): Promise<void> {
 
   } else {
       // 게시글을 비공개로 전환하지 않는 경우 DB 업데이트 로직
+      const newFirstMedia = extractFirstMediaUrl(content);
+      const newThumbnailUrl = newFirstMedia ? await findThumbnailUrl(newFirstMedia) : "https://hyamwcz838h4ikyf.public.blob.vercel-storage.com/default_thumbnail.png";
+
       try {
           await prisma.post.update({
               where: { id: postId },
               data: {
-                  title,
-                  content,
-                  is_published,
-                  summary,
-                  thumbnail_url: thumbnail_url,
-                  updated_at: new Date(), // 수정 시간 갱신
+                  title: title,
+                  content: content,
+                  updated_at: new Date(),
+                  is_published: true,
+                  summary: content.substring(0, 50),
+                  thumbnail_url: newThumbnailUrl,
               },
           });
 
@@ -186,21 +191,22 @@ export async function handleUpdatePost(formData: FormData): Promise<void> {
         if (mediaArray && mediaArray.length > 0) {
           await prisma.media.updateMany({
             where: {
-              blob_url: { in: mediaArray }
+              medium_url: { in: mediaArray }
             },
             data: {
               status: "USED",
               is_public: is_published ? true : false, // 기본값 true
+              post_id: postId,
               updated_at: new Date(),
             },
           });
         }
 
-        // 더 이상 사용하지 않는 미디어를 SCHEDULED_FOR_DELETION로 업데이트
+/*         // 더 이상 사용하지 않는 미디어를 SCHEDULED_FOR_DELETION로 업데이트
         if (scheduledDeleteMedia && scheduledDeleteMedia.length > 0) {
           await prisma.media.updateMany({
             where: {
-              blob_url: { in: scheduledDeleteMedia }
+              medium_url: { in: scheduledDeleteMedia }
             },
             data: {
               status: "SCHEDULED_FOR_DELETION",
@@ -208,7 +214,11 @@ export async function handleUpdatePost(formData: FormData): Promise<void> {
               updated_at: new Date(),
             },
           });
-        }
+        } */
+
+      if (scheduledDeleteMedia && scheduledDeleteMedia.length > 0) {
+        await deleteMediaAndBlob(scheduledDeleteMedia, "legacy_public");
+      }
 
       } catch (error) {
         console.error("Media 테이블 수정 실패: ", error);
@@ -280,7 +290,6 @@ export async function handleDeletePost(id: string): Promise<void> {
       const mediaList = await prisma.media.findMany({
         where: { post_id: postId }
       })
-      console.log(mediaList);
 
       // 미디어 삭제
       if (mediaList.length > 0) {
@@ -317,78 +326,100 @@ export async function handleDeletePost(id: string): Promise<void> {
     redirect('/posts/all'); 
 }
 
-// 새 미디어 URL 반환 로직
-async function replicateMediaAndGetNewUrls(content: string): Promise<string> {
-  const mediaArray = howManyMedia(content);
+/**
+ * 게시글 비공개 전환 시 미디어를 새 Blob으로 복제하고, content 안의 마크다운 URL을 교체합니다.
+ *
+ * @param postId 게시글 ID
+ * @param content 수정 중인 게시글 내용 (textarea에서 입력된 상태)
+ * @returns 새로 복제된 미디어 URL이 적용된 content
+ */
+async function replicateMediaAndGetNewUrls(postId: number, content: string): Promise<string> {
+  // 0️⃣ content에서 medium_url 추출
+  const mediaArray = howManyMedia(content); // 현재 textarea에서 수정된 컨텐츠 안의 medium_url 배열
+  if (!mediaArray) return content; // 미디어가 없으면 바로 원본 content 반환
 
-  if (!mediaArray) return content;
+  // 1️⃣ DB에서 medium_url 기준으로 기존 blob_url, 썸네일 URL 가져오기
+  // => content에 있는 medium_url을 키로 blob_url 매핑
+  const blobMap = await prisma.media.findMany({
+    where: { medium_url: { in: mediaArray } },
+    select: { blob_url: true, medium_url: true, thumbnail_url: true }
+  });
+  const mediumToBlobMap = new Map(blobMap.map(m => [m.medium_url, m.blob_url]));
 
-  // 1. 병렬 복제 작업을 위한 Promise 배열 생성
-  const replicationPromises = mediaArray.map(async (oldMediaUrl) => {
+  // 2️⃣ 병렬 복제 작업을 위한 Promise 배열 생성
+  const replicationPromises = mediaArray.map(async (mediumUrl) => {
       try {
-          // Vercel Blob copy 함수를 사용하여 파일을 복제하고 새로운 URL을 얻습니다.
-          const mime_type = getFileExtension(oldMediaUrl)
-          const newBlob = await copy(oldMediaUrl, generateUUID() + mime_type, { access: 'public' });
+          const oldBlobUrl = mediumToBlobMap.get(mediumUrl);
+          if (!oldBlobUrl) throw new Error(`Blob not found for mediumUrl: ${mediumUrl}`);
 
-          // 2. Media 테이블에 복제된 새 미디어 레코드 생성
-          // 이 레코드는 '비공개' 게시글에 사용될 새 파일에 대한 메타데이터입니다.
+          // 2-1️⃣ Vercel Blob 복제
+          const mime_type = getFileExtension(oldBlobUrl);
+          const newBlob = await copy(oldBlobUrl, generateUUID() + mime_type, { access: 'public' });
+
+          // 2-2️⃣ 썸네일, mediumUrl 등 리사이징된 이미지 생성
+          const fileURL: ResizedImages = await generateResizedImagesSharp(newBlob.url);
+
+          // 2-3️⃣ 새 Media 레코드 DB에 생성
           await prisma.media.create({
               data: {
-                  blob_url: newBlob.url, // 새 복제 URL
+                  blob_url: newBlob.url,                       // 새 복제 Blob URL
                   original_name: newBlob.pathname.split('/').pop() || 'replicated-file',
-                  mime_type: mime_type, // 확장자는 원본에서 추론
-                  uploaded_by: "projectwj",
-                  status: "USED", // 올린 순간에 실행되는 함수니까 used
-                  is_public: false, // 비공개용으로 마킹
+                  mime_type: mime_type,                        // 파일 확장자
+                  uploaded_by: "projectwj",                    // uploader 정보
+                  status: "USED",                              // 사용 중인 미디어로 상태 설정
+                  created_at: new Date(),
+                  updated_at: new Date(),
+                  is_public: false,                            // 비공개용으로 마킹
+                  post_id: postId,                             // 게시글 ID 연결
+                  medium_url: fileURL.mediumUrl,               // 새 medium_url
+                  thumbnail_url: fileURL.thumbnailUrl,        // 썸네일 URL
               }
           });
 
-          return {newUrl: newBlob.url, oldUrl: oldMediaUrl, newFilename: newBlob.pathname.split('/').pop()};
+          // 2-4️⃣ 교체용 정보 반환
+          return {
+            newUrl: fileURL.mediumUrl,     // 새 medium_url
+            oldUrl: mediumUrl,             // 기존 medium_url
+            newFilename: newBlob.pathname.split('/').pop(), // 파일명
+          };
 
       } catch (error) {
-          console.error(`[Security] Failed to replicate Blob URL ${oldMediaUrl}. Skipping replication.`, error);
+          console.error(`[Security] Failed to replicate Blob URL ${mediumUrl}. Skipping replication.`, error);
           throw new Error("복제 작업에 실패했습니다.");
       }
   });
 
-    // 4. Promise.all을 사용하여 모든 복제 작업을 병렬로 실행하고 결과를 순서대로 받습니다.
-    const replicationResults = (await Promise.all(replicationPromises)).filter(result => result !== null);
+  // 3️⃣ 모든 복제 작업 병렬 실행
+  const replicationResults = (await Promise.all(replicationPromises)).filter(result => result !== null);
 
-    // 5. 받은 결과를 content에 적용
-    // content 문자열에 포함된 오래된 URL들을 새로 복제된 URL로 교체합니다.
-    let newContent = content;
-    replicationResults.forEach(result => {
-        if (result) {
-            // CHANGED: 교체 로직 전체 변경
-            // 1. 정규식에서 사용할 수 있도록 oldUrl의 특수 문자를 이스케이프 처리합니다.
-            const escapedOldUrl = result.oldUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            
-            // 2. oldUrl을 포함하는 전체 마크다운 이미지 태그를 찾는 정규식을 생성합니다.
-            const markdownTagRegex = new RegExp(`!\\[.*?\\]\\(${escapedOldUrl}\\)`, 'g');
-            
-            // 동영상 판단해야 함
-            const fileExtension = getFileExtension(result.newUrl);
-            let isVideo = false;
-            if(fileExtension === ".mp4" || fileExtension === ".mov" || fileExtension === ".avi" ||
-              fileExtension === ".wmv" || fileExtension === ".asf" || fileExtension === ".mkv" ||
-              fileExtension === ".flv" || fileExtension === ".f4v" || fileExtension === ".ts" ||
-              fileExtension === ".mpeg"){
-                isVideo = true;
-              }
+  // 4️⃣ content 안의 기존 medium_url을 새 medium_url로 교체
+  let newContent = content;
+  replicationResults.forEach(result => {
+      if (!result) return;
 
-            // 3. `![새 파일 이름](새 URL)` 형식의 새로운 마크다운 태그를 만듭니다.
-            const newMarkdownTag = isVideo
-                                ? `![video:${result.newFilename}](${result.newUrl})`
-                                : `![${result.newFilename}](${result.newUrl})`;
+      // 4-1️⃣ 정규식에서 사용할 수 있도록 특수 문자 이스케이프
+      const escapedOldUrl = result.oldUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-            // 4. 원본 콘텐츠에서 찾은 옛날 태그를 새로운 태그로 교체합니다.
-            newContent = newContent.replace(markdownTagRegex, newMarkdownTag);
-        }
-    });
+      // 4-2️⃣ 기존 마크다운 이미지 태그 전체를 찾는 정규식
+      const markdownTagRegex = new RegExp(`!\\[.*?\\]\\(${escapedOldUrl}\\)`, 'g');
 
-    // 6. 새 content 리턴
-    return newContent;
+      // 4-3️⃣ 동영상인지 판단
+      const fileExtension = getFileExtension(result.newUrl);
+      const isVideo = [".mp4",".mov",".avi",".wmv",".asf",".mkv",".flv",".f4v",".ts",".mpeg"].includes(fileExtension);
+
+      // 4-4️⃣ 새로운 마크다운 태그 생성
+      const newMarkdownTag = isVideo
+                          ? `![video:${result.newFilename}](${result.newUrl})`
+                          : `![${result.newFilename}](${result.newUrl})`;
+
+      // 4-5️⃣ 기존 content의 옛날 마크다운 태그를 새 태그로 교체
+      newContent = newContent.replace(markdownTagRegex, newMarkdownTag);
+  });
+
+  // 5️⃣ 새 content 반환
+  return newContent;
 }
+
 
 // 불필요 미디어 삭제(Update에서 공개->비공개 전환할 때 사용)
 async function deleteMediaAndBlob(mediaArray: string[] | null, label: string) {
@@ -396,19 +427,31 @@ async function deleteMediaAndBlob(mediaArray: string[] | null, label: string) {
 
   // 트랜잭션 실행
   const transaction = prisma.$transaction(async (tx) => {
-    await tx.media.deleteMany({
-      where: { blob_url: { in: mediaArray } },
-    });
-    console.log(`✅ media 테이블에서 삭제 완료 [${label}]:`, mediaArray);
+    // blob에서 삭제할 목록 찾기
+    const mediaList = await tx.media.findMany({
+      where: { medium_url: { in: mediaArray }}
+    })
 
     try {
-      await del(mediaArray);
-      console.log(`✅ Vercel Blob에서 삭제 완료 [${label}]:`, mediaArray);
+      // blob에서 파일들 삭제
+      for (const media of mediaList) {
+        const urlsToDelete = [media.blob_url, media.medium_url, media.thumbnail_url]
+          .filter((url): url is string => !!url); // null/undefined/빈 문자열 제외
+
+        await Promise.all(urlsToDelete.map(url => del(url)));
+      }
+
+      console.log(`✅ Vercel Blob에서 삭제 완료 [${label}]:`, mediaList);
     } catch (error) {
       console.error(`❌ Vercel Blob에서 삭제 실패 [${label}]:\n`, error);
       // Blob 삭제 실패 → 트랜잭션 롤백 유도
       throw new Error(`Blob 삭제 실패 [${label}]`);
     }
+
+    await tx.media.deleteMany({
+      where: { medium_url: { in: mediaArray } },
+    });
+    console.log(`✅ media 테이블에서 삭제 완료 [${label}]:`, mediaList);
   });
 
   try {

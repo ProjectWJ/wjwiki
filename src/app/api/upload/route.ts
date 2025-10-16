@@ -1,7 +1,7 @@
 // 본문에 삽입한 미디어 파일 업로드 api
 import { put } from "@vercel/blob";
 import { NextResponse } from "next/server";
-import { generateUUID, getFileExtension } from '@/lib/utils'; // 🚨 새로 만든 유틸리티 임포트
+import { getFileExtension } from '@/lib/utils'; // 🚨 새로 만든 유틸리티 임포트
 import { prisma } from '@/lib/db' // model
 import { generateResizedImagesSharp, ResizedImages } from "@/lib/utils";
 
