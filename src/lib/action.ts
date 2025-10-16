@@ -349,8 +349,20 @@ async function replicateMediaAndGetNewUrls(content: string): Promise<string> {
             // 2. oldUrl을 포함하는 전체 마크다운 이미지 태그를 찾는 정규식을 생성합니다.
             const markdownTagRegex = new RegExp(`!\\[.*?\\]\\(${escapedOldUrl}\\)`, 'g');
             
+            // 동영상 판단해야 함
+            const fileExtension = getFileExtension(result.newUrl);
+            let isVideo = false;
+            if(fileExtension === ".mp4" || fileExtension === ".mov" || fileExtension === ".avi" ||
+              fileExtension === ".wmv" || fileExtension === ".asf" || fileExtension === ".mkv" ||
+              fileExtension === ".flv" || fileExtension === ".f4v" || fileExtension === ".ts" ||
+              fileExtension === ".mpeg"){
+                isVideo = true;
+              }
+
             // 3. `![새 파일 이름](새 URL)` 형식의 새로운 마크다운 태그를 만듭니다.
-            const newMarkdownTag = `![${result.newFilename}](${result.newUrl})`;
+            const newMarkdownTag = isVideo
+                                ? `![video:${result.newFilename}](${result.newUrl})`
+                                : `![${result.newFilename}](${result.newUrl})`;
 
             // 4. 원본 콘텐츠에서 찾은 옛날 태그를 새로운 태그로 교체합니다.
             newContent = newContent.replace(markdownTagRegex, newMarkdownTag);
