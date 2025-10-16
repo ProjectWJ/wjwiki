@@ -43,3 +43,7 @@ next-env.d.ts
 /src/generated/prisma
 
 /troubleshooting.md
+
+# test
+**/*.test.ts
+**/*.test.tsx

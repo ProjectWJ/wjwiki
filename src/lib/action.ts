@@ -245,48 +245,65 @@ export async function handleDeletePost(id: string): Promise<void> {
     
     // 1. 🚨 게시글을 삭제하기 전에 내용을 조회하여 미디어 URL을 확보합니다.
     const postToDelete = await prisma.post.findUnique({
-        where: { id: postId },
-        select: { content: true } // content 필드만 가져옵니다.
+        where: { id: postId }
     });
 
     if (!postToDelete) {
         // 이미 삭제되었거나 존재하지 않는 경우
+        console.log("게시글이 이미 삭제되었습니다.");
         revalidatePath('/posts'); 
         redirect('/posts');
     }
 
-    const content = postToDelete.content;
-
     // 1. DB 삭제 로직
     try {
-        await prisma.post.delete({
-            where: { id: postId },
-        });
-        
-        // 3. 미디어 정리 예약: 본문에 사용된 모든 파일의 상태를 변경합니다.
-        const mediaArray = howManyMedia(content);
+/*       // 🚨 3일 후 삭제되도록 예약 시간을 설정합니다.
+      const scheduledDeleteTime = new Date();
+      scheduledDeleteTime.setDate(scheduledDeleteTime.getDate() + 3); // 3일 후
 
-        if (mediaArray) {
-            // 쿼리 파라미터 제거: DB의 id과 일치시켜야 함
-            // const cleanUrls = usedUrls.map(url => url.split('?')[0]);
-            
-            // 🚨 일주일 후 삭제되도록 예약 시간을 설정합니다.
-            const scheduledDeleteTime = new Date();
-            scheduledDeleteTime.setDate(scheduledDeleteTime.getDate() + 7); // 7일 후
+      await prisma.media.updateMany({
+        where: {
+            post_id: postId,
+            status: 'USED', // USED 상태인 파일만 정리 대상으로 삼습니다.
+        },
+        data: {
+            status: 'SCHEDULED_FOR_DELETION',
+            scheduled_delete_at: scheduledDeleteTime,
+            is_public: false // 비공개로 전환
+        },
+      }); */
 
-            await prisma.media.updateMany({
-                where: {
-                    blob_url: { in: mediaArray },
-                    status: 'USED', // USED 상태인 파일만 정리 대상으로 삼습니다.
-                },
-                data: {
-                    status: 'SCHEDULED_FOR_DELETION',
-                    scheduled_delete_at: scheduledDeleteTime,
-                    is_public: false // 비공개로 전환
-                },
-            });
+      // 괜히 유예기간 주지 않는 게 좋을듯
+      // 삭제가 무서우면 유예기간 X 백업 O
+
+      // 해당 id에서 사용된 모든 미디어 불러오기
+      const mediaList = await prisma.media.findMany({
+        where: { post_id: postId }
+      })
+      console.log(mediaList);
+
+      // 미디어 삭제
+      if (mediaList.length > 0) {
+        for (const media of mediaList) {
+          // Blob에서 파일들 폐기
+          const urlsToDelete = [media.blob_url, media.medium_url, media.thumbnail_url]
+            .filter((url): url is string => !!url); // null/undefined/빈 문자열 제외
+
+          await Promise.all(urlsToDelete.map(url => del(url)));
+          console.log("Blob Delete Complete:", urlsToDelete);
         }
 
+        // DB에서 파일들 폐기
+        await prisma.media.deleteMany({
+          where: { post_id: postId }
+        });
+        console.log("prisma Media Delete Complete:", JSON.stringify(mediaList, null, 2));
+      }
+
+      await prisma.post.delete({
+          where: { id: postId },
+      });
+      console.log("prisma posts Delete Complete: " + postId);
     } catch (error) {
         console.error("게시글 삭제 또는 미디어 정리 예약 실패:", error);
         throw new Error("게시글 및 관련 미디어를 처리하는 도중 오류가 발생했습니다.");
