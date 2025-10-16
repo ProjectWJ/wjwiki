@@ -6,7 +6,8 @@ import { createPost } from '@/lib/post';
 import { del, copy } from '@vercel/blob';
 import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache'; // 데이터 갱신을 위해 필요
-import { extractFirstMediaUrl, generateThumbnailUrl, generateUUID, getFileExtension, howManyMedia } from '@/lib/utils' // 썸네일 생성
+import { extractFirstMediaUrl, findThumbnailUrl, generateThumbnailUrl, generateUUID, getFileExtension, howManyMedia } from '@/lib/utils' // 썸네일 생성
+
 
 // 게시물 생성 폼 제출을 처리하는 서버 액션
 // @param formData 폼 데이터를 포함하는 객체
@@ -18,14 +19,7 @@ export async function handleCreatePost(formData: FormData) {
   const is_published = formData.get('is_published') === 'on' ? false : true; // 체크박스가 off일 때 true
   const summary = content.substring(0, 50); // 요약은 내용의 앞 50자로 자동 생성
   const firstMedia = extractFirstMediaUrl(content); // 첫 번째 미디어
-  let thumbnail_url;
-
-  if(firstMedia) {
-    thumbnail_url = generateThumbnailUrl(firstMedia);
-  }
-  else {
-    thumbnail_url = "";
-  }
+  const thumbnail_url = await findThumbnailUrl(firstMedia);
 
   let newPostId: number;
 
@@ -35,6 +29,9 @@ export async function handleCreatePost(formData: FormData) {
     return;
   }
 
+  // 컨텐츠에 써진 모든 미디어 찾기
+  const mediaArray = howManyMedia(content);
+
   // 1단계에서 정의한 Prisma 함수 호출
   try {
     const newPost = await createPost({
@@ -42,7 +39,7 @@ export async function handleCreatePost(formData: FormData) {
       content,
       is_published,
       summary,
-      thumbnail_url,
+      thumbnail_url: thumbnail_url,
     });
     
     newPostId = newPost.id;
@@ -53,28 +50,30 @@ export async function handleCreatePost(formData: FormData) {
   }
 
   // media가 있고, createPost가 성공하면 본문에 포함된 모든 미디어를 USED로 변경
-  // 컨텐츠에 써진 모든 미디어 찾기
-  const mediaArray = howManyMedia(content);
   if(mediaArray) {
+
     // 비공개 상태인지에 따라 다른 쿼리
     if(is_published === false){
       await prisma.media.updateMany ({
-        where: { blob_url: { in: mediaArray }, status: 'PENDING'},
+        where: { medium_url: { in: mediaArray }, status: 'PENDING'},
         data: {
           status: "USED",
+          post_id: newPostId,
           is_public: false
         }
       })
     }
     else{
       await prisma.media.updateMany ({
-        where: { blob_url: { in: mediaArray }, status: 'PENDING'},
+        where: { medium_url: { in: mediaArray }, status: 'PENDING'},
         data: {
           status: "USED",
+          post_id: newPostId,
           is_public: true
         }
       })
     }
+
   }
 
   // 공개 게시물이면 거기로, 아니면 전체 게시물로 이동
@@ -84,6 +83,7 @@ export async function handleCreatePost(formData: FormData) {
   else {
     redirect('/posts/all');
   }
+
 }
 
 /**

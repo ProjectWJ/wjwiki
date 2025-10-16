@@ -1,5 +1,9 @@
 // src/lib/utils.ts
 
+import { prisma } from "./db";
+import sharp from 'sharp';
+import { put } from "@vercel/blob";
+
 /**
  * User-Agent 문자열을 파싱하여 OS 및 브라우저 정보를 추출합니다.
  */
@@ -121,6 +125,24 @@ export function generateThumbnailUrl(url: string): string {
     return `${url}?w=300&fit=cover&format=webp`;
 }
 
+
+export async function findThumbnailUrl(medium_url: string | null): Promise<string> {
+
+    if (!medium_url)
+        return "https://hyamwcz838h4ikyf.public.blob.vercel-storage.com/default_thumbnail.png";
+
+    const mediaUrl = await prisma.media.findFirst({
+        where: { medium_url: medium_url },
+        select: { thumbnail_url: true }
+    })
+
+    if (!mediaUrl || !mediaUrl.thumbnail_url) 
+        return "https://hyamwcz838h4ikyf.public.blob.vercel-storage.com/default_thumbnail.png";
+
+    return mediaUrl.thumbnail_url;
+}
+
+
 // 본문 URL 목록 추출해서 id만 넘겨주기
 export function howManyMedia(content: string) {
 
@@ -132,4 +154,49 @@ export function howManyMedia(content: string) {
     }
 
     return null;
+}
+
+
+/**
+ * 원본 이미지를 바탕으로 다중 해상도 이미지를 만들어 반환합니다.
+ * 게시글 등록 / 수정 시에 실행되어야 하는 
+ */
+
+export interface ResizedImages {
+  thumbnailUrl: string;
+  mediumUrl: string;
+  originalUrl: string;
+}
+
+export async function generateResizedImagesSharp(originalUrl: string): Promise<ResizedImages> {
+    const mimeType = getFileExtension(originalUrl);
+
+    // 동영상이면 즉시 반환
+    if(mimeType === ".mp4" || mimeType === ".mov" || mimeType === ".avi" ||
+        mimeType === ".wmv" || mimeType === ".asf" || mimeType === ".mkv" ||
+        mimeType === ".flv" || mimeType === ".f4v" || mimeType === ".ts" ||
+        mimeType === ".mpeg") {
+            return {
+                thumbnailUrl: "https://hyamwcz838h4ikyf.public.blob.vercel-storage.com/default_thumbnail_video%20%282%29%20%282%29.png",
+                mediumUrl: originalUrl,
+                originalUrl: originalUrl
+            }
+        }
+
+    const response = await fetch(originalUrl);
+    const buffer = Buffer.from(await response.arrayBuffer());
+
+    // 1️⃣ 썸네일
+    const thumbnailBuffer = await sharp(buffer).resize({ width: 200 }).webp().toBuffer();
+    const thumbnailBlob = await put(generateUUID() + ".webp", thumbnailBuffer, { access: 'public' });
+
+    // 2️⃣ 중간 화질
+    const mediumBuffer = await sharp(buffer).resize({ width: 800 }).webp().toBuffer();
+    const mediumBlob = await put(generateUUID() + ".webp", mediumBuffer, { access: 'public' });
+
+    return {
+        thumbnailUrl: thumbnailBlob.url,
+        mediumUrl: mediumBlob.url,
+        originalUrl: originalUrl,
+    };
 }

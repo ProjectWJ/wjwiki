@@ -47,6 +47,9 @@ model Post {
   // Prisma에서는 기본값 설정 시 작은따옴표로 감싼 문자열을 사용합니다.
   thumbnail_url   String    @db.VarChar(255) @default("https://hyamwcz838h4ikyf.public.blob.vercel-storage.com/default_thumbnail.png") @map("thumbnail_url")
   
+  // 🔹 Media와의 관계 (1:N)
+  media     Media[]   // Media 테이블의 post_id가 이 Post를 가리킴
+
   // 9. 실제 DB 테이블 이름 지정 (테이블 이름이 'posts'라고 가정)
   @@map("posts") 
 }
@@ -110,15 +113,21 @@ model Session {
   @@map("Session")
 }
 
-// 미디어 관리 총괄 테이블
+// 미디어 관리 메타데이터 테이블
 model Media {
   id              Int      @id @default(autoincrement())
+
+  // 파일의 원래 이름 (UUID로 저장했더라도, 사용자에게 보여줄 이름)
+  original_name   String
   
   // Blob 스토리지에 저장된 실제 파일 URL (고유값)
   blob_url        String   @unique
   
-  // 파일의 원래 이름 (UUID로 저장했더라도, 사용자에게 보여줄 이름)
-  original_name   String
+  // 중간 화질 파일 (상세 보기용)
+  medium_url      String? 
+
+  // 저화질 썸네일 파일
+  thumbnail_url   String?
   
   // 파일의 MIME 타입 (image/jpeg, video/mp4 등)
   mime_type       String
@@ -134,6 +143,10 @@ model Media {
   
   // 파일 공개 상태
   is_public       Boolean   @default(true) @map("is_public")
+
+  // 연결된 게시글 ID (FK)
+  post_id           Int?         // 게시글이 없는 임시 미디어도 존재할 수 있으므로 nullable
+  Post              Post?        @relation(fields: [post_id], references: [id], onDelete: Cascade)
 
   // 파일 생성 시점
   created_at      DateTime @default(now())
