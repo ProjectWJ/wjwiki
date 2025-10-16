@@ -124,10 +124,10 @@ model Media {
   blob_url        String   @unique
   
   // 중간 화질 파일 (상세 보기용)
-  medium_url      String? 
+  medium_url      String   @unique
 
   // 저화질 썸네일 파일
-  thumbnail_url   String?
+  thumbnail_url   String   @unique
   
   // 파일의 MIME 타입 (image/jpeg, video/mp4 등)
   mime_type       String

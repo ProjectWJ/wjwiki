@@ -178,11 +178,11 @@ export async function generateResizedImagesSharp(originalUrl: string): Promise<R
 
     // 1️⃣ 썸네일
     const thumbnailBuffer = await sharp(buffer).resize({ width: 200 }).webp().toBuffer();
-    const thumbnailBlob = await put(generateUUID() + ".webp", thumbnailBuffer, { access: 'public' });
+    const thumbnailBlob = await put(generateUUID() + ".webp", thumbnailBuffer, { access: 'public', addRandomSuffix: true });
 
     // 2️⃣ 중간 화질
     const mediumBuffer = await sharp(buffer).resize({ width: 800 }).webp().toBuffer();
-    const mediumBlob = await put(generateUUID() + ".webp", mediumBuffer, { access: 'public' });
+    const mediumBlob = await put(generateUUID() + ".webp", mediumBuffer, { access: 'public', addRandomSuffix: true });
 
     return {
         thumbnailUrl: thumbnailBlob.url,

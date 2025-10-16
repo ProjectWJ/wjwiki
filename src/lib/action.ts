@@ -121,10 +121,7 @@ export async function handleUpdatePost(formData: FormData): Promise<void> {
       // 새 썸네일 생성
       const newFirstMedia = extractFirstMediaUrl(replicateResult);
       const newThumbnailUrl = newFirstMedia ? await findThumbnailUrl(newFirstMedia) : "https://hyamwcz838h4ikyf.public.blob.vercel-storage.com/default_thumbnail.png";
-      console.log("replicateResult: " + replicateResult);
-      console.log("newFirestMedia: " + newFirstMedia);
-      console.log("newThumbnailUrl: " + newThumbnailUrl);
-
+      
       await prisma.post.update({
         where: { id: postId },
         data: {
@@ -363,7 +360,7 @@ async function replicateMediaAndGetNewUrls(postId: number, content: string): Pro
           await prisma.media.create({
               data: {
                   blob_url: newBlob.url,                       // 새 복제 Blob URL
-                  original_name: newBlob.pathname.split('/').pop() || 'replicated-file',
+                  original_name: generateUUID() + mime_type,    // newBlob.pathname.split('/').pop() || 'replicated-file',
                   mime_type: mime_type,                        // 파일 확장자
                   uploaded_by: "projectwj",                    // uploader 정보
                   status: "USED",                              // 사용 중인 미디어로 상태 설정

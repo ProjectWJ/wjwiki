@@ -37,7 +37,7 @@ const components = {
         if (src) {
             return (
                 <a
-                    href={`${src}?original=true`}
+                    href={`/api/media?url=${encodeURIComponent(src as string)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     >
