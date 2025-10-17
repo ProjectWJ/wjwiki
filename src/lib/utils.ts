@@ -86,32 +86,29 @@ export function generateUUID(): string {
  */
 export function extractFirstMediaUrl(content: string): string | null {
     // 마크다운 이미지/링크 패턴 (Markdown Link/Image Pattern)
-    // ![...](URL) 형태를 찾습니다.
-    const markdownRegex = /!\[.*?\]\((https?:\/\/[^\s\)]+)\)/;
+    // ![...](URL) 형태를 찾습니다. ![video:...](URL)도 찾습니다.
+    const markdownRegex = /!\[(?:video:[^\]]+|[^\]]*)\]\((https?:\/\/[^\s)]+)\)/;
     
     const match = content.match(markdownRegex);
     
-    if (match && match.length > 0) {
-        // match[1]은 괄호 안의 URL입니다.
-
-        // 동영상이면 동영상 기본 썸네일
-        const isVideo = getFileExtension(match[1]);
-        
-        if(isVideo === ".mp4" || isVideo === ".mov" || isVideo === ".avi" ||
-            isVideo === ".wmv" || isVideo === ".asf" || isVideo === ".mkv" ||
-            isVideo === ".flv" || isVideo === ".f4v" || isVideo === ".ts" ||
-            isVideo === ".mpeg") {
-            
-            return "https://hyamwcz838h4ikyf.public.blob.vercel-storage.com/default_thumbnail_video.png"
-        } else {
-            // 이미지면 이미지 썸네일
-            return match[1];
-        }
-    }
+    if (match && match.length > 0)
+       return match[1];         // match[1]은 괄호 안의 URL입니다.
     
     return null;
 }
 
+const VIDEO_FORMATS = [
+    ".mp4",
+    ".wmv",
+    ".flv",
+    ".mpeg",
+    ".mov",
+    ".asf",
+    ".f4v",
+    ".avi",
+    ".mkv",
+    // 기존 코드에 있던 ".ts"를 포함하려면 여기에 추가해야 합니다.
+];
 /**
  * medium_url을 받아 thumbnail_url을 찾아줍니다.
  * 
@@ -120,6 +117,11 @@ export async function findThumbnailUrl(medium_url: string | null): Promise<strin
 
     if (!medium_url)
         return "https://hyamwcz838h4ikyf.public.blob.vercel-storage.com/default_thumbnail.png";
+
+    // 영상이면 지정 썸네일 반환
+    const isVideo = getFileExtension(medium_url);
+    if(VIDEO_FORMATS.includes(isVideo))
+        return "https://hyamwcz838h4ikyf.public.blob.vercel-storage.com/default_thumbnail_video.png"
 
     const mediaUrl = await prisma.media.findFirst({
         where: { medium_url: medium_url },

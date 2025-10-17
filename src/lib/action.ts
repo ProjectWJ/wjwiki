@@ -8,6 +8,18 @@ import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache'; // 데이터 갱신을 위해 필요
 import { extractFirstMediaUrl, findThumbnailUrl, ResizedImages, generateResizedImagesSharp, generateUUID, getFileExtension, howManyMedia } from '@/lib/utils' // 썸네일 생성
 
+const VIDEO_FORMATS = [
+    ".mp4",
+    ".wmv",
+    ".flv",
+    ".mpeg",
+    ".mov",
+    ".asf",
+    ".f4v",
+    ".avi",
+    ".mkv",
+    // 기존 코드에 있던 ".ts"를 포함하려면 여기에 추가해야 합니다.
+];
 
 // 게시물 생성 폼 제출을 처리하는 서버 액션
 // @param formData 폼 데이터를 포함하는 객체
@@ -20,7 +32,10 @@ export async function handleCreatePost(formData: FormData) {
   const summary = content.substring(0, 50); // 요약은 내용의 앞 50자로 자동 생성
   const firstMedia = extractFirstMediaUrl(content); // 첫 번째 미디어
   const thumbnail_url = await findThumbnailUrl(firstMedia);
+  console.log(content);
+  console.log(firstMedia);
   console.log(thumbnail_url); // 여기부터 디버깅 시작
+
   let newPostId: number;
 
   // 필수 필드 검증
@@ -97,7 +112,7 @@ export async function handleUpdatePost(formData: FormData): Promise<void> {
     const title = formData.get('title') as string;
     const legacyContent = formData.get("legacy_content") as string;
     const content = formData.get('content') as string;
-    const legacyIs_published = formData.get('legacy_is_published') === 'on' ? false: true;
+    const legacyIs_published = formData.get('legacy_is_published') === 'on' ? false : true;
     const is_published = formData.get('is_published') === 'on' ? false : true; // 체크박스가 off일 때 true
 /*     const summary = content.substring(0, 50); // 요약은 내용의 앞 50자로 자동 생성
     const firstMedia = extractFirstMediaUrl(content); // 첫 번째 미디어
@@ -291,7 +306,14 @@ export async function handleDeletePost(id: string): Promise<void> {
       // 미디어 삭제
       if (mediaList.length > 0) {
         for (const media of mediaList) {
-          // Blob에서 파일들 폐기
+          // 동영상이면 영상 하나만 폐기하면 됨
+          if (VIDEO_FORMATS.includes(media.mime_type)){
+            await del(media.blob_url);
+            console.log("Blob Delete Complete:", media.original_name);
+            continue;
+          }
+
+          // Blob에서 이미지 파일들 폐기
           const urlsToDelete = [media.blob_url, media.medium_url, media.thumbnail_url]
             .filter((url): url is string => !!url); // null/undefined/빈 문자열 제외
 
@@ -432,6 +454,13 @@ async function deleteMediaAndBlob(mediaArray: string[] | null, label: string) {
     try {
       // blob에서 파일들 삭제
       for (const media of mediaList) {
+        // 동영상이면 영상 하나만 폐기하면 됨
+        if (VIDEO_FORMATS.includes(media.mime_type)){
+          await del(media.blob_url);
+          console.log("Blob Delete Complete:", media.original_name);
+          continue;
+        }
+
         const urlsToDelete = [media.blob_url, media.medium_url, media.thumbnail_url]
           .filter((url): url is string => !!url); // null/undefined/빈 문자열 제외
 
