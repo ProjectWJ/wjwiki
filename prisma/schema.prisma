@@ -126,8 +126,8 @@ model Media {
   // 중간 화질 파일 (상세 보기용)
   medium_url      String   @unique
 
-  // 저화질 썸네일 파일
-  thumbnail_url   String   @unique
+  // 저화질 썸네일 파일 (기본 썸네일이 필요하니 중복 허용)
+  thumbnail_url   String   
   
   // 파일의 MIME 타입 (image/jpeg, video/mp4 등)
   mime_type       String

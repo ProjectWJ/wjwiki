@@ -102,7 +102,7 @@ export function extractFirstMediaUrl(content: string): string | null {
             isVideo === ".flv" || isVideo === ".f4v" || isVideo === ".ts" ||
             isVideo === ".mpeg") {
             
-            return "https://hyamwcz838h4ikyf.public.blob.vercel-storage.com/default_thumbnail_video%20%282%29%20%282%29.png"
+            return "https://hyamwcz838h4ikyf.public.blob.vercel-storage.com/default_thumbnail_video.png"
         } else {
             // 이미지면 이미지 썸네일
             return match[1];
@@ -167,7 +167,7 @@ export async function generateResizedImagesSharp(originalUrl: string): Promise<R
         mimeType === ".flv" || mimeType === ".f4v" || mimeType === ".ts" ||
         mimeType === ".mpeg") {
             return {
-                thumbnailUrl: "https://hyamwcz838h4ikyf.public.blob.vercel-storage.com/default_thumbnail_video%20%282%29%20%282%29.png",
+                thumbnailUrl: "https://hyamwcz838h4ikyf.public.blob.vercel-storage.com/default_thumbnail_video.png",
                 mediumUrl: originalUrl,
                 originalUrl: originalUrl
             }

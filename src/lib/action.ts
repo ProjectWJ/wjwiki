@@ -20,7 +20,7 @@ export async function handleCreatePost(formData: FormData) {
   const summary = content.substring(0, 50); // 요약은 내용의 앞 50자로 자동 생성
   const firstMedia = extractFirstMediaUrl(content); // 첫 번째 미디어
   const thumbnail_url = await findThumbnailUrl(firstMedia);
-
+  console.log(thumbnail_url); // 여기부터 디버깅 시작
   let newPostId: number;
 
   // 필수 필드 검증
