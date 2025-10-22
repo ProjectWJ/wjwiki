@@ -8,6 +8,7 @@ import icon_algorithm from "../app/images/algorithm.png";
 import icon_frontend from "../app/images/frontend.png";
 import icon_introduce from "../app/images/introduce.png";
 import icon_knowledge from "../app/images/knowledge.png";
+import Link from "next/link";
 
 // className={`bg-sky-500 hover:bg-sky-700 ${isBlogHovered ? "opacity-100" : ""}`}>Menu</label>
 
@@ -67,7 +68,12 @@ export default function NavigationBar() {
             className={`inline-block cursor-default items-center px-5 text-slate-300 hover:text-white`}
           >
             <li className="relative-li">
-              Blog
+              <div>
+                <Link href="/posts/all" >
+                  Blog
+                </Link>
+              </div>
+
               {focus === "blog" ? (
                 <ul
                   className={`navUlCSS absolute w-52 rounded-md bg-white p-2

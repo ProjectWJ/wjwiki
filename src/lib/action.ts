@@ -6,7 +6,7 @@ import { createPost } from '@/lib/post';
 import { del, copy } from '@vercel/blob';
 import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache'; // 데이터 갱신을 위해 필요
-import { extractFirstMediaUrl, findThumbnailUrl, ResizedImages, generateResizedImagesSharp, generateUUID, getFileExtension, howManyMedia } from '@/lib/utils' // 썸네일 생성
+import { extractFirstMediaUrl, findThumbnailUrl, ResizedImages, generateResizedImagesSharp, generateUUID, getFileExtension, howManyMedia } from '@/lib/server-utils' // 썸네일 생성
 
 const VIDEO_FORMATS = [
     ".mp4",
@@ -32,9 +32,6 @@ export async function handleCreatePost(formData: FormData) {
   const summary = content.substring(0, 50); // 요약은 내용의 앞 50자로 자동 생성
   const firstMedia = extractFirstMediaUrl(content); // 첫 번째 미디어
   const thumbnail_url = await findThumbnailUrl(firstMedia);
-  console.log(content);
-  console.log(firstMedia);
-  console.log(thumbnail_url); // 여기부터 디버깅 시작
 
   let newPostId: number;
 
@@ -424,7 +421,7 @@ async function replicateMediaAndGetNewUrls(postId: number, content: string): Pro
 
       // 4-3️⃣ 동영상인지 판단
       const fileExtension = getFileExtension(result.newUrl);
-      const isVideo = [".mp4",".mov",".avi",".wmv",".asf",".mkv",".flv",".f4v",".ts",".mpeg"].includes(fileExtension);
+      const isVideo = VIDEO_FORMATS.includes(fileExtension);
 
       // 4-4️⃣ 새로운 마크다운 태그 생성
       const newMarkdownTag = isVideo

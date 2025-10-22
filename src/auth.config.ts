@@ -5,7 +5,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from '@/lib/db'; // 기존 prisma 임포트 유지
 import bcrypt from 'bcryptjs';
 import { sendLoginAlertEmail } from '@/lib/email'; // 🚨 (새로 생성한 파일)
-import { parseUserAgent } from '@/lib/utils'; // 🚨 (User-Agent 파싱 함수)
+import { parseUserAgent } from '@/lib/server-utils'; // 🚨 (User-Agent 파싱 함수)
 import crypto from 'crypto'; // Node.js 기본 모듈 (토큰 생성을 위해)
 import { cookies } from 'next/headers';
 import { verifyTotpCode } from '@/lib/totp';
@@ -230,7 +230,6 @@ export const authConfig: NextAuthConfig = {
                 }
 
                 // 2. 🚨 최종 로그인 성공 시 (2FA 완료 또는 2FA 비활성화 사용자)
-                // 자꾸 이메일 날아와서 일단 비활성화
                 if (user.email) {
                     // 이메일 알림 발송 로직은 최종 로그인 성공 시에만 실행됩니다.
 

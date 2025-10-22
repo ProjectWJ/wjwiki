@@ -1,12 +1,11 @@
 "use client";
 
 import { Analytics } from "@vercel/analytics/next"
-import { SpeedInsights } from "@vercel/speed-insights/next"
 import { useEffect, useState } from "react";
 import NavigationBar from "./navigationbar";
 import "../app/css/page.css";
 
-const welcomeText = "Welcome To WJWIKI !".split("");
+const welcomeText = "Welcome To WJwiki !".split("");
 
 export default function Home() {
   const [nowTitle, setNowTitle] = useState("");
@@ -108,7 +107,6 @@ export default function Home() {
         </div>
       </div>
       <Analytics />
-      <SpeedInsights />
     </>
   );
 }

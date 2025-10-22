@@ -1,9 +1,9 @@
 // 본문에 삽입한 미디어 파일 업로드 api
 import { put } from "@vercel/blob";
 import { NextResponse } from "next/server";
-import { getFileExtension } from '@/lib/utils'; // 🚨 새로 만든 유틸리티 임포트
+import { getFileExtension } from '@/lib/server-utils'; // 🚨 새로 만든 유틸리티 임포트
 import { prisma } from '@/lib/db' // model
-import { generateResizedImagesSharp, ResizedImages } from "@/lib/utils";
+import { generateResizedImagesSharp, ResizedImages } from "@/lib/server-utils";
 
 // Blob: 파일 저장소. 업로드, URL 반환 외에는 관여 안 함
 // Prisma의 Media 테이블: 메타데이터 저장소. 파일의 상태, 주인, 접근 권한 관리
