@@ -5,7 +5,8 @@
 // 이 오류를 해결하기 위해 이 페이지는 동적으로 나오게 설정
 export const dynamic = "force-dynamic";
 
-import Header from '@/components/Header';
+import LoginMenu from '@/components/loginMenu';
+import { NavigationMenuDemo } from '@/components/NavigationMenu';
 import { getPublishedPosts } from '@/lib/post'; // 2번에서 작성한 DB 조회 함수
 import Image from 'next/image';
 
@@ -38,49 +39,54 @@ export default async function HomePage() {
 
   // 3. 게시물 목록 렌더링
   return (
+    <>
+      <main className="container mx-auto p-4">
+        <div className='flex m-auto'>
+          <NavigationMenuDemo />
+          <LoginMenu />
+        </div>
+        <h1 className="text-3xl font-bold mb-8">최신 게시물</h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
 
-    <main className="container mx-auto p-4">
-      <Header />
-      <h1 className="text-3xl font-bold mb-8">최신 게시물</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
 
+          {posts.map((post: Post) => (
+              <div key={post.id} className="border p-4 rounded-lg shadow-md">
+                  {post.thumbnail_url && post.thumbnail_url.startsWith("https://hyamwcz838h4ikyf.public.blob.vercel-storage.com/") ? (
+                    <Image
+                      src={`${post.thumbnail_url}?w=800&q=25`}
+                      alt={post.title}
+                      width={250}
+                      height={250}
+                      className="w-full h-40 object-cover rounded-md mb-4"
+                      style={{ objectFit: 'cover' }}
+                      priority
+                    />
+                  ) : 
+                    <Image
+                      src={`${post.thumbnail_url}?w=800&q=25`}
+                      alt={post.title}
+                      width={250}
+                      height={250}
+                      className="w-full h-40 object-cover rounded-md mb-4"
+                      style={{ objectFit: 'cover' }}
+                    />}
 
-        {posts.map((post: Post) => (
-            <div key={post.id} className="border p-4 rounded-lg shadow-md">
-                {post.thumbnail_url && post.thumbnail_url.startsWith("https://hyamwcz838h4ikyf.public.blob.vercel-storage.com/") ? (
-                  <Image
-                    src={`${post.thumbnail_url}?w=800&q=25`}
-                    alt={post.title}
-                    width={250}
-                    height={250}
-                    className="w-full h-40 object-cover rounded-md mb-4"
-                    style={{ objectFit: 'cover' }}
-                    priority
-                  />
-                ) : 
-                  <Image
-                    src={`${post.thumbnail_url}?w=800&q=25`}
-                    alt={post.title}
-                    width={250}
-                    height={250}
-                    className="w-full h-40 object-cover rounded-md mb-4"
-                    style={{ objectFit: 'cover' }}
-                  />}
+                  {/* 동적 URL id 사용 */}
+                  <a href={`/posts/${post.id}`} className="text-xl font-semibold hover:underline">
+                      {post.title}
+                      {!post.is_published && (
+                        <span className="ml-2 text-sm text-gray-500">(비공개 상태)</span>
+                      )}
+                  </a>
+                  <p className="text-gray-600 mt-2">{post.summary}</p>
+                  <p className="text-sm text-gray-400 mt-4">
+                      작성일: {new Date(post.created_at).toLocaleDateString('ko-KR')}
+                  </p>
+              </div>
+          ))}
+        </div>
+      </main>
+    </>
 
-                {/* 동적 URL id 사용 */}
-                <a href={`/posts/${post.id}`} className="text-xl font-semibold hover:underline">
-                    {post.title}
-                    {!post.is_published && (
-                      <span className="ml-2 text-sm text-gray-500">(비공개 상태)</span>
-                    )}
-                </a>
-                <p className="text-gray-600 mt-2">{post.summary}</p>
-                <p className="text-sm text-gray-400 mt-4">
-                    작성일: {new Date(post.created_at).toLocaleDateString('ko-KR')}
-                </p>
-            </div>
-        ))}
-      </div>
-    </main>
   );
 }

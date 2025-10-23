@@ -26,7 +26,6 @@ export function LoginForm({
 }: React.ComponentProps<"div">) {
   const [errorMessage, dispatch] = useActionState(authenticate, undefined);
   
-  console.log(errorMessage);
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
@@ -61,7 +60,7 @@ export function LoginForm({
                 />
               </Field>
               <Field>
-                <SubmitButton text="login" />
+                <SubmitButton text="Login" />
               </Field>
             </FieldGroup>
           </form>

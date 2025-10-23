@@ -102,6 +102,7 @@ function TOTPFormContent({
                         maxLength={6}
                         required
                         value={totpCode}
+                        autoFocus
                         onChange={(value) => setTotpCode(value)}
                     >
                     <InputOTPGroup>
