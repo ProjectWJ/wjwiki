@@ -1,19 +1,7 @@
 // src/lib/post.ts
 import { auth } from '@/auth';
 import { prisma } from '@/lib/db';
-
-// 카테고리 나누기
-export const CATEGORIES = [
-  { label: "Dev Log", value: "devlog" },
-  { label: "Tech Note", value: "technote" },
-  { label: "Project", value: "project" },
-  { label: "Insight", value: "insight" },
-  { label: "Snippet", value: "snippet" },
-  { label: "Diary", value: "diary" },
-] as const;
-
-export type CategoryValue = (typeof CATEGORIES)[number]["value"];
-
+import { CATEGORIES } from '@/constants/categories';
 
 // all에서 사용하는 게시물 목록을 조회하는 함수
 export async function getPublishedPosts() {
@@ -119,6 +107,7 @@ export async function getPostsByCategory(category: string) {
 // 게시물 생성 시 필요한 데이터 타입 인터페이스
 interface PostCreateData {
   title: string;
+  category: string;
   content: string;
   is_published: boolean; // 기본값은 true(공개)
   summary: string;
@@ -129,7 +118,7 @@ interface PostCreateData {
 // @param data 제목, 요약, 내용 등을 포함한 게시물 데이터
 // @returns 생성된 게시물 객체
 export async function createPost(data: PostCreateData) {  
-  const { title, content, is_published, summary, thumbnail_url } = data;
+  const { title, category, content, is_published, summary, thumbnail_url } = data;
 
   // thubnail_url이 제공되지 않으면 null 또는 undefined로 처리해서 pirsma 스키마와 맞춤
   const finalThumbnailUrl = thumbnail_url?.trim() || undefined;
@@ -137,6 +126,7 @@ export async function createPost(data: PostCreateData) {
   return prisma.post.create({
     data: {
       title,
+      category,
       content,
       is_published,
       summary,

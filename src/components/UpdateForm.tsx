@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useFormStatus } from 'react-dom'; // server action의 상태를 알기 위해 사용
 import { handleUpdatePost } from '@/lib/action'; // 기존의 서버 액션 함수 임포트
+import { UpdateNativeSelectGroups } from './CategorySelect';
 
 type UploadedFileResponse = {
   url: {
@@ -38,10 +39,11 @@ async function uploadFile(file: File): Promise<UploadedFileResponse | null> {
     }
 }
 
-interface PostEditProps {
+export interface PostEditProps {
     post: {
         id: string;
         title: string;
+        category: string;
         content: string;
         is_published: boolean;
         created_at: Date;
@@ -106,6 +108,9 @@ export default function PostForm(postProps: PostEditProps) {
                 <label htmlFor="is_published" className="ml-2 block text-sm text-gray-900">비공개</label>
                 <input type="checkbox" id="is_published" name="is_published" defaultChecked={!postProps.post.is_published} className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" />
             </div>
+
+            {/* 카테고리 선택 */}
+            <UpdateNativeSelectGroups post={postProps.post} />
 
             {/* 파일 업로드 인풋 추가 */}
             <div>

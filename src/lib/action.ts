@@ -27,6 +27,7 @@ export async function handleCreatePost(formData: FormData) {
 
   // FormData 객체에서 필드 값을 추출합니다.
   const title = formData.get('title') as string;
+  const category_select = formData.get('category_select') as string || "diary";
   const content = formData.get('content') as string;
   const is_published = formData.get('is_published') === 'on' ? false : true; // 체크박스가 off일 때 true
   const summary = content.substring(0, 50); // 요약은 내용의 앞 50자로 자동 생성
@@ -48,6 +49,7 @@ export async function handleCreatePost(formData: FormData) {
   try {
     const newPost = await createPost({
       title,
+      category: category_select,
       content,
       is_published,
       summary,
@@ -107,6 +109,7 @@ export async function handleUpdatePost(formData: FormData): Promise<void> {
     // 1. 데이터 추출 및 유효성 검사
     const id = formData.get('id') as string;
     const title = formData.get('title') as string;
+    const category_select = formData.get('category_select') as string || "diary";
     const legacyContent = formData.get("legacy_content") as string;
     const content = formData.get('content') as string;
     const legacyIs_published = formData.get('legacy_is_published') === 'on' ? false : true;
@@ -138,6 +141,7 @@ export async function handleUpdatePost(formData: FormData): Promise<void> {
         where: { id: postId },
         data: {
           title,
+          category: category_select,
           content: replicateResult,
           updated_at: new Date(),
           is_published: false,
@@ -166,6 +170,7 @@ export async function handleUpdatePost(formData: FormData): Promise<void> {
               where: { id: postId },
               data: {
                   title: title,
+                  category: category_select,
                   content: content,
                   updated_at: new Date(),
                   is_published: true,
