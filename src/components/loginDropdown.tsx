@@ -60,7 +60,12 @@ export function DropdownMenuDialog({ onSignOut }: DropdownProps) {
             <DropdownMenuItem 
                 className="hover:cursor-pointer"
                 onClick={() => {location.href="/posts/new"}}>
-                New Post
+                글쓰기
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+                className="hover:cursor-pointer"
+                onClick={() => {location.href="/admin"}}>
+                관리(미구현)
             </DropdownMenuItem>
 {/*             <DropdownMenuItem onSelect={() => setShowNewDialog(true)}>
               New File...
@@ -75,7 +80,7 @@ export function DropdownMenuDialog({ onSignOut }: DropdownProps) {
             <DropdownMenuItem 
                 className="hover:cursor-pointer"
                 onSelect={() => setShowLogoutDialog(true)}>
-                Log out...
+                로그아웃
             </DropdownMenuItem>
           </DropdownMenuGroup>
         </DropdownMenuContent>
@@ -83,7 +88,7 @@ export function DropdownMenuDialog({ onSignOut }: DropdownProps) {
       <Dialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Do you want to log out?</DialogTitle>
+            <DialogTitle>로그아웃하시겠습니까?</DialogTitle>
             <DialogDescription>
             </DialogDescription>
           </DialogHeader>
@@ -95,7 +100,7 @@ export function DropdownMenuDialog({ onSignOut }: DropdownProps) {
           </FieldGroup> */}
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
+              <Button variant="outline">취소</Button>
             </DialogClose>
             <form action={onSignOut}>
                 <LogoutSubmitButton />
@@ -114,7 +119,7 @@ function LogoutSubmitButton() {
     <Button variant="outline" type="submit" disabled={pending}
       className="bg-red-400 text-white hover:bg-red-500 hover:text-white w-full"
     >
-      {pending ? <Spinner /> : 'Log out'}
+      {pending ? <Spinner /> : '로그아웃'}
     </Button>
   );
 }

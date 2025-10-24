@@ -14,6 +14,7 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu"
+import { CATEGORIES } from "@/constants/categories"
 
 /* const components: { title: string; href: string; description: string }[] = [
   {
@@ -53,6 +54,18 @@ import {
   },
 ] */
 
+function ListItemMap() {
+  return(
+    CATEGORIES.map((c, index) => {
+      return (
+        <ListItem key={index} href={"/posts/all?category=" + c.value} title={c.label}>
+          {c.detail}
+        </ListItem>
+      )
+    })
+  )
+}
+
 export function NavigationMenuDemo() {
   const isMobile = useIsMobile()
 
@@ -75,7 +88,7 @@ export function NavigationMenuDemo() {
                     href="/posts/all"
                   >
                     <div className="mb-2 text-lg font-medium sm:mt-4">
-                      WJwiki
+                      Blog
                     </div>
                     <p className="text-muted-foreground text-sm leading-tight">
                       ProjectWJ의 블로그
@@ -83,15 +96,7 @@ export function NavigationMenuDemo() {
                   </Link>
                 </NavigationMenuLink>
               </li>
-              <ListItem href="/docs" title="Introduction">
-                Re-usable components built using Radix UI and Tailwind CSS.
-              </ListItem>
-              <ListItem href="/docs/installation" title="Installation">
-                How to install dependencies and structure your app.
-              </ListItem>
-              <ListItem href="/docs/primitives/typography" title="Typography">
-                Styles for headings, paragraphs, lists...etc
-              </ListItem>
+              <ListItemMap />
             </ul>
           </NavigationMenuContent>
         </NavigationMenuItem>
