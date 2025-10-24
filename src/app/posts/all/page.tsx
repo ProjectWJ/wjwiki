@@ -1,4 +1,4 @@
-// src/app/page.tsx
+// src/app/posts/all/page.tsx
 
 // getPublishedPosts로 인해 posts는 동적인 값이 된다.
 // Dynamic server usage: Route /posts/all couldn't be rendered statically because it used headers.
@@ -7,16 +7,34 @@ export const dynamic = "force-dynamic";
 
 import LoginMenu from '@/components/loginMenu';
 import { NavigationMenuDemo } from '@/components/NavigationMenu';
-import { getPublishedPosts } from '@/lib/post'; // 2번에서 작성한 DB 조회 함수
+import { getPublishedPosts, getPostsByCategory } from '@/lib/post'; // 2번에서 작성한 DB 조회 함수
 import Image from 'next/image';
 
-// prisma 설정 변경
+interface HomePageProps {
+  // searchParams 객체 자체는 항상 존재하므로 '?'(optional)를 제거합니다.
+  // category는 문자열(string), 문자열 배열(string[]), 또는 없을(undefined) 수 있습니다.
+  searchParams: Promise<{
+    category?: string | string[] | undefined;
+  }>;
+// 표준:
+/*   searchParams: {
+    category?: string | string[] | undefined;
+  } */
+}
+// 아니 Promise를 쓰지도 않는데 왜 넣어줘야 동적라우팅 오류가 해결되는거야??
+// 원인 좀 찾아보기
 
 // async 키워드를 사용하면 이 컴포넌트는 Server Component로 동작함
-export default async function HomePage() {
-  // 1. DB 조회 함수 호출
-  const posts = await getPublishedPosts(); 
+export default async function HomePage({ searchParams }: HomePageProps) {
+  const category = (await searchParams).category; // /posts/all?category=devlog → "devlog"
+  // 표준: const category = searchParams.category;
+  const singleCategory = Array.isArray(category) ? category[0] : category;
 
+  // 1. DB 조회 함수 호출
+  const posts = singleCategory
+    ? await getPostsByCategory(singleCategory)
+    : await getPublishedPosts();
+    
   // 2. 데이터가 없는 경우
   if (!posts || posts.length === 0) {
     return (
@@ -31,6 +49,7 @@ export default async function HomePage() {
   interface Post {
       id: number;
       title: string;
+      category: string;
       summary?: string | null;
       created_at: string | number | Date;
       thumbnail_url?: string;

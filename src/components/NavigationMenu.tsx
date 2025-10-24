@@ -132,7 +132,8 @@ export function NavigationMenuDemo() {
               </li>
               <ListItem
                 href="https://github.com/ProjectWJ/webtools_lite_extension"
-                title="Webtools Lite">
+                title="Webtools Lite"
+              >
                 웹 페이지에서 유용하게 활용할 수 있는 다기능 도구 모음 확장프로그램입니다.
               </ListItem>
             </ul>

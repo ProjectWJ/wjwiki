@@ -111,8 +111,8 @@ function LogoutSubmitButton() {
   const { pending } = useFormStatus();
 
   return (
-    <Button type="submit" disabled={pending}
-      className="bg-red-400 hover:bg-red-500"
+    <Button variant="outline" type="submit" disabled={pending}
+      className="bg-red-400 text-white hover:bg-red-500 hover:text-white w-full"
     >
       {pending ? <Spinner /> : 'Log out'}
     </Button>

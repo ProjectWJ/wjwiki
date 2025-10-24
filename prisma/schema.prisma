@@ -22,6 +22,9 @@ model Post {
   // 2. 제목 (필수, NOT NULL)
   title           String    @db.VarChar(255)
   
+  // .. 카테고리 ex. "dev-log", "tech-note", ...
+  category        String    @default("diary")
+
   // 3. 본문 (TEXT) - 길이 제한 없음.
   // TEXT는 Prisma에서 String으로 표현됩니다.
   content         String

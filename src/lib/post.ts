@@ -2,6 +2,19 @@
 import { auth } from '@/auth';
 import { prisma } from '@/lib/db';
 
+// 카테고리 나누기
+export const CATEGORIES = [
+  { label: "Dev Log", value: "devlog" },
+  { label: "Tech Note", value: "technote" },
+  { label: "Project", value: "project" },
+  { label: "Insight", value: "insight" },
+  { label: "Snippet", value: "snippet" },
+  { label: "Diary", value: "diary" },
+] as const;
+
+export type CategoryValue = (typeof CATEGORIES)[number]["value"];
+
+
 // all에서 사용하는 게시물 목록을 조회하는 함수
 export async function getPublishedPosts() {
   try {
@@ -17,6 +30,7 @@ export async function getPublishedPosts() {
       select: {
         id: true,
         title: true,
+        category: true,
         summary: true,
         thumbnail_url: true,
         created_at: true,
@@ -62,6 +76,44 @@ export async function getPostById(id: number) {
     throw new Error('게시글 불러오기 실패');
   }
 }
+
+
+// 카테고리별 게시물 조회 함수
+export async function getPostsByCategory(category: string) {
+
+  // string으로 한번 걸러졌으니 이후 검증
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if (!CATEGORIES.map(c => c.value).includes(category as any)) {
+    throw new Error("Invalid category value");
+  }
+
+  try {
+    const session = await auth();
+    const where = session
+      ? { category }
+      : { category, is_published: true };
+
+    const posts = await prisma.post.findMany({
+      where,
+      select: {
+        id: true,
+        title: true,
+        category: true,
+        summary: true,
+        thumbnail_url: true,
+        created_at: true,
+        is_published: true,
+      },
+      orderBy: { created_at: 'desc' },
+    });
+
+    return posts;
+  } catch (error) {
+    console.error(`Failed to fetch posts by category: ${category}`, error);
+    return [];
+  }
+}
+
 
 // new에서 사용하는 새 게시물 생성 함수
 // 게시물 생성 시 필요한 데이터 타입 인터페이스
