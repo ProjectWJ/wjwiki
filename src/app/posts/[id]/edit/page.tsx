@@ -16,11 +16,14 @@ export default async function PostEditPage({ params }: { params: Promise<{ id: s
     
     // 3. 수정 폼 렌더링 (기존 데이터를 초기값으로 전달)
     return (
-        <div className="container mx-auto mt-10">
-            {/* 🚨 PostEditForm은 현재 Server Action을 호출해야 하므로, 
-               'use client' 폼으로 분리하거나, Server Action을 직접 호출해야 합니다. */}
+        <main className="container mx-auto p-6">
+            <div className="mb-6">
+                {/* 🚨 PostEditForm은 현재 Server Action을 호출해야 하므로, 
+                'use client' 폼으로 분리하거나, Server Action을 직접 호출해야 합니다. */}
+            </div>
             <UpdateForm post={post} />
-        </div>
+        </main>
+
     );
 }
 

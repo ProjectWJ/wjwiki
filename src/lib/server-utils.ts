@@ -99,7 +99,7 @@ export function extractFirstMediaUrl(content: string): string | null {
     return null;
 }
 
-const VIDEO_FORMATS = [
+export const VIDEO_FORMATS = [
     ".mp4",
     ".wmv",
     ".flv",
