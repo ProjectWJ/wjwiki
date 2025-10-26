@@ -1,5 +1,6 @@
 import { Spinner } from '@/components/ui/spinner';
 import { PostCard } from './PostCard';
+import FooterComponent from './FooterComponent';
 
 interface Post {
   id: number;
@@ -156,6 +157,9 @@ export function PostListPage({
           ))}
         </section>
       )}
+
+      {/* Footer */}
+      <FooterComponent />
     </div>
   );
 }
