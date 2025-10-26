@@ -136,3 +136,40 @@
     @apply mb-4 flex h-40 w-full items-center justify-center rounded-md bg-gray-100 text-sm text-gray-500;
   }
 }
+
+@layer utilities {
+  .prose {
+    --tw-prose-body: theme('colors.foreground');
+    --tw-prose-headings: theme('colors.foreground');
+    --tw-prose-lead: theme('colors.foreground');
+    --tw-prose-links: theme('colors.primary');
+    --tw-prose-bold: theme('colors.foreground');
+    --tw-prose-counters: theme('colors.muted.foreground');
+    --tw-prose-bullets: theme('colors.muted.foreground');
+    --tw-prose-hr: theme('colors.border');
+    --tw-prose-quotes: theme('colors.foreground');
+    --tw-prose-quote-borders: theme('colors.border');
+    --tw-prose-captions: theme('colors.muted.foreground');
+    --tw-prose-code: theme('colors.foreground');
+    --tw-prose-pre-code: theme('colors.foreground');
+    --tw-prose-pre-bg: theme('colors.muted');
+    --tw-prose-th-borders: theme('colors.border');
+    --tw-prose-td-borders: theme('colors.border');
+  }
+
+  .prose :where(h1, h2, h3, h4, h5, h6):not(:where([class~="not-prose"] *)) {
+    @apply font-bold mb-3 mt-6;
+  }
+
+  .prose :where(p):not(:where([class~="not-prose"] *)) {
+    @apply mb-6 leading-relaxed;
+  }
+
+  .prose :where(ul, ol):not(:where([class~="not-prose"] *)) {
+    @apply mb-6 pl-6;
+  }
+
+  .prose :where(li):not(:where([class~="not-prose"] *)) {
+    @apply mb-2;
+  }
+}
