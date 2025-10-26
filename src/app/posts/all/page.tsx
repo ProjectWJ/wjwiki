@@ -78,7 +78,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       category: string;
       summary?: string | null;
       created_at: string | number | Date;
-      thumbnail_url?: string;
+      thumbnail_url?: string | null;
       is_published: boolean
   }
 
