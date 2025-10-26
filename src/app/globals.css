@@ -121,3 +121,17 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .post-card {
+    @apply rounded-lg border p-4 shadow-md;
+  }
+
+  .post-thumbnail-image {
+    @apply mb-4 h-40 w-full rounded-md object-cover;
+  }
+
+  .post-thumbnail-placeholder {
+    @apply mb-4 flex h-40 w-full items-center justify-center rounded-md bg-gray-100 text-sm text-gray-500;
+  }
+}
