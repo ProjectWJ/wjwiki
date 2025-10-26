@@ -8,7 +8,6 @@ import {
   SelectContent
 } from "@/components/ui/select"
 import { CATEGORIES } from "@/constants/categories"
-import { PostEditProps } from "./UpdateForm"
 
 // PostForm에서 쓰는거
 export function PostSelectGroups() {

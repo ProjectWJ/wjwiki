@@ -9,6 +9,7 @@ import Image from 'next/image';
 import { auth } from '@/auth';
 import Link from 'next/link';
 import DeleteButton from '@/components/DeleteButton';
+import { PostDetailPage } from '@/components/PostDetailPage';
 
 // <img> 렌더러 컴포넌트 정의. 영상 나오게 하려고 추가
 const components = {
@@ -110,7 +111,7 @@ export async function generateMetadata(
 }
 
 // 상세 페이지 컴포넌트
-export default async function PostDetailPage({ params } : { params: PageParams }) {
+export default async function PostDetailPageRoute({ params } : { params: PageParams }) {
     // 1. URL에서 id 추출
     const { id } = await params;
     const session = await auth(); // 🚨 서버 컴포넌트에서 세션 정보 가져오기
@@ -132,40 +133,51 @@ export default async function PostDetailPage({ params } : { params: PageParams }
       notFound();
     }
 
+    // Transform post to include author information
+    const transformedPost = {
+        ...post,
+        author: {
+        name: 'WJwiki', // Replace with actual author data from your DB
+        avatarUrl: null, // Replace with actual avatar URL from your DB
+        }
+    };
+
     // 6. 렌더링
     return (
-        <main className="container mx-auto p-6">
-            <article>
-                <h1 className="text-4xl font-extrabold mb-4">{post.title}</h1>
-                <p className="text-gray-500 mb-8">
-                    작성일: {new Date(post.created_at).toLocaleDateString('ko-KR')}
-                </p>
-                <Link href={`/posts/all`} className="px-3 py-1 text-sm text-white bg-gray-700 rounded hover:bg-black transition-colors">
-                목록
-                </Link>
-                {session?.user ? (
-                    <>
-                        <Link href={`/posts/${postId}/edit`} className="px-3 py-1 text-sm text-white bg-indigo-500 rounded hover:bg-indigo-600 transition-colors">
-                        수정
-                        </Link>
-                        <DeleteButton postId={postId} />
-                        {!post.is_published && (
-                        <span className="ml-2 text-sm text-gray-500">(비공개 상태)</span>
-                        )}
-                    </>
-                ) : (
-                    <></>
-                )}
-                <hr className="mb-8" />
-                <div className="prose max-w-none">
-                    <ReactMarkdown
-                        // 사용자 정의 컴포넌트를 렌더러에 전달.
-                        components={components}
-                        rehypePlugins={[rehypeSanitize]}
-                        >{post.content}
-                    </ReactMarkdown>
-                </div>
-            </article>
-        </main>
+    <main className="container mx-auto px-4 py-8 md:py-12 max-w-7xl">
+      {/* Action Buttons */}
+      <div className="mb-8 flex gap-2">
+        <Link
+          href="/posts/all"
+          className="px-3 py-1 text-sm text-white bg-gray-700 rounded hover:bg-black transition-colors"
+        >
+          목록
+        </Link>
+        {session?.user && (
+          <>
+            <Link
+              href={`/posts/${postId}/edit`}
+              className="px-3 py-1 text-sm text-white bg-indigo-500 rounded hover:bg-indigo-600 transition-colors"
+            >
+              수정
+            </Link>
+            <DeleteButton postId={postId} />
+            {!post.is_published && (
+              <span className="ml-2 text-sm text-gray-500">(비공개 상태)</span>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Post Detail Component */}
+      <PostDetailPage post={transformedPost}>
+        <ReactMarkdown
+          components={components}
+          rehypePlugins={[rehypeSanitize]}
+        >
+          {post.content}
+        </ReactMarkdown>
+      </PostDetailPage>
+    </main>
     );
 }
