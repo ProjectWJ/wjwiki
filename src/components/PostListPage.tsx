@@ -1,6 +1,5 @@
 import { Spinner } from '@/components/ui/spinner';
 import { PostCard } from './PostCard';
-import FooterComponent from './FooterComponent';
 
 interface Post {
   id: number;
@@ -28,8 +27,6 @@ export function PostListPage({
   posts,
   isLoading = false,
   featuredPost,
-  currentPage = 1,
-  totalPages = 1,
 }: PostListPageProps) {
   if (isLoading) {
     return (
@@ -49,7 +46,7 @@ export function PostListPage({
 
   const featured = featuredPost || posts[0];
   const popularPosts = posts.slice(0, 3);
-  const trendingPosts = posts.slice(3, 9);
+  const trendingPosts = posts.slice(3, 12);
 
   return (
     <div className="w-full">
@@ -133,33 +130,7 @@ export function PostListPage({
           </div>
         </section>
       )}
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <section className="flex justify-center items-center gap-3">
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-            <button
-              type="button"
-              key={page}
-              className={`
-                w-12 h-12 rounded-xl text-base font-normal transition-colors
-                ${
-                  page === currentPage
-                    ? 'bg-[#2980B9] text-white'
-                    : 'text-foreground hover:bg-muted'
-                }
-              `}
-              aria-label={`페이지 ${page}`}
-              aria-current={page === currentPage ? 'page' : undefined}
-            >
-              {page}
-            </button>
-          ))}
-        </section>
-      )}
-
-      {/* Footer */}
-      <FooterComponent />
+      
     </div>
   );
 }
