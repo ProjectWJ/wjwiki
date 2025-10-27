@@ -70,7 +70,7 @@ export function NavigationMenuDemo() {
   const isMobile = useIsMobile()
 
   return (
-    <NavigationMenu className="z-1" viewport={isMobile}>
+    <NavigationMenu className="z-30" viewport={isMobile}>
       <NavigationMenuList className="flex-wrap">
         <NavigationMenuItem>
           <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
