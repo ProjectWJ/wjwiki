@@ -38,7 +38,9 @@ export function PostCard({
 
   if (variant === 'featured') {
     return (
-      <Link
+        // <SlideBanner /> use server 상태라 안됨
+        <></>        
+/*       <Link
         href={`/posts/${id}`}
         className={cn(
           'group relative overflow-hidden rounded-3xl block h-[400px]',
@@ -84,7 +86,7 @@ export function PostCard({
             </div>
           </div>
         </div>
-      </Link>
+      </Link> */
     );
   }
 

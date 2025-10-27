@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic";
 import LoginMenu from '@/components/loginMenu';
 import { NavigationMenuDemo } from '@/components/NavigationMenu';
 import { PostListPage } from '@/components/PostListPage';
+import { SlideBanner } from '@/components/SlideBanner.client';
 import { getPublishedPosts, getPostsByCategory } from '@/lib/post'; // 2번에서 작성한 DB 조회 함수
 
 interface HomePageProps {
@@ -47,6 +48,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       </div>
       
       <main className="container mx-auto px-4 py-8 md:py-12">
+        <SlideBanner />
         <PostListPage
           posts={transformedPosts}
           currentPage={currentPage}
