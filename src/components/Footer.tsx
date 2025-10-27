@@ -1,37 +1,134 @@
+import Link from "next/link";
+import GithubIconLink from "./GithubIconLink";
+import logo from '../app/images/logo.png'
+import Image from 'next/image'
+
 export default function Footer() {
+  const originalTemplate = {
+    name: "Free Blog Template",
+    url: "https://www.figma.com/community/file/1456300075957972581",
+    author: "Naufal Adiftya",
+  };
+
   return (
     <footer className="w-full bg-white px-4 py-14 md:py-14 flex flex-col items-center gap-12">
       <div className="w-full max-w-[1216px] min-w-[343px] flex flex-wrap items-center content-center gap-8">
         {/* Logo and Social Links Column */}
         <div className="min-w-[343px] flex flex-col items-start gap-3">
           {/* Logo */}
-          <div className="min-w-[343px] h-10 flex items-center justify-center gap-2">
-            <svg
-              width="32"
-              height="32"
-              viewBox="0 0 32 32"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-8 h-8"
-            >
-              <path
-                d="M10.5591 4.47998H24.0514L14.1319 19.1826H0.639648L10.5591 4.47998Z"
-                fill="#212121"
-              />
-              <path
-                d="M11.1506 21.1852L7.30859 26.8799H21.4408L31.3603 12.1772H20.9298L14.8524 21.1852H11.1506Z"
-                fill="#404040"
-              />
-            </svg>
-            <span className="flex-1 text-[#212121] font-bold text-xl leading-[150%]">
-              Blog Template
-            </span>
+          <div className="min-w-[343px] h-10 flex items-center justify-start gap-2">
+            <Image
+              width={64}
+              height={64}
+              src={logo}
+              alt="projectwj logo"
+            />
+{/*             <span className="flex-1 text-[#212121] font-bold text-xl leading-[150%]">
+              WJwiki
+            </span> */}
           </div>
 
           {/* Social Links */}
-          <div className="min-w-[343px] flex items-start gap-3">
+{/*           <div className="min-w-[343px] flex items-start gap-3">
+            <GithubIconLink 
+              href="https://github.com/ProjectWJ"
+              size={24}
+            />
+          </div> */}
+        </div>
+
+        {/* Contact Information */}
+        <div className="min-w-[343px] flex-1 flex flex-wrap items-start content-start gap-8 md:gap-8">
+
+          {/* Email */}
+          <div className="min-w-[250px] flex flex-col items-start gap-1">
+            <h3 className="text-[#30333C] font-semibold text-sm leading-[150%]">
+              Email
+            </h3>
+            <p className="text-[#30333C] font-normal text-sm leading-[150%]">
+              projectwj@proton.me
+            </p>
+          </div>
+
+          <div className="min-w-[250px] flex flex-col items-start gap-1">
+            <h3 className="text-[#30333C] font-semibold text-sm leading-[150%]">
+              Github
+            </h3>
+            <p className="text-[#30333C] font-normal text-sm leading-[150%] flex items-center gap-1">
+
+              <GithubIconLink 
+                href="https://github.com/ProjectWJ"
+                size={16}
+              />
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* 1-B. CC BY 4.0 라이선스 명시 (Attribution) */}
+      <div className="w-full max-w-[1216px] min-w-[343px] flex flex-wrap items-center content-center gap-8">
+        <div className="text-gray-500 font-normal text-xs">
+          <span>
+              디자인 템플릿은 <Link 
+                  href={originalTemplate.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="underline hover:text-gray-700"
+              >
+                  {originalTemplate.name}
+              </Link>
+              (저작자: {originalTemplate.author})에서 가져왔으며, <Link
+                  href="http://creativecommons.org/licenses/by/4.0/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="underline hover:text-gray-700"
+              >CC BY 4.0
+              </Link> 라이선스가 적용됩니다.
+          </span>
+        </div>
+      </div>
+
+      {/* Credits and Footer Links */}
+      <div className="w-full max-w-[1216px] min-w-[343px] flex flex-wrap items-start content-start gap-8">
+
+        {/* Copyright */}
+        <div className="flex-1 text-[#30333C] font-normal text-sm leading-[150%]">
+          © 2025 ProjectWJ. All rights reserved.
+        </div>
+
+        {/* Footer Links */}
+        <div className="min-w-[343px] max-w-[400px] flex-1 flex flex-wrap items-start content-start gap-6">
+          <Link
+            href="/terms"
+            target="_blank"
+            className="min-w-[100px] flex-1 text-[#30333C] font-normal text-sm leading-[150%] hover:underline"
+          >
+            Privacy Policy
+          </Link>
+          <Link
+            href="/terms"
+            target="_blank"
+            className="min-w-[100px] flex-1 text-[#30333C] font-normal text-sm leading-[150%] hover:underline"
+          >
+            Terms of Service
+          </Link>
+          <Link
+            href="/terms"
+            target="_blank"
+            className="min-w-[100px] flex-1 text-[#30333C] font-normal text-sm leading-[150%] hover:underline"
+          >
+            Cookies Settings
+          </Link>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+
+
             {/* Instagram */}
-            <a href="#" className="w-6 h-6 flex items-center justify-center">
+{/*             <a href="#" className="w-6 h-6 flex items-center justify-center">
               <svg
                 width="18"
                 height="18"
@@ -58,10 +155,10 @@ export default function Footer() {
                   strokeLinejoin="round"
                 />
               </svg>
-            </a>
+            </a> */}
 
             {/* X (Twitter) */}
-            <a href="#" className="w-6 h-6 flex items-center justify-center">
+{/*             <a href="#" className="w-6 h-6 flex items-center justify-center">
               <svg
                 width="18"
                 height="18"
@@ -77,10 +174,10 @@ export default function Footer() {
                   strokeLinejoin="round"
                 />
               </svg>
-            </a>
+            </a> */}
 
             {/* LinkedIn */}
-            <a href="#" className="w-6 h-6 flex items-center justify-center">
+{/*             <a href="#" className="w-6 h-6 flex items-center justify-center">
               <svg
                 width="18"
                 height="18"
@@ -105,10 +202,10 @@ export default function Footer() {
                   strokeLinejoin="round"
                 />
               </svg>
-            </a>
+            </a> */}
 
             {/* Facebook */}
-            <a href="#" className="w-6 h-6 flex items-center justify-center">
+{/*             <a href="#" className="w-6 h-6 flex items-center justify-center">
               <svg
                 width="18"
                 height="18"
@@ -125,10 +222,10 @@ export default function Footer() {
                   strokeLinejoin="round"
                 />
               </svg>
-            </a>
+            </a> */}
 
             {/* YouTube */}
-            <a href="#" className="w-6 h-6 flex items-center justify-center">
+{/*             <a href="#" className="w-6 h-6 flex items-center justify-center">
               <svg
                 width="18"
                 height="18"
@@ -148,14 +245,11 @@ export default function Footer() {
                   strokeLinejoin="round"
                 />
               </svg>
-            </a>
-          </div>
-        </div>
+            </a> */}
 
-        {/* Contact Information */}
-        <div className="min-w-[343px] flex-1 flex flex-wrap items-start content-start gap-8 md:gap-8">
+
           {/* Address */}
-          <div className="min-w-[276px] flex flex-col items-start gap-1">
+{/*           <div className="min-w-[276px] flex flex-col items-start gap-1">
             <h3 className="text-[#30333C] font-semibold text-sm leading-[150%]">
               Address
             </h3>
@@ -163,9 +257,9 @@ export default function Footer() {
               Level 1, 12 Sample St, Sydney NSW 2000
             </p>
           </div>
-
+ */}
           {/* Phone Number */}
-          <div className="min-w-[200px] flex-1 flex flex-col items-start gap-1">
+{/*           <div className="min-w-[200px] flex-1 flex flex-col items-start gap-1">
             <h3 className="text-[#30333C] font-semibold text-sm leading-[150%]">
               Phone Number
             </h3>
@@ -173,48 +267,4 @@ export default function Footer() {
               1800 123 4567
             </p>
           </div>
-
-          {/* Email */}
-          <div className="min-w-[250px] flex flex-col items-start gap-1">
-            <h3 className="text-[#30333C] font-semibold text-sm leading-[150%]">
-              Email
-            </h3>
-            <p className="text-[#30333C] font-normal text-sm leading-[150%]">
-              blog@template.io
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Credits and Footer Links */}
-      <div className="w-full max-w-[1216px] min-w-[343px] flex flex-wrap items-start content-start gap-8">
-        {/* Copyright */}
-        <div className="flex-1 text-[#30333C] font-normal text-sm leading-[150%]">
-          © 2025 Blog Template. All rights reserved.
-        </div>
-
-        {/* Footer Links */}
-        <div className="min-w-[343px] max-w-[400px] flex-1 flex flex-wrap items-start content-start gap-6">
-          <a
-            href="#"
-            className="min-w-[100px] flex-1 text-[#30333C] font-normal text-sm leading-[150%] hover:underline"
-          >
-            Privacy Policy
-          </a>
-          <a
-            href="#"
-            className="min-w-[100px] flex-1 text-[#30333C] font-normal text-sm leading-[150%] hover:underline"
-          >
-            Terms of Service
-          </a>
-          <a
-            href="#"
-            className="min-w-[100px] flex-1 text-[#30333C] font-normal text-sm leading-[150%] hover:underline"
-          >
-            Cookies Settings
-          </a>
-        </div>
-      </div>
-    </footer>
-  );
-}
+ */}
