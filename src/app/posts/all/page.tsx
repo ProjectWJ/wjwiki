@@ -5,7 +5,7 @@
 // 이 오류를 해결하기 위해 이 페이지는 동적으로 나오게 설정
 export const dynamic = "force-dynamic";
 
-import FooterComponent from '@/components/FooterComponent';
+import Footer from '@/components/Footer';
 import LoginMenu from '@/components/loginMenu';
 import { NavigationMenuDemo } from '@/components/NavigationMenu';
 import { CustomPagination } from '@/components/Pagination.client';
@@ -35,7 +35,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const transformedPosts = posts?.map(post => ({
     ...post,
     author: {
-      name: 'WJwiki', // Replace with actual author data from your DB
+      name: 'ProjectWJ', // Replace with actual author data from your DB
       avatarUrl: null, // Replace with actual avatar URL from your DB
     }
   }));
@@ -58,7 +58,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         <PostListPage
           posts={transformedPosts}
           currentPage={currentPage}
-          totalPages={Math.ceil((posts?.length || 0) / 12)}
+          totalPages={totalPages}
         />
         <CustomPagination 
           currentPage={currentPage}
@@ -66,7 +66,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         />
               
         {/* Footer */}
-        <FooterComponent />
+        <Footer />
       </main>
     </>
   );

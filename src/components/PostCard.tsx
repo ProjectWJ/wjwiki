@@ -27,9 +27,9 @@ export function PostCard({
   className,
 }: PostCardProps) {
   const formattedDate = new Date(date).toLocaleDateString('ko-KR', {
-    year: 'numeric',
+/*     year: 'numeric', ex) 2025년 1월 1일
     month: 'short',
-    day: 'numeric',
+    day: 'numeric', */
   });
 
   const imageUrl = thumbnailUrl 

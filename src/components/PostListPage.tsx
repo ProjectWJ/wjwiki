@@ -27,6 +27,8 @@ export function PostListPage({
   posts,
   isLoading = false,
   featuredPost,
+  currentPage,
+  // totalPages,
 }: PostListPageProps) {
   if (isLoading) {
     return (
@@ -45,8 +47,8 @@ export function PostListPage({
   }
 
   const featured = featuredPost || posts[0];
-  const popularPosts = posts.slice(0, 3);
-  const trendingPosts = posts.slice(3, 12);
+  const popularPosts = currentPage === 1 ? posts.slice(0, 3) : [];
+  const trendingPosts = currentPage === 1 ? posts.slice(3, 12) : posts.slice(0, 12);
 
   return (
     <div className="w-full">
@@ -63,56 +65,60 @@ export function PostListPage({
       </section>
 
       {/* Popular Post Section */}
-      <section className="mb-14 md:mb-20">
-        <div className="text-center mb-8 md:mb-12 space-y-3">
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-            Popular Post
-          </h2>
-          <p className="text-base md:text-lg text-muted-foreground">
-            Ideas, trends, and inspiration for a brighter future
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-14">
-          {/* Large Card */}
-          {popularPosts[0] && (
-            <div className="lg:row-span-2">
-              <PostCard
-                id={popularPosts[0].id}
-                title={popularPosts[0].title}
-                thumbnailUrl={popularPosts[0].thumbnail_url}
-                author={popularPosts[0].author}
-                date={popularPosts[0].created_at}
-              />
+      {
+        currentPage === 1
+        ? <section className="mb-14 md:mb-20">
+            <div className="text-center mb-8 md:mb-12 space-y-3">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground">
+                New on the Blog
+              </h2>
+              <p className="text-base md:text-lg text-muted-foreground">
+                Discover some of the most engaging stories from our recent posts.
+              </p>
             </div>
-          )}
 
-          {/* Horizontal Cards */}
-          <div className="space-y-8 md:space-y-10">
-            {popularPosts.slice(1).map((post) => (
-              <PostCard
-                key={post.id}
-                id={post.id}
-                title={post.title}
-                thumbnailUrl={post.thumbnail_url}
-                author={post.author}
-                date={post.created_at}
-                variant="horizontal"
-              />
-            ))}
-          </div>
-        </div>
-      </section>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-14">
+              {/* Large Card */}
+              {popularPosts[0] && (
+                <div className="lg:row-span-2">
+                  <PostCard
+                    id={popularPosts[0].id}
+                    title={popularPosts[0].title}
+                    thumbnailUrl={popularPosts[0].thumbnail_url}
+                    author={popularPosts[0].author}
+                    date={popularPosts[0].created_at}
+                  />
+                </div>
+              )}
+
+              {/* Horizontal Cards */}
+              <div className="space-y-8 md:space-y-10">
+                {popularPosts.slice(1).map((post) => (
+                  <PostCard
+                    key={post.id}
+                    id={post.id}
+                    title={post.title}
+                    thumbnailUrl={post.thumbnail_url}
+                    author={post.author}
+                    date={post.created_at}
+                    variant="horizontal"
+                  />
+                ))}
+              </div>
+            </div>
+          </section>
+        : ""
+      }
 
       {/* Trending Post Section */}
       {trendingPosts.length > 0 && (
         <section className="mb-14 md:mb-20">
           <div className="text-center mb-8 md:mb-12 space-y-3">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-              Trending Post
+              All Posts
             </h2>
             <p className="text-base md:text-lg text-muted-foreground">
-              Discover how innovation and creativity drive meaningful change
+              Find all my stories gathered here in one place.
             </p>
           </div>
 

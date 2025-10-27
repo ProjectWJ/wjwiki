@@ -33,7 +33,7 @@ export function CustomPagination({ currentPage, totalPages }: PaginationProps) {
   };
 
   return (
-    <Pagination className='hover:focus'>
+    <Pagination>
       <PaginationContent>
         <PaginationItem>
           <PaginationPrevious

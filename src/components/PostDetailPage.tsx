@@ -2,7 +2,7 @@ import { Spinner } from '@/components/ui/spinner';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Instagram, Facebook, Twitter, LinkIcon } from 'lucide-react';
-import FooterComponent from './FooterComponent';
+import Footer from './Footer';
 
 interface Post {
   id: string; // number로 바꾸기?
@@ -237,7 +237,7 @@ export function PostDetailPage({
       </div>
 
       {/* Footer */}
-      <FooterComponent />
+      <Footer />
     </div>
   );
 }
