@@ -5,6 +5,7 @@
 import { prisma } from "./db";
 import sharp from 'sharp';
 import { put } from "@vercel/blob";
+import { vercelBlobUrl } from "@/constants/vercelblobURL";
 
 /**
  * User-Agent 문자열을 파싱하여 OS 및 브라우저 정보를 추출합니다.
@@ -118,12 +119,16 @@ export const VIDEO_FORMATS = [
 export async function findThumbnailUrl(medium_url: string | null): Promise<string> {
 
     if (!medium_url)
-        return "https://hyamwcz838h4ikyf.public.blob.vercel-storage.com/default_thumbnail.png";
+        return `${vercelBlobUrl}default_thumbnail.png`;
 
     // 영상이면 지정 썸네일 반환
     const isVideo = getFileExtension(medium_url);
     if(VIDEO_FORMATS.includes(isVideo))
-        return "https://hyamwcz838h4ikyf.public.blob.vercel-storage.com/default_thumbnail_video.png"
+        return `${vercelBlobUrl}default_thumbnail_video.png`
+
+    // 외부의 url이면
+    if (medium_url && !medium_url.startsWith(vercelBlobUrl))
+        return medium_url;
 
     const mediaUrl = await prisma.media.findFirst({
         where: { medium_url: medium_url },
@@ -131,7 +136,7 @@ export async function findThumbnailUrl(medium_url: string | null): Promise<strin
     })
 
     if (!mediaUrl || !mediaUrl.thumbnail_url) 
-        return "https://hyamwcz838h4ikyf.public.blob.vercel-storage.com/default_thumbnail.png";
+        return `${vercelBlobUrl}default_thumbnail.png`;
 
     return mediaUrl.thumbnail_url;
 }
@@ -171,7 +176,7 @@ export async function generateResizedImagesSharp(originalUrl: string): Promise<R
         mimeType === ".flv" || mimeType === ".f4v" || mimeType === ".ts" ||
         mimeType === ".mpeg") {
             return {
-                thumbnailUrl: "https://hyamwcz838h4ikyf.public.blob.vercel-storage.com/default_thumbnail_video.png",
+                thumbnailUrl: `${vercelBlobUrl}default_thumbnail_video.png`,
                 mediumUrl: originalUrl,
                 originalUrl: originalUrl
             }

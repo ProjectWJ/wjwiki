@@ -1,5 +1,6 @@
 import { Spinner } from '@/components/ui/spinner';
 import { PostCard } from './PostCard';
+import { EmptyNotFound } from './ui/empty';
 
 interface Post {
   id: number;
@@ -41,7 +42,7 @@ export function PostListPage({
   if (!posts || posts.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
-        <p className="text-xl text-muted-foreground">아직 작성된 게시물이 없습니다.</p>
+        <EmptyNotFound />
       </div>
     );
   }

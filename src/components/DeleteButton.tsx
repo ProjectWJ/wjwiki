@@ -1,46 +1,20 @@
 // components/DeleteButton.tsx
-
 'use client';
-import { handleDeletePost } from '@/lib/action'; 
-import { useFormStatus } from 'react-dom';
 
-interface DeleteButtonProps {
-    postId: number; // 삭제할 게시글의 ID
-}
+import { Trash } from "lucide-react";
+import { useDeleteModal } from "./DeleteModalContext"; // 방금 만든 훅
 
-function SubmitButton() {
-    const { pending } = useFormStatus();
+export function DeleteButton({ postId }: { postId: number }) {
+  const { openModal } = useDeleteModal();
 
-    return (
-        <button
-            type="submit"
-            disabled={pending}
-            className="px-3 py-1 bg-red-600 text-white text-sm font-semibold rounded-md shadow hover:bg-red-700 disabled:opacity-50 transition duration-150"
-        >
-            {pending ? '삭제 중...' : '게시글 삭제'}
-        </button>
-    );
-}
-
-export default function DeleteButton({ postId }: DeleteButtonProps) {
-    // 1. Server Action 바인딩 (postId를 첫 번째 인자로 고정)
-    const handleDelete = handleDeletePost.bind(null, postId.toString());
-
-    return (
-        <form 
-            action={handleDelete}
-            // 🚨 핵심: onSubmit 이벤트 핸들러 추가
-            onSubmit={(e) => {
-                // 사용자에게 삭제 확인 요청
-                const confirmed = confirm('정말로 이 게시글을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.');
-                
-                // 사용자가 '취소'를 누른 경우
-                if (!confirmed) {
-                    e.preventDefault(); // 폼 제출(Server Action 호출)을 중단시킵니다.
-                }
-            }}
-        >
-            <SubmitButton />
-        </form>
-    );
+  return (
+    <button
+      type="button"
+      className="w-10 h-10 flex items-center justify-center rounded-xl bg-red-400 hover:bg-red-300 transition-colors"
+      aria-label="삭제"
+      onClick={() => openModal(postId)} // ✅ 클릭 시 Context의 함수 호출
+    >
+      <Trash color="#e5e5e5" className="w-6 h-6 text-muted-foreground" />
+    </button>
+  );
 }

@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { vercelBlobUrl } from '@/constants/vercelblobURL';
 
 interface PostCardProps {
   id: number;
@@ -35,6 +36,7 @@ export function PostCard({
   const imageUrl = thumbnailUrl 
     ? `${thumbnailUrl}${thumbnailUrl.includes('?') ? '&' : '?'}w=800&q=75`
     : null;
+  // const imageUrl = thumbnailUrl;
 
   if (variant === 'featured') {
     return (
@@ -99,13 +101,23 @@ export function PostCard({
           className
         )}
       >
-        {imageUrl && (
-          <div className="relative w-full md:w-48 h-48 md:h-56 flex-shrink-0 rounded-xl overflow-hidden">
+        {imageUrl?.startsWith(vercelBlobUrl) && (
+          <div className="relative w-full h-full md:w-48 h-48 md:h-56 flex-shrink-0 rounded-xl overflow-hidden">
             <Image
               src={imageUrl}
               alt={title}
               fill
               className="object-cover transition-transform duration-300 group-hover:scale-105"
+            />
+          </div>
+        )}
+        {!imageUrl?.startsWith(vercelBlobUrl) && (
+          <div className="relative w-full h-full md:w-48 h-48 md:h-56 flex-shrink-0 rounded-xl overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={imageUrl!}
+              alt={title}
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
           </div>
         )}
@@ -141,13 +153,23 @@ export function PostCard({
       href={`/posts/${id}`}
       className={cn('group flex flex-col gap-4 md:gap-5', className)}
     >
-      {imageUrl && (
+      {imageUrl?.startsWith(vercelBlobUrl) && (
         <div className="relative w-full h-60 md:h-80 rounded-xl overflow-hidden">
           <Image
             src={imageUrl}
             alt={title}
             fill
             className="object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        </div>
+      )}
+      {!imageUrl?.startsWith(vercelBlobUrl) && (
+        <div className="relative w-full h-60 md:h-80 rounded-xl overflow-hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={imageUrl!}
+            alt={title}
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
         </div>
       )}

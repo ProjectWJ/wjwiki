@@ -12,6 +12,7 @@ export default function Footer() {
 
   return (
     <footer className="w-full bg-white px-4 py-14 md:py-14 flex flex-col items-center gap-12">
+      <hr className="w-full mt-10" />
       <div className="w-full max-w-[1216px] min-w-[343px] flex flex-wrap items-center content-center gap-8">
         {/* Logo and Social Links Column */}
         <div className="min-w-[343px] flex flex-col items-start gap-3">

@@ -7,6 +7,7 @@ import { del, copy } from '@vercel/blob';
 import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache'; // 데이터 갱신을 위해 필요
 import { extractFirstMediaUrl, findThumbnailUrl, ResizedImages, generateResizedImagesSharp, generateUUID, getFileExtension, howManyMedia } from '@/lib/server-utils' // 썸네일 생성
+import { vercelBlobUrl } from '@/constants/vercelblobURL';
 
 const VIDEO_FORMATS = [
     ".mp4",
@@ -135,7 +136,7 @@ export async function handleUpdatePost(formData: FormData): Promise<void> {
 
       // 새 썸네일 생성
       const newFirstMedia = extractFirstMediaUrl(replicateResult);
-      const newThumbnailUrl = newFirstMedia ? await findThumbnailUrl(newFirstMedia) : "https://hyamwcz838h4ikyf.public.blob.vercel-storage.com/default_thumbnail.png";
+      const newThumbnailUrl = newFirstMedia ? await findThumbnailUrl(newFirstMedia) : `${vercelBlobUrl}default_thumbnail.png`;
       
       await prisma.post.update({
         where: { id: postId },
@@ -163,7 +164,7 @@ export async function handleUpdatePost(formData: FormData): Promise<void> {
   } else {
       // 게시글을 비공개로 전환하지 않는 경우 DB 업데이트 로직
       const newFirstMedia = extractFirstMediaUrl(content);
-      const newThumbnailUrl = newFirstMedia ? await findThumbnailUrl(newFirstMedia) : "https://hyamwcz838h4ikyf.public.blob.vercel-storage.com/default_thumbnail.png";
+      const newThumbnailUrl = newFirstMedia ? await findThumbnailUrl(newFirstMedia) : `${vercelBlobUrl}default_thumbnail.png`;
 
       try {
           await prisma.post.update({

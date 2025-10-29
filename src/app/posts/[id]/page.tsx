@@ -8,8 +8,10 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import { auth } from '@/auth';
 import Link from 'next/link';
-import DeleteButton from '@/components/DeleteButton';
 import { PostDetailPage } from '@/components/PostDetailPage';
+import { NavigationMenuDemo } from '@/components/NavigationMenu';
+import LoginMenu from '@/components/loginMenu';
+import { vercelBlobUrl } from '@/constants/vercelblobURL';
 
 // <img> 렌더러 컴포넌트 정의. 영상 나오게 하려고 추가
 const components = {
@@ -35,9 +37,10 @@ const components = {
         }
 
         // 이미지인 경우 next.js의 Image 컴포넌트 사용해서 최적화
-        if (src) {
+        // 다른 링크에서 가져온 이미지일 경우에는 X 
+        if (src && src.toString().includes(vercelBlobUrl)) {
             return (
-                <a
+                <Link
                     href={`/api/media?url=${encodeURIComponent(src as string)}`}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -51,7 +54,7 @@ const components = {
                         priority={true}
                         {...props}
                     />
-                </a>
+                </Link>
             );
         }
 
@@ -116,6 +119,7 @@ export default async function PostDetailPageRoute({ params } : { params: PagePar
     const { id } = await params;
     const session = await auth(); // 🚨 서버 컴포넌트에서 세션 정보 가져오기
 
+    const isAdmin = session?.user ? true : false;
 
     // 2. id를 number로 변환
     const postId = parseInt(id, 10); 
@@ -144,40 +148,24 @@ export default async function PostDetailPageRoute({ params } : { params: PagePar
 
     // 6. 렌더링
     return (
-    <main className="container mx-auto px-4 py-8 md:py-12 max-w-7xl">
-      {/* Action Buttons */}
-      <div className="mb-8 flex gap-2">
-        <Link
-          href="/posts/all"
-          className="px-3 py-1 text-sm text-white bg-gray-700 rounded hover:bg-black transition-colors"
-        >
-          목록
-        </Link>
-        {session?.user && (
-          <>
-            <Link
-              href={`/posts/${postId}/edit`}
-              className="px-3 py-1 text-sm text-white bg-indigo-500 rounded hover:bg-indigo-600 transition-colors"
+      <>
+        <div className="flex justify-between items-center container mx-auto px-4 py-6">
+          <NavigationMenuDemo />
+          <LoginMenu />
+        </div>
+        
+        <main className="container mx-auto px-4 py-8 md:py-12">
+          
+          {/* Post Detail Component */}
+          <PostDetailPage post={transformedPost} isAdmin={isAdmin}>
+            <ReactMarkdown
+              components={components}
+              rehypePlugins={[rehypeSanitize]}
             >
-              수정
-            </Link>
-            <DeleteButton postId={postId} />
-            {!post.is_published && (
-              <span className="ml-2 text-sm text-gray-500">(비공개 상태)</span>
-            )}
-          </>
-        )}
-      </div>
-
-      {/* Post Detail Component */}
-      <PostDetailPage post={transformedPost}>
-        <ReactMarkdown
-          components={components}
-          rehypePlugins={[rehypeSanitize]}
-        >
-          {post.content}
-        </ReactMarkdown>
-      </PostDetailPage>
-    </main>
+              {post.content}
+            </ReactMarkdown>
+          </PostDetailPage>
+        </main>
+      </>
     );
 }

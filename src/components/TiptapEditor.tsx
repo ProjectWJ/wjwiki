@@ -42,6 +42,7 @@ import {
   RemoveFormatting,
   Type,
   ListTodo,
+  ArrowUpFromLine
 } from 'lucide-react';
 import { UploadedFileResponse } from './PostForm';
 import { PostSelectGroups, UpdateSelectGroups } from './CategorySelect';
@@ -650,9 +651,9 @@ export function SubmitButton() {
         <Button 
             type="submit" 
             disabled={pending}
-            className="h-11 bg-[#2463EB] hover:bg-[#2463EB]/90 text-white rounded-xl px-4 shadow-[0_1px_2px_0_rgba(26,26,26,0.08)] transition-colors"
+            className="h-11 w-16 bg-[#2463EB] hover:bg-[#2463EB]/90 text-white rounded-xl px-4 shadow-[0_1px_2px_0_rgba(26,26,26,0.08)] transition-colors"
         >
-            {pending ? <Spinner /> : 'Posting'}
+            {pending ? <Spinner color='white' /> : <ArrowUpFromLine color='white' />}
         </Button>
     );
 }
