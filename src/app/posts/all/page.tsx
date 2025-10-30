@@ -9,6 +9,7 @@ import Footer from '@/components/Footer';
 import LoginMenu from '@/components/loginMenu';
 import { NavigationMenuDemo } from '@/components/NavigationMenu';
 import { CustomPagination } from '@/components/Pagination.client';
+import { PostDetailProgress } from '@/components/PostDetailProgress';
 import { PostListPage } from '@/components/PostListPage';
 import { SlideBanner } from '@/components/SlideBanner.client';
 import { getPostsByCategory, getPostCountByCategory } from '@/lib/post'; // 2번에서 작성한 DB 조회 함수
@@ -48,10 +49,11 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
   return (
     <>
-      <div className="flex justify-between items-center container mx-auto px-4 py-6">
-        <NavigationMenuDemo />
-        <LoginMenu />
-      </div>
+        <PostDetailProgress />
+        <div className="sticky z-50 top-2 shadow-xl rounded-2xl bg-white flex justify-between items-center container mx-auto px-4 py-4">
+          <NavigationMenuDemo />
+          <LoginMenu />
+        </div>
       
       <main className="container mx-auto px-4 py-8 md:py-12">
         <SlideBanner />

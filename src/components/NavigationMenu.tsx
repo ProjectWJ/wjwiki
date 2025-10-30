@@ -15,6 +15,8 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu"
 import { CATEGORIES } from "@/constants/categories"
+import Image from 'next/image';
+import logoImage from "@/app/images/naviLogo.png"
 
 /* const components: { title: string; href: string; description: string }[] = [
   {
@@ -70,11 +72,21 @@ export function NavigationMenuDemo() {
   const isMobile = useIsMobile()
 
   return (
-    <NavigationMenu className="z-30" viewport={isMobile}>
+    <NavigationMenu className="z-30 px-4" viewport={isMobile}>
       <NavigationMenuList className="flex-wrap">
         <NavigationMenuItem>
           <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-            <Link href="/"><span className="font-bold">WJwiki</span></Link>
+            <Link href="/">
+{/*               <span className="font-bold">WJwiki</span> */}
+            <Image 
+              src={logoImage} 
+              alt="로고" 
+              // width와 height가 자동으로 제공되므로 주석 처리하거나 필요에 따라 재정의할 수 있습니다.
+              // width={100} 
+              // height={50}
+              style={{ width: '90px', height: '30px' }}
+            />
+            </Link>
           </NavigationMenuLink>
         </NavigationMenuItem>
         <NavigationMenuItem>
@@ -88,7 +100,7 @@ export function NavigationMenuDemo() {
                     href="/posts/all"
                   >
                     <div className="mb-2 text-lg font-medium sm:mt-4">
-                      Blog
+                      WJwiki
                     </div>
                     <p className="text-muted-foreground text-sm leading-tight">
                       ProjectWJ의 블로그
