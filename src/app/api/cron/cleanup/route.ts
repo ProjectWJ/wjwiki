@@ -6,7 +6,7 @@ export const runtime = 'nodejs'; // Node.js 런타임에서 안정적으로 실�
 
 /**
  * 미사용 미디어를 정리하는 Cron Job API Route입니다.
- * 1. PENDING (고아 파일) 정리: 24시간 이상 된 파일 삭제
+ * 1. PENDING (고아 파일) 정리: 12시간 이상 된 파일 삭제
  * 2. SCHEDULED_FOR_DELETION (삭제 예약) 정리: 예약 시간이 지난 파일 삭제
  */
 export async function GET(req: Request) {
@@ -22,17 +22,23 @@ export async function GET(req: Request) {
     const now = new Date();
     
     // -----------------------------------------------------------
-    // 1. 고아 파일 (PENDING) 정리: 24시간 이상 된 PENDING 파일
+    // 1. 고아 파일 (PENDING) 정리: 12시간 이상 된 PENDING 파일
     // -----------------------------------------------------------
-    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 24000); // 24시간 제한
+    const halfDayAgo = new Date(now.getTime() - 60 * 60 * 12000); // 12시간 제한
 
     const pendingFiles = await prisma.media.findMany({
         where: {
             status: 'PENDING',
             created_at: {
-                lt: oneHourAgo, // created_at이 24시간 전보다 작은(오래된) 파일
+                lt: halfDayAgo, // created_at이 12시간 전보다 작은(오래된) 파일
             },
         },
+        select: {
+            id: true,
+            blob_url: true,
+            medium_url: true,
+            thumbnail_url: true
+        }
     });
 
     // 현재 미디어에서 즉시 삭제되고 있어서 2번 로직은 현재 작동 X
@@ -46,6 +52,12 @@ export async function GET(req: Request) {
                 lte: now, // scheduled_delete_at이 현재 시각보다 같거나 작은(지난) 파일
             },
         },
+        select: {
+            id: true,
+            blob_url: true,
+            medium_url: true,
+            thumbnail_url: true,
+        }
     });
 
     const filesToDelete = [...pendingFiles, ...scheduledFiles];
@@ -61,9 +73,16 @@ export async function GET(req: Request) {
     // -----------------------------------------------------------
     const deletionPromises = filesToDelete.map(async (file) => {
         try {
-            // Blob 스토리지에서 파일 삭제
-            await deleteBlobFile(file.blob_url);
 
+        // Blob 스토리지에서 파일 삭제: 세 가지 URL을 Promise.all로 묶어 병렬 삭제
+        // url이 없는 경우를 대비해 filter로 유효한 url만 남기기
+        const urlsToDelete = [file.blob_url, file.medium_url, file.thumbnail_url].filter(url => url);
+        
+        // 각 URL에 대해 deleteBlobFile을 호출하는 Promise 배열 생성
+        const blobDeletionPromises = urlsToDelete.map(url => deleteBlobFile(url));
+
+        // 모든 Blob 삭제 작업이 완료될 때까지 대기
+        await Promise.all(blobDeletionPromises);
             // DB 레코드 삭제 (Blob 삭제 성공 시에만)
             await prisma.media.delete({
                 where: { id: file.id },

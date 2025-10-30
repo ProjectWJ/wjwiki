@@ -59,6 +59,7 @@ import { Spinner } from './ui/spinner';
 import DOMPurify from "isomorphic-dompurify";
 import { Node, mergeAttributes } from '@tiptap/core'
 import "./TiptapEditor.css";
+import { vercelBlobUrl } from '@/constants/vercelblobURL';
 
 interface TiptapEditorProps {
   value: string;
@@ -93,10 +94,17 @@ export default function TiptapEditor({ value, onChange, onImageUpload, initialDa
       TableCell,
       Underline,
       Link.configure({
-        openOnClick: false,
+        openOnClick: true,
         autolink: true,
+        HTMLAttributes: {
+          target: '_blank',
+          // 보안상의 이유로 rel="noopener noreferrer"를 추가하는 것이 좋습니다.
+          rel: 'noopener noreferrer',
+        }
       }),
-      Image,
+      Image.configure({
+        inline: true
+      }),
       Video,
       TextAlign.configure({
         types: ['heading', 'paragraph'],
@@ -240,34 +248,91 @@ export default function TiptapEditor({ value, onChange, onImageUpload, initialDa
     return null;
   }
 
-  const handleImageInsert = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !onImageUpload) return;
+const handleImageInsert = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // 1. 파일 객체 추출 및 초기 유효성 검사
+  const file = e.target.files?.[0];
+  
+  // 파일이 없거나 (선택 취소), 파일 업로드 핸들러가 정의되지 않았다면 함수 종료
+  if (!file || !onImageUpload) {
+    console.warn("파일이 선택되지 않았거나 onImageUpload 핸들러가 없습니다.");
+    return;
+  }
+
+  // 2. 파일 업로드 및 에디터 삽입 로직을 Promise로 묶어 정의
+  // 이 Promise는 toast.promise가 상태를 추적하는 대상이 됩니다.
+  const uploadAndInsertPromise: Promise<UploadedFileResponse> = new Promise((resolve, reject) => {
     
-    const uploadResponse = await onImageUpload(file);
+    // 비동기 파일 업로드 함수 호출
+    onImageUpload(file)
+      .then(uploadResponse => {
+        // 2-1. 업로드 응답 유효성 검사
+        if (uploadResponse) {
+          // 업로드 성공: 에디터에 콘텐츠를 삽입하는 로직 실행
 
-    if (uploadResponse) {
-      const mimeType = file.type;
-      if (mimeType.startsWith('video/')) {
-        // editor.chain().focus().setImage({ src: uploadResponse.url.mediumUrl, alt: `video:${uploadResponse.originalFilename}`, title: uploadResponse.originalFilename }).run();
-        editor.chain().focus().insertContent({
-          type: "video",
-          attrs: {
-            src: uploadResponse.url.mediumUrl,
+          const srcUrl = uploadResponse.url.mediumUrl;
+          const altText = uploadResponse.originalFilename;
+          const mimeType = file.type;
+
+          const proxyLinkUrl = `/api/media?url=${encodeURIComponent(srcUrl)}`;
+
+          // MIME 타입을 확인하여 비디오 또는 이미지로 구분하여 에디터에 삽입
+          if (mimeType.startsWith('video/')) {
+            // 비디오 파일 처리: 'video' 노드로 삽입
+            editor.chain().focus().insertContent({
+              type: "video",
+              attrs: {
+                src: srcUrl,
+              }
+            }).run();
+          } else {
+            // 이미지 파일 처리: 'image' 노드로 삽입
+            editor.chain().focus().setImage({ 
+              src: srcUrl, 
+              alt: altText, 
+              title: altText // title 속성을 파일명으로 설정
+            })
+            .selectParentNode()
+            .setLink({
+              href: srcUrl.startsWith(vercelBlobUrl) ? proxyLinkUrl : srcUrl,
+              target: '_blank',
+            })
+            .run();
           }
-        }).run();
-      }
-      else {
-        editor.chain().focus().setImage({ src: uploadResponse.url.mediumUrl, alt: uploadResponse.originalFilename, title: uploadResponse.originalFilename }).run();
-      }
+          
+          // Promise 성공 처리: resolve를 호출하여 toast.promise의 'success' 상태로 전환
+          resolve(uploadResponse);
+        } else {
+          // 업로드 핸들러가 null 또는 undefined를 반환한 경우 (논리적 실패)
+          console.error("업로드 실패: 서버 응답이 유효하지 않음");
+          // Promise 실패 처리: reject를 호출하여 toast.promise의 'error' 상태로 전환
+          reject(new Error("업로드에 실패했습니다. (응답 없음)"));
+        }
+      })
+      .catch(error => {
+        // onImageUpload 호출 중 네트워크 오류 등의 예외 발생 시
+        console.error("업로드 중 예외 발생:", error);
+        // Promise 실패 처리
+        reject(error);
+      });
+  });
 
-      toast.success("업로드 완료");
+  // 3. toast.promise를 사용하여 업로드 진행 상황을 사용자에게 표시
+  toast.promise(uploadAndInsertPromise, {
+    // 로딩 상태: Promise가 대기 중일 때 표시
+    loading: "업로드 중...", 
+    
+    // 성공 상태: Promise가 resolve되었을 때 표시
+    success: "업로드 완료", 
+    
+    // 실패 상태: Promise가 reject되었을 때 표시
+    error: (err) => {
+      // err 객체를 이용하여 콘솔에 디버깅 정보를 출력
+      console.error("업로드 최종 실패: ", err);
+      // 사용자에게 보여줄 친화적인 오류 메시지 반환
+      return "업로드에 실패했습니다."; 
     }
-    else {
-      console.error("파일 업로드 실패");
-      toast.error("파일 업로드에 실패했습니다.");
-    }
-  };
+  });
+};
 
   const handlePrint = () => {
     window.print();
