@@ -2,6 +2,7 @@
 
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import { Markdown } from '@tiptap/markdown'
 import Underline from '@tiptap/extension-underline';
 import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
@@ -11,6 +12,10 @@ import { TextStyle } from '@tiptap/extension-text-style';
 import Color from '@tiptap/extension-color';
 import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
+import { Table } from '@tiptap/extension-table';
+import TableCell from '@tiptap/extension-table-cell';
+import TableHeader from '@tiptap/extension-table-header';
+import TableRow from '@tiptap/extension-table-row';
 import { useState, useEffect } from 'react';
 import {
   DropdownMenu,
@@ -51,13 +56,20 @@ import { PostEditProps } from './UpdateForm';
 import { Button } from './ui/button';
 import { useFormStatus } from 'react-dom';
 import { Spinner } from './ui/spinner';
+import DOMPurify from "isomorphic-dompurify";
+import { Node, mergeAttributes } from '@tiptap/core'
+import "./TiptapEditor.css";
 
 interface TiptapEditorProps {
   value: string;
-  onChange: (value: string) => void;
+  onChange: (html: string, markdown: string) => void;
   onImageUpload?: (file: File) => Promise<UploadedFileResponse | null>;
   initialData?: PostEditProps // 업데이트값이 있을 때 쓸 것
 }
+
+// PostForm, UpdateForm에서 마크다운 미리보기
+// video를 업로드하면 마크다운으로 변환을 못해서(마크다운 문법 자체가 없으니까)
+// 미리보기에서 video 태그는 생략되는 현상 있음
 
 export default function TiptapEditor({ value, onChange, onImageUpload, initialData }: TiptapEditorProps) {
   const [zoom, setZoom] = useState('100%');
@@ -71,11 +83,21 @@ export default function TiptapEditor({ value, onChange, onImageUpload, initialDa
           levels: [1, 2, 3],
         },
       }),
+      Markdown,
+      Table.configure({
+        resizable: true, // 드래그로 크기 조정 가능
+      }),
+      TableRow,
+      TableHeader,
+      // Note: TableCell은 기본적으로 단락 노드를 포함합니다.
+      TableCell,
       Underline,
       Link.configure({
         openOnClick: false,
+        autolink: true,
       }),
       Image,
+      Video,
       TextAlign.configure({
         types: ['heading', 'paragraph'],
       }),
@@ -89,31 +111,130 @@ export default function TiptapEditor({ value, onChange, onImageUpload, initialDa
         nested: true,
       }),
     ],
+    parseOptions: {
+      preserveWhitespace: "full",
+    },
     content: value,
     editorProps: {
       attributes: {
         class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-xl focus:outline-none min-h-[500px] lg:min-h-[700px] max-w-none',
       },
+      // handlePaste(view, event, slice) {
+      handlePaste(view, event) {
+        const text = event.clipboardData?.getData('text/plain');
+
+        if (text && editor) {
+          const markdownStorage = editor.markdown;
+
+          // 🧹 1. 복붙한 텍스트 즉시 정화 (XSS 방지)
+          // - Markdown 내 HTML 블록 (<script>, <iframe> 등) 제거
+          // - 단순 텍스트라면 영향 거의 없음
+          const cleanText = DOMPurify.sanitize(text, { ALLOWED_TAGS: [] });
+
+          if (markdownStorage && markdownStorage.parse) {
+            try {
+              // 2. 정화된 Markdown을 ProseMirror JSON으로 파싱
+              const parsedContent = markdownStorage.parse(cleanText);
+
+              if (parsedContent) {
+                // 3. 삽입
+                editor.chain()
+                  .focus()
+                  .insertContent(parsedContent)
+                  .run();
+
+                return true; // 기본 붙여넣기 방지
+              }
+            } catch (e) {
+              console.warn("Markdown parse failed:", e);
+              toast.warning("Parse 실패. 공격 시도에 주의하세요. " + e)
+            }
+          }
+
+          // 파서 실패 시 그냥 정화된 텍스트 삽입
+          editor.commands.insertContent(cleanText);
+          return true;
+        }
+
+        return false;
+      }
+
+      // xss 방지 전 백업용
+/*             handlePaste(view, event) {
+        const text = event.clipboardData?.getData('text/plain');
+
+        if (text && editor) {
+          // 1. tiptap-markdown 확장 인스턴스에 접근
+          //    (tiptap-markdown은 일반적으로 storage에 markdown 객체를 등록합니다.)
+          const markdownStorage = editor.markdown;
+
+          // 2. 마크다운 파서가 존재하는지 확인하고 텍스트를 JSON(ProseMirror 노드)으로 파싱
+          if (markdownStorage && markdownStorage.parse) {
+            
+            // 파싱: 마크다운 텍스트를 Tiptap/ProseMirror 노드 구조(JSON)로 변환
+            // 파싱 결과는 { type: 'doc', content: [...] } 형태의 JSON 객체입니다.
+            const parsedContent = markdownStorage.parse(text); 
+
+            if (parsedContent) {
+              // 3. 변환된 콘텐츠(JSON)를 현재 커서 위치에 삽입
+              editor.chain()
+                .focus()
+                // insertContent는 JSON 객체를 잘 처리합니다.
+                .insertContent(parsedContent) 
+                .run();
+              
+              // 기본 붙여넣기 동작 방지
+              return true; 
+            }
+          }
+          
+          // 파싱에 실패하거나 파서 API가 없을 경우,
+          // insertContent를 한 번 더 시도하여 줄바꿈만 해결하도록 합니다.
+          editor.commands.insertContent(text);
+          return true;
+        }
+
+        return false;
+      } */
     },
     immediatelyRender: false,
     onUpdate: ({ editor }) => {
-      const markdown = editor.getHTML();
-      onChange(markdown);
+      const html = editor.getHTML();
+      const markdown = editor.getMarkdown();
+      onChange(html, markdown);
     },
   });
 
-  useEffect(() => {
+/*   useEffect(() => {
     if (editor && value !== editor.getHTML()) {
       editor.commands.setContent(value);
     }
-  }, [value, editor]);
+  }, [value, editor]); */
 
   // update에서 기존 데이터 불러오는 로직
   useEffect(() => {
     if(editor && initialData) {
-      editor.commands.setContent(initialData.post.content);
+      const htmlContent = initialData.post.content;
+      
+      // 1. 에디터에 HTML 콘텐츠 설정
+      editor.commands.setContent(htmlContent);
+      
+      // 2. Tiptap이 HTML을 노드로 파싱할 시간을 기다립니다 (필요할 경우)
+      //    setContent 직후에는 일반적으로 바로 getMarkdown을 호출해도 됩니다.
+      
+      // 3. 설정된 노드를 마크다운으로 변환
+      const markdown = editor.getMarkdown();
+
+      // 4. 부모 컴포넌트의 상태를 이 마크다운으로 초기화하기 위해 onChange 호출
+      if (markdown) {
+        // ⭐ HTML과 마크다운을 함께 부모로 전달
+        onChange(htmlContent, markdown); 
+      }
     }
-  }, [initialData, editor]);
+  }, [initialData, editor, onChange]);
+  // 참고: useEffect의 의존성 배열에 onChange를 포함하면 무한 루프 가능성이 있으나,
+  // TiptapEditor의 value 상태를 건드리지 않으므로 여기서는 괜찮습니다.
+  // useCallback을 사용해서 무한루프 방지
 
   if (!editor) {
     return null;
@@ -128,7 +249,13 @@ export default function TiptapEditor({ value, onChange, onImageUpload, initialDa
     if (uploadResponse) {
       const mimeType = file.type;
       if (mimeType.startsWith('video/')) {
-        editor.chain().focus().setImage({ src: uploadResponse.url.mediumUrl, alt: `video:${uploadResponse.originalFilename}`, title: uploadResponse.originalFilename }).run();
+        // editor.chain().focus().setImage({ src: uploadResponse.url.mediumUrl, alt: `video:${uploadResponse.originalFilename}`, title: uploadResponse.originalFilename }).run();
+        editor.chain().focus().insertContent({
+          type: "video",
+          attrs: {
+            src: uploadResponse.url.mediumUrl,
+          }
+        }).run();
       }
       else {
         editor.chain().focus().setImage({ src: uploadResponse.url.mediumUrl, alt: uploadResponse.originalFilename, title: uploadResponse.originalFilename }).run();
@@ -147,7 +274,7 @@ export default function TiptapEditor({ value, onChange, onImageUpload, initialDa
   };
 
   const addLink = () => {
-    const url = window.prompt('URL을 입력하세요:');
+    const url = window.prompt('텍스트를 드래그한 후 URL을 입력하면 동작합니다.\nURL을 입력하세요:\n');
     if (url) {
       editor.chain().focus().setLink({ href: url }).run();
     }
@@ -681,3 +808,41 @@ export async function uploadFile(file: File): Promise<UploadedFileResponse | nul
         return null;
     }
 }
+
+const Video = Node.create({
+  name: 'video', // 노드 이름 정의
+  group: 'block', // 블록 요소로 처리 (단락 등과 동등)
+  selectable: true, // 에디터에서 선택 가능하게 함
+  draggable: true, // 드래그 가능하게 함
+  atom: true, // 하나의 단위(unit)로 처리
+
+  // 1. 속성(Attributes) 정의
+  // 여기서는 비디오의 소스 URL과 너비, 높이, 컨트롤 여부를 정의합니다.
+  addAttributes() {
+    return {
+      src: { default: null },
+      controls: { default: true },
+      class: { default: "md:max-h-[720px] md:h-auto md:max-w-full" } // 상세보기에서 보여지는 거 설정
+    }
+  },
+
+  // 2. HTML 파싱(Parsing) 규칙 정의
+  // 외부 HTML(예: 불러온 기존 콘텐츠)에서 <video> 태그를 만났을 때 이 노드로 인식하게 합니다.
+  parseHTML() {
+    return [{
+      tag: 'video',
+    }]
+  },
+
+  // 3. HTML 렌더링 규칙 정의 (에디터 콘텐츠 출력 시)
+  // Tiptap 콘텐츠를 HTML로 내보낼 때 어떻게 렌더링할지 정의합니다.
+  renderHTML({ HTMLAttributes }) {
+    return ['video', mergeAttributes(HTMLAttributes, {
+      class: "md:max-h-[720px] md:h-auto md:max-w-full", // 에디터에서 보여지는 거 설정
+    })]
+  },
+
+  // 4. 입력 규칙 정의 (선택 사항: 마크다운처럼 특정 텍스트로 삽입)
+  // 예를 들어, /video <URL>과 같은 명령으로 삽입하는 기능을 추가할 수 있습니다.
+  // ...
+})

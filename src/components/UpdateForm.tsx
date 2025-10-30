@@ -1,9 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { handleUpdatePost } from '@/lib/action'; // 기존의 서버 액션 함수 임포트
 import dynamic from 'next/dynamic';
-import { htmlToMarkdown } from '@/lib/markdown-converter';
 import { Checkbox } from './ui/checkbox';
 import { Label } from './ui/label';
 import { uploadFile } from './TiptapEditor';
@@ -34,14 +33,14 @@ export interface PostEditProps {
 }
 
 export default function PostForm(postProps: PostEditProps) {
-    const [content, setContent] = useState(postProps.post.content);
-    const [contentHtml, setContentHtml] = useState('');
+    const [htmlContent, setHtmlContent] = useState(postProps.post.content); // html 텍스트
+    const [markContent, setMarkContent] = useState(postProps.post.content); // 마크다운 문법으로 변환해줘야 함
 
-    const handleContentChange = (html: string) => {
-        setContentHtml(html);
-        const markdown = htmlToMarkdown(html);
-        setContent(markdown);
-    };
+    // useCallback으로 감싸서 무한루프 방지
+    const handleContentChange = useCallback((html: string, markdown: string) => {
+        setHtmlContent(html);
+        setMarkContent(markdown);
+    }, []);
 
     return (
         // action은 서버 액션을 가리킴
@@ -82,13 +81,13 @@ export default function PostForm(postProps: PostEditProps) {
             {/* WYSIWYG 에디터 */}
             <div>
                 <TiptapEditor 
-                    value={contentHtml} 
+                    value={htmlContent} 
                     onChange={handleContentChange}
                     onImageUpload={uploadFile}
                     initialData={postProps}
                 />
-                {/* 마크다운 형식으로 서버에 전송 */}
-                <input type="hidden" name="content" value={content} />
+                {/* 서버에 전송 */}
+                <input type="hidden" name="content" value={htmlContent} />
             </div>
             
             {/* 마크다운 미리보기 (개발용, 필요시 제거) */}
@@ -98,7 +97,7 @@ export default function PostForm(postProps: PostEditProps) {
                         마크다운 문법 보기
                     </summary>
                     <pre className="mt-2 p-4 bg-gray-100 rounded text-xs overflow-auto max-h-[200px]">
-                        {content}
+                        {markContent}
                     </pre>
                 </details>
             )}

@@ -2,19 +2,21 @@
 // 이 컴포넌트는 Server Component로 동작합니다.
 import { getPostById } from '@/lib/post';
 import { notFound } from 'next/navigation';
-import ReactMarkdown from 'react-markdown'; 
-import rehypeSanitize from "rehype-sanitize";
+/* import ReactMarkdown from 'react-markdown'; 
+import rehypeSanitize from "rehype-sanitize"; */
 import type { Metadata } from 'next';
-import Image from 'next/image';
+// import Image from 'next/image';
 import { auth } from '@/auth';
-import Link from 'next/link';
+// import Link from 'next/link';
 import { PostDetailPage } from '@/components/PostDetailPage';
 import { NavigationMenuDemo } from '@/components/NavigationMenu';
 import LoginMenu from '@/components/loginMenu';
-import { vercelBlobUrl } from '@/constants/vercelblobURL';
+// import { vercelBlobUrl } from '@/constants/vercelblobURL';
+import DOMPurify from 'isomorphic-dompurify';
 
 // <img> 렌더러 컴포넌트 정의. 영상 나오게 하려고 추가
-const components = {
+// 현재 미사용 상태
+/* const components = {
     // img 태그 렌더링하는 부분 재정의
     // 미사용 width, height 경고 제거 위한 아래 주석 추가
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -24,6 +26,7 @@ const components = {
         if (alt?.startsWith('video:')) {
             // 영상이면 <video> 태그 반환
             const videoTitle = alt.substring('video:'.length);
+            // source도 있지만 src로 대부분 작동
             return (
                 <video
                     controls 
@@ -31,7 +34,6 @@ const components = {
                     title={videoTitle} 
                     style={{ maxWidth: '100%', height: 'auto', display: 'block', margin: '15px auto' }}
                 >
-                {/* <source> 추가할 수도 있지만 src로 대부분 작동 */}
                 </video>
             );
         }
@@ -63,7 +65,62 @@ const components = {
         // eslint-disable-next-line @next/next/no-img-element
         return <img src={src} alt={alt} {...props} />;
     }
+} */
+
+/* const replace = (node: DOMNode) => {
+    // DOMPurify로 정제된 후의 'Element' 타입 노드만 처리
+    if (node instanceof Element) {
+
+        // 1. <img> 태그 처리
+        if (node.name === 'img') {
+            const { alt, src } = node.attribs;
+            const props = node.attribs; // 나머지 속성 (className, style 등)
+            
+            // a. 비디오 처리 (alt="video:..." 기준)
+            if (alt?.startsWith('video:')) {
+                const videoTitle = alt.substring('video:'.length);
+                return (
+                    <video
+                        controls 
+                        src={src} 
+                        title={videoTitle} 
+                        style={{ maxWidth: '100%', height: 'auto', display: 'block', margin: '15px auto' }}
+                        {...props}
+                    >
+                    </video>
+                );
+            }
+
+            // b. Next.js Image 최적화 처리 (vercelBlobUrl 포함 시)
+            if (src && src.includes(vercelBlobUrl)) {
+                // width, height를 직접 지정하거나, layout='responsive' 대신 style={{ width: '100%', height: 'auto' }}를 사용
+                return (
+                    <Link
+                        href={`/api/media?url=${encodeURIComponent(src)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        <Image
+                            src={`${src}?w=800&q=75`}
+                            alt={alt || ''}
+                            width={800} 
+                            height={600} 
+                            style={{ width: '100%', height: 'auto', objectFit: "contain" }}
+                            priority={true}
+                            {...props}
+                        />
+                    </Link>
+                );
+            }
+            
+            // c. 기본 <img> 태그 반환 (외부 링크 이미지 등)
+            // eslint-disable-next-line @next/next/no-img-element
+            return <img src={src} alt={alt} {...props} />;
+        }
+    }
 }
+
+const options: HTMLReactParserOptions = { replace }; */
 
 // Type error: Type '{ params: { id: string; }; }' does not satisfy the constraint 'PageProps'.
 // 이 에러 해결하려면 이렇게 Promise로 감싸야 한다.
@@ -146,6 +203,9 @@ export default async function PostDetailPageRoute({ params } : { params: PagePar
         }
     };
 
+    // 1. DOMPurify를 사용하여 HTML 정제
+    const safeHTML = DOMPurify.sanitize(post.content);
+
     // 6. 렌더링
     return (
       <>
@@ -158,12 +218,7 @@ export default async function PostDetailPageRoute({ params } : { params: PagePar
           
           {/* Post Detail Component */}
           <PostDetailPage post={transformedPost} isAdmin={isAdmin}>
-            <ReactMarkdown
-              components={components}
-              rehypePlugins={[rehypeSanitize]}
-            >
-              {post.content}
-            </ReactMarkdown>
+            <div id='main-content' dangerouslySetInnerHTML={{ __html: safeHTML }} />
           </PostDetailPage>
         </main>
       </>

@@ -136,7 +136,7 @@ export function PostDetailPage({
       {/* Main Content Area */}
       <div className="flex flex-col gap-8 lg:gap-12 lg:grid lg:grid-cols-[1fr_minmax(0,_120ch)_1fr] lg:justify-items-center">
         {/* Article Content */}
-      <article className="flex-1 min-w-0 lg:col-start-2">
+      <article className="flex-1 w-full min-w-0 lg:col-start-2">
           {/* Content */}
           <div className="markdown-body">
             {children}

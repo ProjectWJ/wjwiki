@@ -1,9 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { handleCreatePost } from '@/lib/action';
 import dynamic from 'next/dynamic';
-import { htmlToMarkdown } from '@/lib/markdown-converter';
 import { Checkbox } from './ui/checkbox';
 import { Label } from './ui/label';
 import { uploadFile } from './TiptapEditor';
@@ -20,14 +19,15 @@ export type UploadedFileResponse = {
 };
 
 export default function PostForm() {
-    const [content, setContent] = useState('');
-    const [contentHtml, setContentHtml] = useState('');
+    const [htmlContent, setHtmlContent] = useState(''); // html 텍스트
+    const [markContent, setMarkContent] = useState('');
 
-    const handleContentChange = (html: string) => {
-        setContentHtml(html);
-        const markdown = htmlToMarkdown(html);
-        setContent(markdown);
-    };
+    // ⭐ 수정: TiptapEditor가 변환 후 보내주는 것
+    // useCallback으로 무한루프 방지
+    const handleContentChange = useCallback((html: string, markdown: string) => {
+        setHtmlContent(html);
+        setMarkContent(markdown);
+    }, []);
 
     return (
         <form action={handleCreatePost} className='space-y-4'>
@@ -63,22 +63,20 @@ export default function PostForm() {
             {/* WYSIWYG 에디터 */}
             <div>
                 <TiptapEditor 
-                    value={contentHtml} 
+                    value={htmlContent} 
                     onChange={handleContentChange}
                     onImageUpload={uploadFile}
                 />
-                {/* 마크다운 형식으로 서버에 전송 */}
-                <input type="hidden" name="content" value={content} />
+                {/* 서버에 전송 */}
+                <input type="hidden" name="content" value={htmlContent} />
             </div>
-
-            {/* 마크다운 미리보기 (개발용, 필요시 제거) */}
-            {process.env.NODE_ENV === 'development' && (
+                {process.env.NODE_ENV === 'development' && (
                 <details className="mt-4">
                     <summary className="cursor-pointer text-sm text-gray-600 hover:text-gray-900">
                         마크다운 문법 보기
                     </summary>
                     <pre className="mt-2 p-4 bg-gray-100 rounded text-xs overflow-auto max-h-[200px]">
-                        {content}
+                        {markContent}
                     </pre>
                 </details>
             )}

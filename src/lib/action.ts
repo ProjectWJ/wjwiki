@@ -8,6 +8,7 @@ import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache'; // 데이터 갱신을 위해 필요
 import { extractFirstMediaUrl, findThumbnailUrl, ResizedImages, generateResizedImagesSharp, generateUUID, getFileExtension, howManyMedia } from '@/lib/server-utils' // 썸네일 생성
 import { vercelBlobUrl } from '@/constants/vercelblobURL';
+import DOMPurify from "isomorphic-dompurify";
 
 const VIDEO_FORMATS = [
     ".mp4",
@@ -29,7 +30,8 @@ export async function handleCreatePost(formData: FormData) {
   // FormData 객체에서 필드 값을 추출합니다.
   const title = formData.get('title') as string;
   const category_select = formData.get('category_select') as string || "diary";
-  const content = formData.get('content') as string;
+  const rawContent = formData.get('content') as string;
+  const content = DOMPurify.sanitize(rawContent); // xss 정화
   const is_published = formData.get('is_published') === 'on' ? false : true; // 체크박스가 off일 때 true
   const summary = content.substring(0, 50); // 요약은 내용의 앞 50자로 자동 생성
   const firstMedia = extractFirstMediaUrl(content); // 첫 번째 미디어
@@ -112,7 +114,8 @@ export async function handleUpdatePost(formData: FormData): Promise<void> {
     const title = formData.get('title') as string;
     const category_select = formData.get('category_select') as string || "diary";
     const legacyContent = formData.get("legacy_content") as string;
-    const content = formData.get('content') as string;
+    const rawContent = formData.get('content') as string;
+    const content = DOMPurify.sanitize(rawContent); // xss 정화
     const legacyIs_published = formData.get('legacy_is_published') === 'on' ? false : true;
     const is_published = formData.get('is_published') === 'on' ? false : true; // 체크박스가 off일 때 true
 /*     const summary = content.substring(0, 50); // 요약은 내용의 앞 50자로 자동 생성
@@ -419,6 +422,21 @@ async function replicateMediaAndGetNewUrls(postId: number, content: string): Pro
   replicationResults.forEach(result => {
       if (!result) return;
 
+      // 1️⃣ 정규식에서 사용할 수 있도록 특수 문자 이스케이프
+      const escapedOldUrl = result.oldUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+      // 2️⃣ <img> 또는 <video> 태그의 src 속성을 찾는 정규식
+      // src="OLD_URL" 또는 src='OLD_URL' 모두 처리
+      const htmlSrcRegex = new RegExp(`<(img|video)([^>]*?)\\s+src=(["'])${escapedOldUrl}\\3([^>]*)>`, 'gi');
+
+      // 3️⃣ 새로운 태그로 교체
+      newContent = newContent.replace(htmlSrcRegex, (_match, tagName, beforeAttrs, quote, afterAttrs) => {
+          return `<${tagName}${beforeAttrs} src=${quote}${result.newUrl}${quote}${afterAttrs}>`;
+      });
+  });
+/*   replicationResults.forEach(result => {
+      if (!result) return;
+
       // 4-1️⃣ 정규식에서 사용할 수 있도록 특수 문자 이스케이프
       const escapedOldUrl = result.oldUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -436,7 +454,7 @@ async function replicateMediaAndGetNewUrls(postId: number, content: string): Pro
 
       // 4-5️⃣ 기존 content의 옛날 마크다운 태그를 새 태그로 교체
       newContent = newContent.replace(markdownTagRegex, newMarkdownTag);
-  });
+  }); */
 
   // 5️⃣ 새 content 반환
   return newContent;

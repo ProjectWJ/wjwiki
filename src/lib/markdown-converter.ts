@@ -3,6 +3,9 @@
  * This is a simple converter for common formatting
  */
 
+
+// 현재 사용되지 않습니다.
+
 export function htmlToMarkdown(html: string): string {
   let markdown = html;
 
