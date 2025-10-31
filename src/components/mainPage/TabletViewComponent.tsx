@@ -504,7 +504,7 @@ export default function TabletViewComponent({
 
   return (
     <div
-      className={`min-h-screen p-10 transition-colors duration-300 ${
+      className={`min-h-screen p-10 transition-colors duration-300 font-[var(--font-nunito)] ${
         isDarkMode ? "bg-[#2B2B2B]" : "bg-[#F5F5F7]"
       }`}
     >
