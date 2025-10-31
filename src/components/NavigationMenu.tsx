@@ -81,6 +81,7 @@ export function NavigationMenuDemo() {
             <Image 
               src={logoImage} 
               alt="로고" 
+              // className="logo"
               // width와 height가 자동으로 제공되므로 주석 처리하거나 필요에 따라 재정의할 수 있습니다.
               // width={100} 
               // height={50}
