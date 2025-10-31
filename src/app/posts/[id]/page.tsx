@@ -12,7 +12,6 @@ import { PostDetailPage } from '@/components/PostDetailPage';
 import { NavigationMenuDemo } from '@/components/NavigationMenu';
 import LoginMenu from '@/components/loginMenu';
 // import { vercelBlobUrl } from '@/constants/vercelblobURL';
-// import DOMPurify from 'isomorphic-dompurify';
 import { PostDetailProgress } from '@/components/PostDetailProgress';
 
 // <img> 렌더러 컴포넌트 정의. 영상 나오게 하려고 추가
@@ -206,7 +205,6 @@ export default async function PostDetailPageRoute({ params } : { params: PagePar
 
     // 1. DOMPurify를 사용하여 HTML 정제
     // 저장 시점에 이미 정화되었으므로 렌더링 성능을 위해 비활성화
-    // const safeHTML = DOMPurify.sanitize(post.content);
 
     // 6. 렌더링
     return (
