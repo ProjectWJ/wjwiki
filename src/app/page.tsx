@@ -1,4 +1,4 @@
-"use client";
+/* "use client";
 
 import { Analytics } from "@vercel/analytics/next"
 import { useEffect, useState } from "react";
@@ -109,4 +109,34 @@ export default function Home() {
       <Analytics />
     </>
   );
+}
+ */
+'use client';
+
+import { SiteLayout } from '@/components/mainPage/layouts/SiteLayout';
+import { CategoryShowcase } from '@/components/mainPage/sections/CategoryShowcase';
+import { Hero } from '@/components/mainPage/sections/Hero';
+import { LatestPosts } from '@/components/mainPage/sections/LatestPosts';
+/* import { DesktopViewComponent } from "@/components/mainPage/dummy/DVC"
+import { DesktopViewComponent2 } from "@/components/mainPage/dummy/DVC2";
+import { TabletViewComponent, DUMMY_DATA } from "@/components/mainPage/dummy/TVC";
+ */
+
+export default function Home() {
+  return (
+    <>
+        <div className='flex justify-center'>
+      <SiteLayout>
+        <Hero />
+        <LatestPosts />
+        <CategoryShowcase />
+      </SiteLayout>
+    </div>
+{/*         <DesktopViewComponent />
+        <DesktopViewComponent2 />
+        <TabletViewComponent cards={DUMMY_DATA} /> */}
+    </>
+
+
+  )
 }

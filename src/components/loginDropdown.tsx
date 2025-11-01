@@ -2,8 +2,7 @@
 
 import { useState } from "react"
 // import { MoreHorizontalIcon } from "lucide-react"
-import accountImg from '../../public/account.png'
-import Image from 'next/image'
+import { CircleUserRound } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -45,12 +44,8 @@ export function DropdownMenuDialog({ onSignOut }: DropdownProps) {
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <Button className="hover:cursor-pointer" variant="outline" aria-label="Open menu" size="icon-sm">
-            <Image 
-                alt="login-image" 
-                src={accountImg}
-                width={24}
-                height={24}
-            />
+            {/* account 로고 */}
+            <CircleUserRound />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-40" align="end">

@@ -13,6 +13,7 @@ import { NavigationMenuDemo } from '@/components/NavigationMenu';
 import LoginMenu from '@/components/loginMenu';
 // import { vercelBlobUrl } from '@/constants/vercelblobURL';
 import { PostDetailProgress } from '@/components/PostDetailProgress';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 // <img> 렌더러 컴포넌트 정의. 영상 나오게 하려고 추가
 // 현재 미사용 상태
@@ -210,8 +211,9 @@ export default async function PostDetailPageRoute({ params } : { params: PagePar
     return (
       <>
         <PostDetailProgress />
-        <div className="sticky z-50 top-2 shadow-xl rounded-2xl bg-white flex justify-between items-center container mx-auto px-4 py-6">
+        <div className="sticky z-50 top-2 shadow-xl rounded-2xl flex justify-between items-center container mx-auto px-4 py-6">
           <NavigationMenuDemo />
+          <ThemeToggle />
           <LoginMenu />
         </div>
         

@@ -12,6 +12,7 @@ import { CustomPagination } from '@/components/Pagination.client';
 import { PostDetailProgress } from '@/components/PostDetailProgress';
 import { PostListPage } from '@/components/PostListPage';
 import { SlideBanner } from '@/components/SlideBanner.client';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { getPostsByCategory, getPostCountByCategory } from '@/lib/post'; // 2번에서 작성한 DB 조회 함수
 
 interface HomePageProps {
@@ -50,8 +51,9 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   return (
     <>
         <PostDetailProgress />
-        <div className="sticky z-50 top-2 shadow-xl rounded-2xl bg-white flex justify-between items-center container mx-auto px-4 py-4">
+        <div className="bg-card text-card-foreground sticky z-50 top-2 shadow-xl rounded-2xl flex justify-between items-center container mx-auto px-4 py-4">
           <NavigationMenuDemo />
+          <ThemeToggle />
           <LoginMenu />
         </div>
       

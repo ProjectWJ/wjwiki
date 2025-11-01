@@ -1,7 +1,6 @@
 import Link from "next/link";
 import GithubIconLink from "./GithubIconLink";
-import logo from '../app/images/logo.png'
-import Image from 'next/image'
+import { FooterLogo } from "./LogoSize";
 
 export default function Footer() {
   const originalTemplate = {
@@ -11,19 +10,14 @@ export default function Footer() {
   };
 
   return (
-    <footer className="w-full bg-white px-4 py-14 md:py-14 flex flex-col items-center gap-12">
+    <footer className="w-full px-4 py-14 md:py-14 flex flex-col items-center gap-12">
       <hr className="w-full mt-10" />
       <div className="w-full max-w-[1216px] min-w-[343px] flex flex-wrap items-center content-center gap-8">
         {/* Logo and Social Links Column */}
         <div className="min-w-[343px] flex flex-col items-start gap-3">
           {/* Logo */}
           <div className="min-w-[343px] h-10 flex items-center justify-start gap-2">
-            <Image
-              width={64}
-              height={64}
-              src={logo}
-              alt="projectwj logo"
-            />
+            <FooterLogo />
 {/*             <span className="flex-1 text-[#212121] font-bold text-xl leading-[150%]">
               WJwiki
             </span> */}

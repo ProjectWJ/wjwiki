@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Nunito } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner"
-import { SpeedInsights } from '@vercel/speed-insights/next';
+import { VercelProviders } from "@/components/providers/VercelProviders";
+import { ThemeProvider } from "@/components/mainPage/ThemeProvider";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -12,6 +14,12 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const nunito = Nunito({
+  variable: "--font-nunito",
+  subsets: ["latin"],
+  weight: ["400", "700", "800", "900"],
 });
 
 export const metadata: Metadata = {
@@ -25,14 +33,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <meta charSet="utf-8" />
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
-        <Toaster />
-        <SpeedInsights /> 
+      <head />
+      <body className={`bg-background text-foreground ${geistSans.variable} ${geistMono.variable} ${nunito.variable} antialiased`}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+          <Toaster />
+          <VercelProviders />
+        </ThemeProvider>
       </body>
     </html>
   );

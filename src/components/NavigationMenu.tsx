@@ -15,8 +15,7 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu"
 import { CATEGORIES } from "@/constants/categories"
-import Image from 'next/image';
-import logoImage from "@/app/images/naviLogo.png"
+import { NaviLogo } from "./LogoSize"
 
 /* const components: { title: string; href: string; description: string }[] = [
   {
@@ -78,15 +77,7 @@ export function NavigationMenuDemo() {
           <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
             <Link href="/">
 {/*               <span className="font-bold">WJwiki</span> */}
-            <Image 
-              src={logoImage} 
-              alt="로고" 
-              // className="logo"
-              // width와 height가 자동으로 제공되므로 주석 처리하거나 필요에 따라 재정의할 수 있습니다.
-              // width={100} 
-              // height={50}
-              style={{ width: '90px', height: '30px' }}
-            />
+              <NaviLogo />
             </Link>
           </NavigationMenuLink>
         </NavigationMenuItem>
