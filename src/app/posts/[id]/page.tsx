@@ -2,18 +2,14 @@
 // 이 컴포넌트는 Server Component로 동작합니다.
 import { getPostById } from '@/lib/post';
 import { notFound } from 'next/navigation';
-/* import ReactMarkdown from 'react-markdown'; 
-import rehypeSanitize from "rehype-sanitize"; */
 import type { Metadata } from 'next';
-// import Image from 'next/image';
 import { auth } from '@/auth';
-// import Link from 'next/link';
 import { PostDetailPage } from '@/components/PostDetailPage';
-import { NavigationMenuDemo } from '@/components/NavigationMenu';
-import LoginMenu from '@/components/loginMenu';
-// import { vercelBlobUrl } from '@/constants/vercelblobURL';
+import Footer from '@/components/Footer';
+import { NaviEventListener } from '@/components/Header.event';
 import { PostDetailProgress } from '@/components/PostDetailProgress';
-import { ThemeToggle } from '@/components/ThemeToggle';
+import LoginMenu from '@/components/loginMenu';
+
 
 // <img> 렌더러 컴포넌트 정의. 영상 나오게 하려고 추가
 // 현재 미사용 상태
@@ -211,18 +207,15 @@ export default async function PostDetailPageRoute({ params } : { params: PagePar
     return (
       <>
         <PostDetailProgress />
-        <div className="sticky z-50 top-2 shadow-xl rounded-2xl flex justify-between items-center container mx-auto px-4 py-6">
-          <NavigationMenuDemo />
-          <ThemeToggle />
-          <LoginMenu />
-        </div>
-        
         <main className="container mx-auto px-4 py-8 md:py-12">
-          
-          {/* Post Detail Component */}
-          <PostDetailPage post={transformedPost} isAdmin={isAdmin}>
-            <div id='main-content' dangerouslySetInnerHTML={{ __html: post.content }} />
-          </PostDetailPage>
+        <NaviEventListener loginMenu={<LoginMenu />}>
+            {/* Post Detail Component */}
+            <PostDetailPage post={transformedPost} isAdmin={isAdmin}>
+                <div id='main-content' dangerouslySetInnerHTML={{ __html: post.content }} />
+            </PostDetailPage>
+            {/* Footer */}
+            <Footer />
+          </NaviEventListener>
         </main>
       </>
     );

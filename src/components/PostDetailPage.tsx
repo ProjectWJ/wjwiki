@@ -1,5 +1,4 @@
 import { Spinner } from '@/components/ui/spinner';
-import Footer from './Footer';
 import { CATEGORIES } from '../constants/categories'
 import SideBar from './SideBar';
 import { EmptyNotFound } from '../components/ui/empty'
@@ -159,9 +158,6 @@ export function PostDetailPage({
           <LinkIcon className="w-6 h-6 text-muted-foreground" />
         </button>
       </div> */}
-
-      {/* Footer */}
-      <Footer />
     </div>
   );
 }

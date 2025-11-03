@@ -10,6 +10,22 @@ async function handleSignOut() {
   await signOut(); // NextAuth의 signOut 함수 호출
 }
 
+/*
+  LoginMenu 관련
+  
+  You're importing a component that needs "next/headers".
+  That only works in a Server Component which is not supported in the pages/ directory.
+  
+  이 오류를 피하기 위해서 해당 서버 컴포넌트는 
+
+  페이지를 렌더링하는 서버 컴포넌트(지금은 여기) ->
+  Header.event.tsx의 NaviEventListener(client) ->
+  Header.tsx의 Header(client)의 props로 들어가는 로직이다.
+
+  향후 유지보수가 좀 빡세질 수 있긴 함
+*/
+
+
 export default async function LoginMenu() {
   const session = await auth(); // 🚨 서버 컴포넌트에서 세션 정보 가져오기
 

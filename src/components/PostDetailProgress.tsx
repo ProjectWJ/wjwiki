@@ -43,5 +43,6 @@ export function PostDetailProgress() {
     };
   }, []); // 의존성 배열이 빈 배열이므로, 컴포넌트 마운트 시 한 번만 등록 및 언마운트 시 한 번만 해제
 
-  return <Progress value={progress} className="sticky top-0 z-50 h-1 rounded-none" />
+  // 모바일 환경에서는 성능을 위해 보이지 않도록 설정
+  return <Progress value={progress} className="sticky hidden sm:block top-0 z-50 h-1 rounded-none" />
 }
