@@ -1,5 +1,20 @@
 import { BlogCard } from "@/components/mainPage/BlogCard";
+import { getPostsByCategory } from "@/lib/post";
 import Link from "next/link";
+
+interface Post {
+  id: number;
+  title: string;
+  category: string;
+  summary?: string | null;
+  created_at: string | Date;
+  thumbnail_url?: string | null;
+  is_published: boolean;
+  author?: {
+    name: string;
+    avatarUrl?: string | null;
+  };
+}
 
 const samplePosts = [
   {
@@ -40,7 +55,12 @@ const samplePosts = [
   },
 ];
 
-export function LatestPosts() {
+export async function LatestPosts() {
+  const newPosts = await getPostsByCategory("all", 1);
+
+  // 제목, 카테고리, 본문(html상태일지도), 작성일(or 수정일) 가져와서 위의 samplePosts에 맞추기
+  // 여기부터 진행~~
+
   return (
     <section className="py-16 sm:py-20 lg:py-24 bg-background dark:bg-background transition-colors duration-300">
       <div className="container px-4 sm:px-6 lg:px-8">
@@ -50,7 +70,7 @@ export function LatestPosts() {
               최신 게시글
             </h2>
             <p className="text-lg sm:text-xl text-blog-base dark:text-muted-foreground">
-              새로운 이야기와 인사이트를 만나보세요
+              작은 개선이 모여 완성되다
             </p>
           </div>
 
@@ -69,7 +89,7 @@ export function LatestPosts() {
 
           <div className="mt-12 sm:mt-16 text-center">
             <Link
-              href="/posts"
+              href="/posts/all"
               className="inline-flex items-center text-lg font-semibold text-primary dark:text-white hover:text-success dark:hover:text-success transition-colors duration-200"
             >
               모든 글 보기

@@ -66,7 +66,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         <Footer />
       </main>
       </NaviEventListener>
-  </>
+    </>
   );
 }
 
