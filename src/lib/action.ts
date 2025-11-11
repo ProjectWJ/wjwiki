@@ -9,6 +9,7 @@ import { revalidatePath } from 'next/cache'; // 데이터 갱신을 위해 필�
 import { extractFirstMediaUrl, findThumbnailUrl, ResizedImages, generateResizedImagesSharp, generateUUID, getFileExtension, howManyMedia } from '@/lib/server-utils' // 썸네일 생성
 import { vercelBlobUrl } from '@/constants/vercelblobURL';
 import DOMPurify from "isomorphic-dompurify";
+import * as cheerio from 'cheerio';
 
 const VIDEO_FORMATS = [
     ".mp4",
@@ -33,7 +34,7 @@ export async function handleCreatePost(formData: FormData) {
   const rawContent = formData.get('content') as string;
   const content = DOMPurify.sanitize(rawContent); // xss 정화
   const is_published = formData.get('is_published') === 'on' ? false : true; // 체크박스가 off일 때 true
-  const summary = content.substring(0, 50); // 요약은 내용의 앞 50자로 자동 생성
+  const summary = cheerio.load(content).text().trim().substring(0, 50); // 요약은 내용의 앞 50자로 자동 생성
   const firstMedia = extractFirstMediaUrl(content); // 첫 번째 미디어
   const thumbnail_url = await findThumbnailUrl(firstMedia);
 
@@ -149,7 +150,7 @@ export async function handleUpdatePost(formData: FormData): Promise<void> {
           content: replicateResult,
           updated_at: new Date(),
           is_published: false,
-          summary: replicateResult.substring(0, 50),
+          summary: cheerio.load(replicateResult).text().trim().substring(0, 50),
           thumbnail_url: newThumbnailUrl,
         }
       });
@@ -178,7 +179,7 @@ export async function handleUpdatePost(formData: FormData): Promise<void> {
                   content: content,
                   updated_at: new Date(),
                   is_published: true,
-                  summary: content.substring(0, 50),
+                  summary: cheerio.load(content).text().trim().substring(0, 50),
                   thumbnail_url: newThumbnailUrl,
               },
           });

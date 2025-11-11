@@ -113,8 +113,7 @@ export function PostCard({
         )}
         {!imageUrl?.startsWith(vercelBlobUrl) && (
           <div className="relative w-full h-full md:w-48 h-48 md:h-56 flex-shrink-0 rounded-xl overflow-hidden">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src={imageUrl!}
               alt={title}
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"

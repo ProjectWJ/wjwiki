@@ -3,11 +3,10 @@
 import Link from "next/link";
 import Image, { StaticImageData } from "next/image";
 import { useState } from "react";
-import photoDevelop from "@/app/images/photo-develop.jpg";
-import photoDesign from "@/app/images/photo-design.jpg";
-import photoDiary from "@/app/images/photo-diary.jpg";
+import { CATEGORIES } from "@/constants/categories"
 
-interface Category {
+
+/* interface Category {
   id: string;
   name: string;
   description: string;
@@ -41,7 +40,7 @@ const categories: Category[] = [
     postCount: 32,
     slug: "life",
   },
-];
+]; */
 
 export function CategoryShowcase() {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
@@ -52,7 +51,7 @@ export function CategoryShowcase() {
         <div className="max-w-7xl mx-auto">
           <div className="mb-12 sm:mb-16 text-center">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground dark:text-white mb-4 tracking-tight">
-              카테고리 둘러보기
+              모든 카테고리
             </h2>
             <p className="text-lg sm:text-xl text-blog-base dark:text-muted-foreground">
               관심있는 주제를 선택해보세요
@@ -60,12 +59,12 @@ export function CategoryShowcase() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-            {categories.map((category) => (
+            {CATEGORIES.map((category) => (
               <Link
-                key={category.id}
-                href={`/categories/${category.slug}`}
+                key={category.value}
+                href={`/posts/all?category=${category.value}`}
                 className="group"
-                onMouseEnter={() => setHoveredId(category.id)}
+                onMouseEnter={() => setHoveredId(category.value)}
                 onMouseLeave={() => setHoveredId(null)}
               >
                 <article
@@ -83,12 +82,12 @@ export function CategoryShowcase() {
                   <div className="absolute inset-0">
                   <Image
                     src={category.image}
-                    alt={category.name}
+                    alt={category.label}
                     fill // 또는 layout="fill" (Next.js 13 이전)을 사용하여 부모 요소에 채웁니다.
                     className={`
                       w-full h-full object-cover
                       transition-all duration-700 ease-out
-                      ${hoveredId === category.id ? "scale-110" : "scale-100"}
+                      ${hoveredId === category.value ? "scale-110" : "scale-100"}
                     `}
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // 반응형 크기를 지정하여 성능을 개선합니다. (선택 사항이지만 권장됨)
                     priority={false} // (선택 사항) 로딩 우선 순위가 높으면 'true'로 설정합니다.
@@ -98,7 +97,7 @@ export function CategoryShowcase() {
                         absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20
                         dark:from-black/90 dark:via-black/60 dark:to-black/30
                         transition-opacity duration-500
-                        ${hoveredId === category.id ? "opacity-90" : "opacity-70"}
+                        ${hoveredId === category.value ? "opacity-90" : "opacity-70"}
                       `}
                     ></div>
                   </div>
@@ -107,34 +106,34 @@ export function CategoryShowcase() {
                     <div
                       className={`
                         transform transition-all duration-500
-                        ${hoveredId === category.id ? "translate-y-0 opacity-100" : "translate-y-2 opacity-90"}
+                        ${hoveredId === category.value ? "translate-y-0 opacity-100" : "translate-y-2 opacity-90"}
                       `}
                     >
-                      <div className="mb-3">
+{/*                       <div className="mb-3">
                         <span className="inline-block px-4 py-1.5 rounded-full bg-white/20 backdrop-blur-sm text-white text-sm font-bold">
                           {category.postCount} 게시글
                         </span>
-                      </div>
+                      </div> */}
 
                       <h3 className="text-3xl sm:text-4xl font-bold text-white mb-3 tracking-tight">
-                        {category.name}
+                        {category.label}
                       </h3>
 
                       <p
                         className={`
                           text-white/90 text-base sm:text-lg leading-relaxed
                           transition-all duration-500
-                          ${hoveredId === category.id ? "opacity-100 max-h-20" : "opacity-80 max-h-16"}
+                          ${hoveredId === category.value ? "opacity-100 max-h-20" : "opacity-80 max-h-16"}
                         `}
                       >
-                        {category.description}
+                        {category.detail}
                       </p>
 
                       <div
                         className={`
                           mt-4 flex items-center text-white font-semibold
                           transition-all duration-500
-                          ${hoveredId === category.id ? "translate-x-2 opacity-100" : "translate-x-0 opacity-0"}
+                          ${hoveredId === category.value ? "translate-x-2 opacity-100" : "translate-x-0 opacity-0"}
                         `}
                       >
                         <span>카테고리 보기</span>

@@ -1,6 +1,7 @@
 import { Spinner } from '@/components/ui/spinner';
 import { PostCard } from './PostCard';
 import { EmptyNotFound } from './ui/empty';
+import { CATEGORIES } from "@/constants/categories"
 
 interface Post {
   id: number;
@@ -22,6 +23,7 @@ interface PostListPageProps {
   featuredPost?: Post;
   currentPage?: number;
   totalPages?: number;
+  category?: string | string[];
 }
 
 export function PostListPage({
@@ -29,6 +31,7 @@ export function PostListPage({
   isLoading = false,
   featuredPost,
   currentPage,
+  category,
   // totalPages,
 }: PostListPageProps) {
   if (isLoading) {
@@ -49,7 +52,9 @@ export function PostListPage({
 
   const featured = featuredPost || posts[0];
   const popularPosts = currentPage === 1 ? posts.slice(0, 3) : [];
-  const trendingPosts = currentPage === 1 ? posts.slice(3, 12) : posts.slice(0, 12);
+  const trendingPosts = currentPage === 1 ? posts.slice(0, 9) : posts.slice(0, 12);
+
+  const currentCategory = CATEGORIES.find((item) => item.value === category);
 
   return (
     <div className="w-full">
@@ -71,10 +76,10 @@ export function PostListPage({
         ? <section className="mb-14 md:mb-20">
             <div className="text-center mb-8 md:mb-12 space-y-3">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-                New on the Blog
+                {currentCategory ? currentCategory.label : "모든 게시글"}
               </h2>
               <p className="text-base md:text-lg text-muted-foreground">
-                Discover some of the most engaging stories from our recent posts.
+                {currentCategory ? currentCategory.introduce : "모든 카테고리의 글을 찾아볼 수 있습니다"}
               </p>
             </div>
 
@@ -108,20 +113,29 @@ export function PostListPage({
               </div>
             </div>
           </section>
-        : ""
+        : <section className="mb-14 md:mb-20">
+            <div className="text-center mb-8 md:mb-12 space-y-3">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground">
+                {currentCategory ? currentCategory.label : "모든 게시글"}
+              </h2>
+              <p className="text-base md:text-lg text-muted-foreground">
+                {currentCategory ? currentCategory.introduce : "모든 카테고리의 글을 찾아볼 수 있습니다"}
+              </p>
+            </div>
+          </section>
       }
 
       {/* Trending Post Section */}
       {trendingPosts.length > 0 && (
         <section className="mb-14 md:mb-20">
-          <div className="text-center mb-8 md:mb-12 space-y-3">
+{/*           <div className="text-center mb-8 md:mb-12 space-y-3">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-              All Posts
+              {currentCategory ? currentCategory.label : "모든 게시글"}
             </h2>
             <p className="text-base md:text-lg text-muted-foreground">
-              Find all my stories gathered here in one place.
+              {currentCategory ? currentCategory.introduce : "모든 카테고리의 글을 찾아볼 수 있습니다"}
             </p>
-          </div>
+          </div> */}
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {trendingPosts.map((post) => (

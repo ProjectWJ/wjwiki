@@ -11,6 +11,7 @@ import LoginMenu from '@/components/loginMenu';
 import { CustomPagination } from '@/components/Pagination.client';
 import { PostDetailProgress } from '@/components/PostDetailProgress';
 import { PostListPage } from '@/components/PostListPage';
+import { SlideBanner } from '@/components/SlideBanner.client';
 import { getPostsByCategory, getPostCountByCategory } from '@/lib/post'; // 2번에서 작성한 DB 조회 함수
 
 interface HomePageProps {
@@ -52,10 +53,12 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       <NaviEventListener loginMenu={<LoginMenu />}>
       
       <main className="container mx-auto px-4 py-8 md:py-12">
+        <SlideBanner />
         <PostListPage
           posts={transformedPosts}
           currentPage={currentPage}
           totalPages={totalPages}
+          category={category}
         />
         <CustomPagination 
           currentPage={currentPage}

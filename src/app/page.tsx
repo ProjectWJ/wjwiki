@@ -125,6 +125,8 @@ import { DesktopViewComponent2 } from "@/components/mainPage/dummy/DVC2";
 import { TabletViewComponent, DUMMY_DATA } from "@/components/mainPage/dummy/TVC";
  */
 
+export const dynamic = 'force-dynamic';
+
 export default function Home() {
   return (
     <>

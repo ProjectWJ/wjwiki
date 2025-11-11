@@ -2,20 +2,7 @@ import { BlogCard } from "@/components/mainPage/BlogCard";
 import { getPostsByCategory } from "@/lib/post";
 import Link from "next/link";
 
-interface Post {
-  id: number;
-  title: string;
-  category: string;
-  summary?: string | null;
-  created_at: string | Date;
-  thumbnail_url?: string | null;
-  is_published: boolean;
-  author?: {
-    name: string;
-    avatarUrl?: string | null;
-  };
-}
-
+/* 
 const samplePosts = [
   {
     id: "1",
@@ -53,13 +40,10 @@ const samplePosts = [
     categories: ["WORK", "DESIGN"],
     slug: "my-template",
   },
-];
+]; */
 
 export async function LatestPosts() {
-  const newPosts = await getPostsByCategory("all", 1);
-
-  // 제목, 카테고리, 본문(html상태일지도), 작성일(or 수정일) 가져와서 위의 samplePosts에 맞추기
-  // 여기부터 진행~~
+    const newPosts = await getPostsByCategory("all", 1);
 
   return (
     <section className="py-16 sm:py-20 lg:py-24 bg-background dark:bg-background transition-colors duration-300">
@@ -70,22 +54,27 @@ export async function LatestPosts() {
               최신 게시글
             </h2>
             <p className="text-lg sm:text-xl text-blog-base dark:text-muted-foreground">
-              작은 개선이 모여 완성되다
+              가장 흥미로운 이야기를 찾아보세요
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
-            {samplePosts.map((post) => (
-              <BlogCard
-                key={post.id}
-                title={post.title}
-                excerpt={post.excerpt}
-                date={post.date}
-                categories={post.categories}
-                slug={post.slug}
-              />
-            ))}
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
+            {newPosts.map((post, index) => {
+              if(index > 5){
+                return;
+              }
+              return (
+                  <BlogCard
+                  key={post.id}
+                  title={post.title}
+                  excerpt={post.summary || "..."}
+                  date={post.updated_at.toLocaleDateString()}
+                  category={post.category}
+                  slug={post.id.toString()}
+                  />
+              )
+            })}
+        </div>
 
           <div className="mt-12 sm:mt-16 text-center">
             <Link

@@ -3,35 +3,42 @@
 import { MoreHorizontal } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { CATEGORIES } from "@/constants/categories";
 
 interface BlogCardProps {
   title: string;
   excerpt: string;
   date: string;
-  categories?: string[];
+  category: string;
+//   categories?: string[];
   image?: string;
   slug: string;
   variant?: "default" | "featured";
 }
 
 const categoryColors: Record<string, string> = {
-  WORK: "bg-success",
-  PERSONAL: "bg-tertiary",
-  GENERAL: "bg-destructive",
-  TECH: "bg-success",
-  DESIGN: "bg-tertiary",
-  LIFE: "bg-destructive",
+  "개발 일지": "bg-slate-400",
+  "기술 노트": "bg-amber-500",
+  "프로젝트 로그": "bg-blue-500",
+  "메모, 팁": "bg-teal-400",
+  "일기": "bg-violet-400",
 };
 
 export function BlogCard({
   title,
   excerpt,
   date,
-  categories = [],
+  category,
   image,
   slug,
   variant = "default",
 }: BlogCardProps) {
+  const currentCategory = CATEGORIES.find((item) => {
+    if(item.value === category){
+      return item;
+    }
+  });
+
   return (
     <Link href={`/posts/${slug}`} className="group">
       <article
@@ -47,7 +54,7 @@ export function BlogCard({
         `}
       >
         <div className="flex flex-col h-full p-6 sm:p-8 gap-4">
-          {categories.length > 0 && (
+{/*           {categories.length > 0 && (
             <div className="flex gap-2 flex-wrap items-start overflow-hidden relative">
               {categories.slice(0, 3).map((category, idx) => (
                 <span
@@ -65,7 +72,18 @@ export function BlogCard({
                 <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-card dark:from-blog-lighter to-transparent"></div>
               )}
             </div>
-          )}
+          )} */}
+          <div className="flex gap-2 flex-wrap items-start overflow-hidden relative">
+            <span
+              className={`
+                inline-flex items-center px-4 py-1.5 rounded-full
+                text-white text-sm font-bold tracking-tight
+                ${currentCategory ? categoryColors[currentCategory.label] : "bg-gray-500"}
+              `}
+            >
+              {currentCategory ? currentCategory.label : category}
+            </span>
+          </div>
 
           {image && variant === "featured" && (
             <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-blog-light dark:bg-muted">

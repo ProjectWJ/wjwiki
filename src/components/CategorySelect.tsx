@@ -12,8 +12,8 @@ import { CATEGORIES } from "@/constants/categories"
 // PostForm에서 쓰는거
 export function PostSelectGroups() {
     return (
-        <Select>
-            <SelectTrigger id="category_select" name="category_select">
+        <Select name="category_select">
+            <SelectTrigger>
                 <SelectValue placeholder="Select Category" />
             </SelectTrigger>
             <SelectContent>
@@ -33,8 +33,8 @@ export function PostSelectGroups() {
 // UpdateForm에서 쓰는거
 export function UpdateSelectGroups(category: { value: string }) {
     return (
-        <Select defaultValue={category.value}>
-            <SelectTrigger id="category_select" name="category_select">
+        <Select name="category_select" defaultValue={category.value}>
+            <SelectTrigger>
                 <SelectValue placeholder="Select Category" />
             </SelectTrigger>
             <SelectContent>

@@ -207,7 +207,7 @@ export default async function PostDetailPageRoute({ params } : { params: PagePar
     return (
       <>
         <PostDetailProgress />
-        <main className="container mx-auto px-4 py-8 md:py-12">
+        <main className="container mx-auto px-4 py-8 mt-12 md:py-12">
         <NaviEventListener loginMenu={<LoginMenu />}>
             {/* Post Detail Component */}
             <PostDetailPage post={transformedPost} isAdmin={isAdmin}>

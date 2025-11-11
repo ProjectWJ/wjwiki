@@ -134,7 +134,7 @@ export function SlideBanner({ className }: { className?: string }) {
     <div
       // 최상위 래퍼: 마우스 이벤트를 감지하고 overflow-hidden으로 슬라이드 영역을 클립
       className={cn(
-        "relative w-full mx-auto overflow-hidden rounded-3xl",
+        "relative w-full mx-auto overflow-hidden rounded-3xl mt-12",
         className
       )}
       onMouseEnter={handleMouseEnter}

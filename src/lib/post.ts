@@ -61,6 +61,7 @@ export async function getPostsByCategory(category: string, page: number) {
         summary: true,
         thumbnail_url: true,
         created_at: true,
+        updated_at: true,
         is_published: true,
       },
       orderBy: { created_at: "desc" }, // 최신순 정렬
