@@ -4,7 +4,9 @@ import * as React from "react"
 import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog"
 
 import { cn } from "@/lib/utils"
-import { buttonVariants } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
+import { Search, X } from "lucide-react"
+import { Input } from "./input"
 
 function AlertDialog({
   ...props
@@ -142,6 +144,73 @@ function AlertDialogCancel({
   )
 }
 
+function SearchDialog() {
+  return (
+    <div className="mt-10 justify-self-end">
+      <AlertDialog>
+        <AlertDialogTrigger asChild className="w-10 h-10">
+          <Button variant="outline">
+            <Search />
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-start">제목, 내용으로 검색</AlertDialogTitle>
+            <AlertDialogDescription className="pt-2 pb-2">
+              <Input
+                id="search-input"
+                placeholder="검색..."
+                className="col-span-2 h-10 w-full"
+                onKeyDown={handleInputKeyDown}
+                autoFocus
+              />
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <SearchDialogFooter>
+            <AlertDialogCancel className="w-16 bg-red-500 hover:bg-red-400"><X color="white"/></AlertDialogCancel>
+            <AlertDialogAction 
+              className="w-16" 
+              onClick={searchAction}
+            >
+              <Search />
+            </AlertDialogAction>
+          </SearchDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  )
+}
+
+const handleInputKeyDown = (event: React.KeyboardEvent) => {
+  if (event.key === 'Enter') {
+    event.preventDefault(); 
+    searchAction();
+  }
+};
+
+function searchAction() {
+  const searchInput = document.getElementById("search-input") as HTMLInputElement;
+  window.location.href = `/posts/search?q=${searchInput.value}`;
+}
+
+function SearchDialogFooter({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="alert-dialog-footer"
+      className={cn(
+        "flex gap-2 sm:flex-row justify-end",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+
+
 export {
   AlertDialog,
   AlertDialogPortal,
@@ -154,4 +223,6 @@ export {
   AlertDialogDescription,
   AlertDialogAction,
   AlertDialogCancel,
+  SearchDialog,
+  SearchDialogFooter,
 }

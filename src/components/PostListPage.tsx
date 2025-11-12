@@ -22,6 +22,7 @@ interface PostListPageProps {
   isLoading?: boolean;
   featuredPost?: Post;
   currentPage?: number;
+  totalPosts?: number;
   totalPages?: number;
   category?: string | string[];
 }
@@ -32,6 +33,7 @@ export function PostListPage({
   featuredPost,
   currentPage,
   category,
+  totalPosts,
   // totalPages,
 }: PostListPageProps) {
   if (isLoading) {
@@ -52,7 +54,7 @@ export function PostListPage({
 
   const featured = featuredPost || posts[0];
   const popularPosts = currentPage === 1 ? posts.slice(0, 3) : [];
-  const trendingPosts = currentPage === 1 ? posts.slice(0, 9) : posts.slice(0, 12);
+  const trendingPosts = currentPage === 1 ? posts.slice(3, 12) : posts.slice(0, 12);
 
   const currentCategory = CATEGORIES.find((item) => item.value === category);
 
@@ -81,8 +83,8 @@ export function PostListPage({
               <p className="text-base md:text-lg text-muted-foreground">
                 {currentCategory ? currentCategory.introduce : "모든 카테고리의 글을 찾아볼 수 있습니다"}
               </p>
+              <p className="text-start text-lg mb-4">{totalPosts} Posts</p>
             </div>
-
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-14">
               {/* Large Card */}
               {popularPosts[0] && (
@@ -121,6 +123,7 @@ export function PostListPage({
               <p className="text-base md:text-lg text-muted-foreground">
                 {currentCategory ? currentCategory.introduce : "모든 카테고리의 글을 찾아볼 수 있습니다"}
               </p>
+              <p className="text-start text-lg mb-4">{totalPosts} Posts</p>
             </div>
           </section>
       }

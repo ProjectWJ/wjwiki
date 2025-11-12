@@ -12,7 +12,8 @@ import { CustomPagination } from '@/components/Pagination.client';
 import { PostDetailProgress } from '@/components/PostDetailProgress';
 import { PostListPage } from '@/components/PostListPage';
 import { SlideBanner } from '@/components/SlideBanner.client';
-import { getPostsByCategory, getPostCountByCategory } from '@/lib/post'; // 2번에서 작성한 DB 조회 함수
+import { SearchDialog } from '@/components/ui/alert-dialog';
+import { getPostsByCategory } from '@/lib/post'; // 2번에서 작성한 DB 조회 함수
 
 interface HomePageProps {
   searchParams: Promise<{
@@ -30,10 +31,15 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const currentPage = page ? page : 1;
 
   // Fetch posts from database
-  const posts = await getPostsByCategory(singleCategory || "all", currentPage)
+  const results = await getPostsByCategory(singleCategory || "all", currentPage)
+
+  if (!results) {
+    console.error("category search fail");
+    return;
+  }
 
   // Transform posts to include author information if needed
-  const transformedPosts = posts?.map(post => ({
+  const transformedPosts = results.posts.map(post => ({
     ...post,
     author: {
       name: 'ProjectWJ', // Replace with actual author data from your DB
@@ -41,11 +47,8 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     }
   }));
 
-  // 총 게시물 수
-  const totalCount = await getPostCountByCategory(singleCategory ? singleCategory : "all");
-  
   // 총 페이지 수 계산
-  const totalPages = Math.ceil(totalCount / 12);
+  const totalPages = Math.ceil(results.count / 12);
 
   return (
     <>
@@ -54,9 +57,11 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       
       <main className="container mx-auto px-4 py-8 md:py-12">
         <SlideBanner />
+        <SearchDialog />
         <PostListPage
           posts={transformedPosts}
           currentPage={currentPage}
+          totalPosts={results.count}
           totalPages={totalPages}
           category={category}
         />

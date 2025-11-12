@@ -3,6 +3,20 @@ import { auth } from '@/auth';
 import { prisma } from '@/lib/db';
 import { CATEGORIES } from '@/constants/categories';
 
+interface GetPostsResultValue {
+  posts: {
+    id: number;
+    title: string;
+    category: string;
+    created_at: Date;
+    updated_at: Date;
+    is_published: boolean;
+    summary: string | null;
+    thumbnail_url: string;
+  }[],
+  count: number;
+}
+
 // ✅ 페이지당 게시물 개수를 상수로 정의
 const POSTS_PER_PAGE = 12;
 
@@ -13,7 +27,7 @@ const POSTS_PER_PAGE = 12;
  * @param page - 현재 페이지 번호 (1부터 시작)
  * @returns Prisma가 반환하는 게시물 객체 배열
  */
-export async function getPostsByCategory(category: string, page: number) {
+export async function getPostsByCategory(category: string, page: number): Promise<GetPostsResultValue | null> {
   // 🔹 page 값이 1보다 작을 경우 안전하게 1로 고정
   const actualPage = Math.max(1, page);
 
@@ -52,29 +66,111 @@ export async function getPostsByCategory(category: string, page: number) {
     }
 
     // ✅ Prisma로 게시물 목록 조회
-    const posts = await prisma.post.findMany({
-      where, // 위에서 동적으로 만든 조건 객체 사용
-      select: {
-        id: true,
-        title: true,
-        category: true,
-        summary: true,
-        thumbnail_url: true,
-        created_at: true,
-        updated_at: true,
-        is_published: true,
-      },
-      orderBy: { created_at: "desc" }, // 최신순 정렬
-      take: POSTS_PER_PAGE, // 페이지당 게시물 수 제한
-      skip: skipAmount, // 페이지 오프셋
-    });
+    const [posts, count] = await Promise.all([
+      prisma.post.findMany({
+        where, // 동적으로 만든 조건 객체 사용
+        select: {
+          id: true,
+          title: true,
+          category: true,
+          summary: true,
+          thumbnail_url: true,
+          created_at: true,
+          updated_at: true,
+          is_published: true,
+        },
+        orderBy: { created_at: "desc" }, // 최신순 정렬
+        take: POSTS_PER_PAGE, // 페이지당 게시물 수 제한
+        skip: skipAmount, // 페이지 오프셋
+      }),
+      prisma.post.count({ where }), // 게시물 전체 개수 카운트
+    ]);
 
-    return posts;
+    return { posts, count };
   } catch (error) {
     console.error(`Failed to fetch posts by category: ${category}`, error);
-    return [];
+    return null;
   }
 }
+
+
+/**
+ * ✅ 입력받은 검색값에 따라 게시물을 조회하는 함수
+ * 
+ * @param query - 입력받은 검색값 (제목, 내용)
+ * @param page - 현재 페이지 번호 (1부터 시작)
+ * @returns Prisma가 반환하는 게시물 객체 배열
+ */
+export async function getPostsBySearch(query: string, page: number): Promise<GetPostsResultValue | null> {
+  // 🔹 page 값이 1보다 작을 경우 안전하게 1로 고정
+  const actualPage = Math.max(1, page);
+
+  // 🔹 Prisma의 skip 옵션에서 사용할 오프셋 계산
+  //    예: page=1 → skip=0, page=2 → skip=12, page=3 → skip=24 ...
+  const skipAmount = (actualPage - 1) * POSTS_PER_PAGE;
+
+  // 🔹 카테고리는 all로 고정
+  const category = "all";
+
+  try {
+    // ✅ 현재 로그인 세션 정보 가져오기
+    const session = await auth();
+
+    /**
+     * ✅ Prisma에서 사용할 where 조건 객체
+     *  - 로그인 여부와 category에 따라 필터 조건이 다르게 설정됨
+     */
+    const where: { 
+      category?: string; 
+      is_published?: boolean;
+      OR?: ({ title: { contains: string } } | { content: { contains: string } })[];
+    } = {};
+
+    if (query) {
+      where.OR = [
+        { title: { contains: query } },
+        { content: { contains: query } },
+      ];
+    }
+
+    // 🔸 1. 로그인하지 않은 사용자에게는 공개 게시물만 보여줌
+    if (!session) {
+      where.is_published = true;
+    }
+
+    // 🔸 2. category가 'all'이 아닐 때만 카테고리 필터 추가
+    if (category !== "all") {
+      where.category = category;
+    }
+
+    // ✅ Prisma로 게시물 목록 조회, 수 카운트
+    const [posts, count] = await Promise.all([
+      prisma.post.findMany({
+        where, // 동적으로 만든 조건 객체 사용
+        select: {
+          id: true,
+          title: true,
+          category: true,
+          summary: true,
+          thumbnail_url: true,
+          created_at: true,
+          updated_at: true,
+          is_published: true,
+        },
+        orderBy: { created_at: "desc" }, // 최신순 정렬
+        take: POSTS_PER_PAGE, // 페이지당 게시물 수 제한
+        skip: skipAmount, // 페이지 오프셋
+      }),
+      prisma.post.count({ where }), // 게시물 전체 개수 카운트
+    ]);
+    
+    return { posts, count };
+  } catch (error) {
+    console.error(`Failed to fetch posts by search: ${category}`, error);
+    return null;
+  }
+}
+
 
 /**
  * ✅ 카테고리별 전체 게시물 개수를 반환하는 함수
@@ -82,7 +178,7 @@ export async function getPostsByCategory(category: string, page: number) {
  * @param category - 게시물 카테고리 ("all" 포함)
  * @returns 해당 카테고리에 속한 게시물 개수 (number)
  */
-export async function getPostCountByCategory(category: string) {
+/* export async function getPostCountByCategory(category: string) {
   const session = await auth();
 
   // 🔹 게시물 개수 조회에도 같은 where 로직 사용
@@ -106,7 +202,7 @@ export async function getPostCountByCategory(category: string) {
     console.error(`Failed to count posts by category: ${category}`, error);
     return 0;
   }
-}
+} */
 
 
 // [id]에서 사용하는 id를 이용해 개별 게시물을 조회하는 함수 (동적 라우팅용)
