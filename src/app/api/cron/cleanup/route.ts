@@ -2,9 +2,6 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { deleteBlobFile } from '@/lib/blob-utils'; // 🚨 Blob 삭제 유틸리티 임포트
 
-export const dynamic = 'force-dynamic';
-const CRON_SECRET_KEY = process.env.CRON_SECRET_KEY;
-
 /**
  * 미사용 미디어를 정리하는 Cron Job API Route입니다.
  * 1. PENDING (고아 파일) 정리: 12시간 이상 된 파일 삭제
@@ -13,19 +10,14 @@ const CRON_SECRET_KEY = process.env.CRON_SECRET_KEY;
 export async function GET(req: Request) {
 
     console.log("--- Authentication procedure Start ---");
+    const authHeader = req.headers.get('authorization');
 
-    const authHeader = req.headers.get('Authorization');
+    if (authHeader !== `Bearer ${process.env.CRON_SECRET_KEY}`) {
+        console.warn("Authentication Failed");
 
-    // 환경 변수 설정 오류 방지
-    if (!CRON_SECRET_KEY) {
-        console.error("CRON_SECRET_KEY environment variable is not set.");
-        return NextResponse.json({ success: false, message: "Server Misconfiguration" }, { status: 500 });
-    }
-
-    // Authorization 헤더가 없거나, Bearer 토큰이 일치하지 않으면 401 Unauthorized 반환
-    if (!authHeader || authHeader !== `Bearer ${CRON_SECRET_KEY}`) {
-        console.error("Access Forbidden: Invalid or missing Authorization token.");
-        return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+        return new Response('Unauthorized request', {
+            status: 401,
+        });
     }
 
     console.log('--- Starting Media Clean-up Cron Job (Verified by Secret Key) ---');
