@@ -12,6 +12,8 @@ const CRON_SECRET_KEY = process.env.CRON_SECRET_KEY;
  */
 export async function GET(req: Request) {
 
+    console.log("--- Authentication procedure Start ---");
+
     const authHeader = req.headers.get('Authorization');
 
     // 환경 변수 설정 오류 방지
