@@ -204,7 +204,7 @@ export const authConfig: NextAuthConfig = {
 
         // 사용자가 활동 중일 때 세션을 갱신하는 주기: 24시간 (초 단위)
         // 이 시간 내에 활동하면 maxAge가 리셋됩니다.
-        updateAge: 30 * 60, // 30분
+        updateAge: 1 * 60 * 60, // 1시간
     },
 
     // 🚨 2. JWT (JSON Web Token) 설정
@@ -260,9 +260,20 @@ export const authConfig: NextAuthConfig = {
             return true; // 로그인 계속 진행
         },
         async jwt({ token, user }) {
+            // 1. 최초 로그인 시 사용자 ID 추가
             if (user) {
                 token.id = user.id;
             }
+
+            // 2. 🚨 추가 로직: 토큰 만료 시간 확인
+            const now = Math.floor(Date.now() / 1000); // 현재 UNIX 시간 (초)
+            
+            // token.exp는 JWT 자체의 만료 시간입니다.
+            if (token.exp && now >= token.exp) {
+                console.log("JWT 토큰 만료");
+                return null; // 세션을 만료된 것으로 처리하여 강제 로그아웃 유도
+            }
+
             return token;
         },
         async session({ session, token }) {

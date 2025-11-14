@@ -14,6 +14,7 @@ interface Post {
   updated_at: string | Date;
   thumbnail_url?: string | null;
   category?: string;
+  is_published: boolean;
   author?: {
     name: string;
     avatarUrl?: string | null;
@@ -72,9 +73,15 @@ export function PostDetailPage({
       <header className="mb-8 md:mb-12 flex flex-col items-center gap-6 md:gap-8">
 
         {/* Title */}
-        <h1 className="text-3xl md:text-5xl font-bold text-foreground text-center max-w-3xl leading-tight">
-          {post.title}
-        </h1>
+        {post.is_published ?
+          <h1 className="text-3xl md:text-5xl font-bold text-foreground text-center max-w-3xl leading-tight">
+            {post.title}
+          </h1>
+        :
+          <h1 className="text-3xl md:text-5xl italic text-gray-500 font-bold text-foreground text-center max-w-3xl leading-tight">
+            {post.title + "(비공개)"}
+          </h1>
+        }
 
         {/* Meta Information */}
         <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 text-sm text-muted-foreground">

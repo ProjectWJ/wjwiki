@@ -68,6 +68,7 @@ export function PostListPage({
           thumbnailUrl={featured.thumbnail_url}
           author={featured.author}
           date={featured.created_at}
+          isPublished={featured.is_published}
           variant="featured"
         />
       </section>
@@ -95,6 +96,7 @@ export function PostListPage({
                     thumbnailUrl={popularPosts[0].thumbnail_url}
                     author={popularPosts[0].author}
                     date={popularPosts[0].created_at}
+                    isPublished={popularPosts[0].is_published}
                   />
                 </div>
               )}
@@ -109,6 +111,7 @@ export function PostListPage({
                     thumbnailUrl={post.thumbnail_url}
                     author={post.author}
                     date={post.created_at}
+                    isPublished={post.is_published}
                     variant="horizontal"
                   />
                 ))}
@@ -149,6 +152,7 @@ export function PostListPage({
                 thumbnailUrl={post.thumbnail_url}
                 author={post.author}
                 date={post.created_at}
+                isPublished={post.is_published}
               />
             ))}
           </div>

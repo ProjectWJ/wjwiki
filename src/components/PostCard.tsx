@@ -13,6 +13,7 @@ interface PostCardProps {
     avatarUrl?: string | null;
   };
   date: Date | string;
+  isPublished: boolean;
   variant?: 'default' | 'horizontal' | 'featured';
   className?: string;
 }
@@ -20,10 +21,11 @@ interface PostCardProps {
 export function PostCard({
   id,
   title,
-  summary,
+  // summary,
   thumbnailUrl,
   author,
   date,
+  isPublished,
   variant = 'default',
   className,
 }: PostCardProps) {
@@ -121,9 +123,15 @@ export function PostCard({
           </div>
         )}
         <div className="flex-1 flex flex-col justify-center gap-3 md:gap-5">
-          <h3 className="text-xl md:text-2xl font-bold text-foreground line-clamp-2 group-hover:text-primary transition-colors">
-            {title}
-          </h3>
+          {isPublished ?
+            <h3 className="text-xl md:text-2xl font-bold text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+              {title}
+            </h3>
+          : 
+            <h3 className="text-xl md:text-2xl italic text-gray-400 font-bold text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+              {title + "(비공개)"}
+            </h3>
+          }
           <div className="flex items-center justify-between text-sm">
             {author && (
               <div className="flex items-center gap-2">
@@ -173,9 +181,15 @@ export function PostCard({
         </div>
       )}
       <div className="space-y-3 md:space-y-5">
-        <h3 className="text-xl md:text-2xl font-bold text-foreground line-clamp-3 group-hover:text-primary transition-colors leading-snug">
-          {title}
-        </h3>
+          {isPublished ?
+            <h3 className="text-xl md:text-2xl font-bold text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+              {title}
+            </h3>
+          : 
+            <h3 className="text-xl md:text-2xl italic text-gray-400 font-bold text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+              {title + "(비공개)"}
+            </h3>
+          }
         <div className="flex items-center justify-between text-sm">
           {author && (
             <div className="flex items-center gap-2">

@@ -20,9 +20,8 @@ export async function GET(req: Request) {
         });
     }
 
-    console.log("success");
-    return NextResponse.json({ success: true });
-/*     console.log('--- Starting Media Clean-up Cron Job ---');
+    console.log("--- Authentication Succeed ---");
+    console.log('--- Starting Media Clean-up Cron Job ---');
     const now = new Date();
     
     // -----------------------------------------------------------
@@ -106,5 +105,5 @@ export async function GET(req: Request) {
         success: true, 
         deletedCount: deleteCount, 
         message: `Successfully deleted ${deleteCount} files.` 
-    }); */
+    });
 }

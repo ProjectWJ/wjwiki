@@ -77,6 +77,7 @@ export function PostSearchListPage({
                 id={post.id}
                 title={post.title}
                 thumbnailUrl={post.thumbnail_url}
+                isPublished={post.is_published}
                 author={post.author}
                 date={post.created_at}
               />
