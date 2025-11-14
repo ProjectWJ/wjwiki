@@ -70,16 +70,16 @@ export default function PostForm() {
                 {/* 서버에 전송 */}
                 <input type="hidden" name="content" value={htmlContent} />
             </div>
-                {process.env.NODE_ENV === 'development' && (
-                <details className="mt-4">
-                    <summary className="cursor-pointer text-sm text-gray-600 hover:text-gray-900">
-                        마크다운 문법 보기
-                    </summary>
-                    <pre className="mt-2 p-4 bg-gray-100 rounded text-xs overflow-auto max-h-[200px]">
-                        {markContent}
-                    </pre>
-                </details>
-            )}
+                        
+            {/* 마크다운 미리보기 */}
+            <details className="mt-4">
+                <summary className="cursor-pointer text-sm text-gray-600 hover:text-gray-900">
+                    마크다운 문법 보기
+                </summary>
+                <pre className="mt-2 p-4 bg-gray-100 rounded text-xs overflow-auto max-h-[200px]">
+                    {markContent}
+                </pre>
+            </details>
         </form>
     );
 }

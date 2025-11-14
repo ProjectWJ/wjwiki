@@ -27,7 +27,7 @@ const VIDEO_FORMATS = [
 // 게시물 생성 폼 제출을 처리하는 서버 액션
 // @param formData 폼 데이터를 포함하는 객체
 export async function handleCreatePost(formData: FormData) {
-
+  console.log(formData);
   // FormData 객체에서 필드 값을 추출합니다.
   const title = formData.get('title') as string;
   const category_select = formData.get('category_select') as string || "diary";

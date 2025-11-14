@@ -226,6 +226,8 @@ export const authConfig: NextAuthConfig = {
                     // 💡 세션 생성을 막는 대신, 리다이렉트 URL을 반환합니다.
                     // NextAuth는 signIn 콜백에서 문자열 URL이 반환되면 그곳으로 리다이렉트합니다.
                     // 리다이렉트 url 리턴
+                    console.log("--- 1FA Success ---");
+
                     return `/2fa-verify`;
                 }
 
@@ -256,6 +258,8 @@ export const authConfig: NextAuthConfig = {
                         console.error("로그인 알림 이메일 발송 실패:", error);
                     }
                 }
+                console.log("--- 2FA Success --- ");
+                console.log("--- Login Succeed --- ");
             }
             return true; // 로그인 계속 진행
         },
