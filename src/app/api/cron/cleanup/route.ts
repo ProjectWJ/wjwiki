@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { deleteBlobFile } from '@/lib/blob-utils'; // 🚨 Blob 삭제 유틸리티 임포트
 
-export const runtime = 'nodejs'; // Node.js 런타임에서 안정적으로 실행
+export const dynamic = 'force-dynamic';
 
 /**
  * 미사용 미디어를 정리하는 Cron Job API Route입니다.
@@ -11,6 +11,10 @@ export const runtime = 'nodejs'; // Node.js 런타임에서 안정적으로 실�
  */
 export async function GET(req: Request) {
 
+    console.log('--- TEST LOG: Cron Job Successfully Triggered ---');
+
+    return NextResponse.json({ success: true, message: 'Test succeed' });
+/* 
     // Vercel에서는 Cron 호출 시 x-vercel-cron 헤더 자동 첨부
     // 정식 Cron에서 온 요청만 처리하도록 보호
     // 필요시 환경변수 토큰 병행
@@ -102,5 +106,5 @@ export async function GET(req: Request) {
         success: true, 
         deletedCount: deleteCount, 
         message: `Successfully deleted ${deleteCount} files.` 
-    });
+    }); */
 }
