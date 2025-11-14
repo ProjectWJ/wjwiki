@@ -15,7 +15,7 @@ export default auth((req) => {
     // 보호할 경로를 정의합니다.
     const isProtectedPath = 
         nextUrl.pathname.startsWith('/posts/new') || 
-        nextUrl.pathname.match(/\/posts\/[^\/]+\/edit$/) || // /posts/[id]/edit 패턴
+        nextUrl.pathname.match(/\/posts\/\d+\/edit$/) || // /posts/숫자/edit 패턴
         nextUrl.pathname.startsWith('/api/upload');
 
     // 1. 보호된 경로에 미인증 사용자가 접근 시

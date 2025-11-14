@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { auth, signOut } from '@/auth'; // auth와 signOut 임포트
 import { DropdownMenuDialog } from './loginDropdown';
 import { CircleUserRound } from 'lucide-react';
+import { Button } from './ui/button';
 
 // 로그아웃을 처리할 Server Action
 async function handleSignOut() {
@@ -39,8 +40,11 @@ export default async function LoginMenu() {
         </>
       ) : (
         // 로그아웃된 사용자에게 로그인 버튼 표시
-        <Link href="/login">
-          <CircleUserRound />
+        <Link href={"/login"}>
+          <Button className="hover:cursor-pointer" variant="outline" aria-label="Open menu" size="icon-sm">
+            {/* account 로고 */}
+            <CircleUserRound />
+          </Button>
         </Link>
       )}
     </div>
