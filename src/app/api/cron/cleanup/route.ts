@@ -20,7 +20,9 @@ export async function GET(req: Request) {
         });
     }
 
-    console.log('--- Starting Media Clean-up Cron Job (Verified by Secret Key) ---');
+    console.log("success");
+    return Response.json({ success: true });
+/*     console.log('--- Starting Media Clean-up Cron Job (Verified by Secret Key) ---');
     const now = new Date();
     
     // -----------------------------------------------------------
@@ -104,5 +106,5 @@ export async function GET(req: Request) {
         success: true, 
         deletedCount: deleteCount, 
         message: `Successfully deleted ${deleteCount} files.` 
-    });
+    }); */
 }
