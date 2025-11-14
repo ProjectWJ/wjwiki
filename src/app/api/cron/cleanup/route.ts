@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { deleteBlobFile } from '@/lib/blob-utils'; // 🚨 Blob 삭제 유틸리티 임포트
 
 export const dynamic = 'force-dynamic';
+const CRON_SECRET_KEY = process.env.CRON_SECRET_KEY;
 
 /**
  * 미사용 미디어를 정리하는 Cron Job API Route입니다.
@@ -11,18 +12,21 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET(req: Request) {
 
-    console.log('--- TEST LOG: Cron Job Successfully Triggered ---');
+    const authHeader = req.headers.get('Authorization');
 
-    return NextResponse.json({ success: true, message: 'Test succeed' });
-/* 
-    // Vercel에서는 Cron 호출 시 x-vercel-cron 헤더 자동 첨부
-    // 정식 Cron에서 온 요청만 처리하도록 보호
-    // 필요시 환경변수 토큰 병행
-    if (!req.headers.get("x-vercel-cron")) {
-        return NextResponse.json({ success: false, message: "Forbidden" }, { status: 403 });
+    // 환경 변수 설정 오류 방지
+    if (!CRON_SECRET_KEY) {
+        console.error("CRON_SECRET_KEY environment variable is not set.");
+        return NextResponse.json({ success: false, message: "Server Misconfiguration" }, { status: 500 });
     }
 
-    console.log('--- Starting Media Clean-up Cron Job ---');
+    // Authorization 헤더가 없거나, Bearer 토큰이 일치하지 않으면 401 Unauthorized 반환
+    if (!authHeader || authHeader !== `Bearer ${CRON_SECRET_KEY}`) {
+        console.error("Access Forbidden: Invalid or missing Authorization token.");
+        return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+    }
+
+    console.log('--- Starting Media Clean-up Cron Job (Verified by Secret Key) ---');
     const now = new Date();
     
     // -----------------------------------------------------------
@@ -106,5 +110,5 @@ export async function GET(req: Request) {
         success: true, 
         deletedCount: deleteCount, 
         message: `Successfully deleted ${deleteCount} files.` 
-    }); */
+    });
 }
