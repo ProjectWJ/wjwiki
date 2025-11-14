@@ -1,9 +1,8 @@
 {
   "crons": [
     {
-      "path": "/api/cron/cleanup",
-      "schedule": "0 15 * * *",
-      "secret": "CRON_SECRET_KEY"
+      "path": "/api/cron/cleanup/route.ts",
+      "schedule": "0 15 * * *"
     }
   ]
 }
