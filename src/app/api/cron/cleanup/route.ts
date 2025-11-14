@@ -10,10 +10,9 @@ import { deleteBlobFile } from '@/lib/blob-utils'; // 🚨 Blob 삭제 유틸리
 export async function GET(req: Request) {
 
     console.log("--- Authentication procedure Start ---");
-    const authHeader = req.headers.get('authorization');
-    console.log(req.headers);
+    const authHeader = req.headers.get('Authorization');
 
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET_KEY}`) {
+    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
         console.warn("Authentication Failed");
 
         return new Response('Unauthorized request', {
@@ -22,8 +21,8 @@ export async function GET(req: Request) {
     }
 
     console.log("success");
-    return Response.json({ success: true });
-/*     console.log('--- Starting Media Clean-up Cron Job (Verified by Secret Key) ---');
+    return NextResponse.json({ success: true });
+/*     console.log('--- Starting Media Clean-up Cron Job ---');
     const now = new Date();
     
     // -----------------------------------------------------------
