@@ -11,6 +11,7 @@ export async function GET(req: Request) {
 
     console.log("--- Authentication procedure Start ---");
     const authHeader = req.headers.get('authorization');
+    console.log(req.headers);
 
     if (authHeader !== `Bearer ${process.env.CRON_SECRET_KEY}`) {
         console.warn("Authentication Failed");
