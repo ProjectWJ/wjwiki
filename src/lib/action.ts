@@ -8,7 +8,6 @@ import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache'; // 데이터 갱신을 위해 필요
 import { extractFirstMediaUrl, findThumbnailUrl, ResizedImages, generateResizedImagesSharp, generateUUID, getFileExtension, howManyMedia } from '@/lib/server-utils' // 썸네일 생성
 import { vercelBlobUrl } from '@/constants/vercelblobURL';
-// import DOMPurify from 'isomorphic-dompurify';
 import sanitize, { Attributes } from "sanitize-html";
 import * as cheerio from 'cheerio';
 
@@ -85,7 +84,8 @@ const TIPTAP_SANITIZE_CONFIG = {
 // @param formData 폼 데이터를 포함하는 객체
 export async function handleCreatePost(formData: FormData) {
   // FormData 객체에서 필드 값을 추출합니다.
-  const title = formData.get('title') as string;
+  const rawTitle = formData.get('title') as string;
+  const title = sanitize(rawTitle, TIPTAP_SANITIZE_CONFIG);
   const category_select = formData.get('category_select') as string || "diary";
   const rawContent = formData.get('content') as string;
   const content = sanitize(rawContent, TIPTAP_SANITIZE_CONFIG); // xss 정화
@@ -168,7 +168,8 @@ export async function handleCreatePost(formData: FormData) {
 export async function handleUpdatePost(formData: FormData): Promise<void> {
     // 1. 데이터 추출 및 유효성 검사
     const id = formData.get('id') as string;
-    const title = formData.get('title') as string;
+    const rawTitle = formData.get('title') as string;
+    const title = sanitize(rawTitle, TIPTAP_SANITIZE_CONFIG);
     const category_select = formData.get('category_select') as string || "diary";
     const legacyContent = formData.get("legacy_content") as string;
     const rawContent = formData.get('content') as string;
