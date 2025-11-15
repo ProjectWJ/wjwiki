@@ -9,7 +9,7 @@ import { revalidatePath } from 'next/cache'; // 데이터 갱신을 위해 필�
 import { extractFirstMediaUrl, findThumbnailUrl, ResizedImages, generateResizedImagesSharp, generateUUID, getFileExtension, howManyMedia } from '@/lib/server-utils' // 썸네일 생성
 import { vercelBlobUrl } from '@/constants/vercelblobURL';
 // import DOMPurify from 'isomorphic-dompurify';
-import sanitize from 'sanitize-html';
+import sanitize, { Attributes } from "sanitize-html";
 import * as cheerio from 'cheerio';
 
 const VIDEO_FORMATS = [
@@ -67,7 +67,18 @@ const TIPTAP_SANITIZE_CONFIG = {
   },
 
   // HTML 주석 제거
-  allowComments: false
+  allowComments: false,
+
+  // ⭐️ transformTags에 타입 적용
+  transformTags: {
+    // TagName과 Attributes 타입을 사용합니다.
+    a: (tagName: string, attribs: Attributes) => {
+        // attribs가 Attributes 타입이므로 객체 속성에 안전하게 접근할 수 있습니다.
+        attribs.rel = attribs.rel ? `${attribs.rel} noopener noreferrer` : 'noopener noreferrer';
+        // sanitize-html Transformer는 Tag 형태({ tagName?, attribs? })를 반환해야 합니다.
+        return { tagName, attribs };
+    }
+  }
 };
 
 // 게시물 생성 폼 제출을 처리하는 서버 액션
