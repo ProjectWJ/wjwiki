@@ -8,8 +8,7 @@ import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache'; // 데이터 갱신을 위해 필요
 import { extractFirstMediaUrl, findThumbnailUrl, ResizedImages, generateResizedImagesSharp, generateUUID, getFileExtension, howManyMedia } from '@/lib/server-utils' // 썸네일 생성
 import { vercelBlobUrl } from '@/constants/vercelblobURL';
-import createDOMPurify from 'dompurify';
-import { JSDOM } from 'jsdom';
+import DOMPurify from 'isomorphic-dompurify';
 import * as cheerio from 'cheerio';
 
 const VIDEO_FORMATS = [
@@ -24,11 +23,6 @@ const VIDEO_FORMATS = [
     ".mkv",
     // 기존 코드에 있던 ".ts"를 포함하려면 여기에 추가해야 합니다.
 ];
-function sanitizeContent(rawHtml: string): string {
-  const window = new JSDOM('').window;
-  const DOMPurify = createDOMPurify(window);
-  return DOMPurify.sanitize(rawHtml);
-};
 
 // 게시물 생성 폼 제출을 처리하는 서버 액션
 // @param formData 폼 데이터를 포함하는 객체
@@ -37,8 +31,8 @@ export async function handleCreatePost(formData: FormData) {
   // FormData 객체에서 필드 값을 추출합니다.
   const title = formData.get('title') as string;
   const category_select = formData.get('category_select') as string || "diary";
-  const rawContent = formData.get('content') as string;
-  const content = sanitizeContent(rawContent); // xss 정화
+  const content = formData.get('content') as string;
+/*   const content = sanitizeContent(rawContent); // xss 정화 */
   const is_published = formData.get('is_published') === 'on' ? false : true; // 체크박스가 off일 때 true
   const summary = cheerio.load(content).text().trim().substring(0, 50); // 요약은 내용의 앞 50자로 자동 생성
   const firstMedia = extractFirstMediaUrl(content); // 첫 번째 미디어
@@ -121,8 +115,8 @@ export async function handleUpdatePost(formData: FormData): Promise<void> {
     const title = formData.get('title') as string;
     const category_select = formData.get('category_select') as string || "diary";
     const legacyContent = formData.get("legacy_content") as string;
-    const rawContent = formData.get('content') as string;
-    const content = sanitizeContent(rawContent); // xss 정화
+    const content = formData.get('content') as string;
+    // const content = sanitizeContent(rawContent); // xss 정화
     const legacyIs_published = formData.get('legacy_is_published') === 'on' ? false : true;
     const is_published = formData.get('is_published') === 'on' ? false : true; // 체크박스가 off일 때 true
 /*     const summary = content.substring(0, 50); // 요약은 내용의 앞 50자로 자동 생성
