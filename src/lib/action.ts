@@ -8,7 +8,8 @@ import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache'; // 데이터 갱신을 위해 필요
 import { extractFirstMediaUrl, findThumbnailUrl, ResizedImages, generateResizedImagesSharp, generateUUID, getFileExtension, howManyMedia } from '@/lib/server-utils' // 썸네일 생성
 import { vercelBlobUrl } from '@/constants/vercelblobURL';
-import DOMPurify from 'isomorphic-dompurify';
+// import DOMPurify from 'isomorphic-dompurify';
+import sanitize from 'sanitize-html';
 import * as cheerio from 'cheerio';
 
 const VIDEO_FORMATS = [
@@ -24,6 +25,51 @@ const VIDEO_FORMATS = [
     // 기존 코드에 있던 ".ts"를 포함하려면 여기에 추가해야 합니다.
 ];
 
+const TIPTAP_SANITIZE_CONFIG = {
+  // 기본 허용 태그에 Tiptap이 자주 쓰는 블록 태그(제목, 테이블, 미디어 등)를 추가합니다.
+  allowedTags: sanitize.defaults.allowedTags.concat([
+    'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 
+    'p', 'div', 'span', 'br', 'hr',
+    'img', 'iframe', 'video', 
+    'pre', 'code', 'blockquote', 
+    // 테이블 관련 태그
+    'table', 'thead', 'tbody', 'tr', 'td', 'th',
+  ]),
+  
+  // 기본 허용 속성에 추가로 필요한 속성들을 정의합니다.
+  allowedAttributes: {
+    ...sanitize.defaults.allowedAttributes,
+    // <a> 태그 속성 (타겟, 네임 등)
+    a: ['href', 'name', 'target', 'rel'], 
+    // <img> 태그 속성 (이미지 크기)
+    img: ['src', 'alt', 'width', 'height', 'loading'], 
+    // <iframe>, <video> 태그 속성
+    iframe: ['src', 'width', 'height', 'frameborder', 'allowfullscreen', 'allow', 'referrerpolicy', 'scrolling'], 
+    video: ['src', 'controls', 'width', 'height', 'autoplay', 'loop', 'muted'],
+    // Tiptap이 사용하는 모든 태그(*)에 공통으로 필요한 속성 (스타일, 클래스, 데이터 속성)
+    '*': ['class', 'style', 'data-*', 'align'], 
+  },
+
+  // iframe을 허용하는 경우, 보안을 위해 허용할 도메인만 지정합니다. (필수)
+  allowedIframeHostnames: ['www.youtube.com'],
+
+  // 스타일을 허용할지 여부 (Tiptap에서 텍스트 색상 등을 쓸 때 필요합니다)
+  allowedStyles: {
+    '*': {
+      'text-align': [/.*/],
+      'color': [/.*/],
+      'background-color': [/.*/],
+      'width': [/.*/],
+      'height': [/.*/],
+      'margin': [/.*/],
+      'padding': [/.*/],
+    }
+  },
+
+  // HTML 주석 제거
+  allowComments: false
+};
+
 // 게시물 생성 폼 제출을 처리하는 서버 액션
 // @param formData 폼 데이터를 포함하는 객체
 export async function handleCreatePost(formData: FormData) {
@@ -31,10 +77,8 @@ export async function handleCreatePost(formData: FormData) {
   // FormData 객체에서 필드 값을 추출합니다.
   const title = formData.get('title') as string;
   const category_select = formData.get('category_select') as string || "diary";
-  const content = formData.get('content') as string;
-  console.log(content);
-  console.log(DOMPurify.sanitize(content));
-/*   const content = sanitizeContent(rawContent); // xss 정화 */
+  const rawContent = formData.get('content') as string;
+  const content = sanitize(rawContent, TIPTAP_SANITIZE_CONFIG); // xss 정화
   const is_published = formData.get('is_published') === 'on' ? false : true; // 체크박스가 off일 때 true
   const summary = cheerio.load(content).text().trim().substring(0, 50); // 요약은 내용의 앞 50자로 자동 생성
   const firstMedia = extractFirstMediaUrl(content); // 첫 번째 미디어
@@ -117,8 +161,8 @@ export async function handleUpdatePost(formData: FormData): Promise<void> {
     const title = formData.get('title') as string;
     const category_select = formData.get('category_select') as string || "diary";
     const legacyContent = formData.get("legacy_content") as string;
-    const content = formData.get('content') as string;
-    // const content = sanitizeContent(rawContent); // xss 정화
+    const rawContent = formData.get('content') as string;
+    const content = sanitize(rawContent, TIPTAP_SANITIZE_CONFIG); // xss 정화
     const legacyIs_published = formData.get('legacy_is_published') === 'on' ? false : true;
     const is_published = formData.get('is_published') === 'on' ? false : true; // 체크박스가 off일 때 true
 /*     const summary = content.substring(0, 50); // 요약은 내용의 앞 50자로 자동 생성
