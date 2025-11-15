@@ -23,18 +23,8 @@ const VIDEO_FORMATS = [
     ".mkv",
     // 기존 코드에 있던 ".ts"를 포함하려면 여기에 추가해야 합니다.
 ];
-/* 
-import createDOMPurify from "dompurify";
-import { JSDOM } from "jsdom";
-function sanitizeContent(rawHtml: string): string {
 
-  const window = new JSDOM('').window;
-  const DOMPurify = createDOMPurify(window);
-  // DOMPurify의 기본 설정은 매우 강력하고 안전합니다.
-  // 특별한 설정이 필요 없다면 옵션 없이 사용합니다.
-  return DOMPurify.sanitize(rawHtml); 
-}
- */
+
 // 게시물 생성 폼 제출을 처리하는 서버 액션
 // @param formData 폼 데이터를 포함하는 객체
 export async function handleCreatePost(formData: FormData) {
