@@ -32,6 +32,8 @@ export async function handleCreatePost(formData: FormData) {
   const title = formData.get('title') as string;
   const category_select = formData.get('category_select') as string || "diary";
   const content = formData.get('content') as string;
+  console.log(content);
+  console.log(DOMPurify.sanitize(content));
 /*   const content = sanitizeContent(rawContent); // xss 정화 */
   const is_published = formData.get('is_published') === 'on' ? false : true; // 체크박스가 off일 때 true
   const summary = cheerio.load(content).text().trim().substring(0, 50); // 요약은 내용의 앞 50자로 자동 생성
