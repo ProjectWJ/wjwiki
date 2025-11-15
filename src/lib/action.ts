@@ -8,6 +8,8 @@ import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache'; // 데이터 갱신을 위해 필요
 import { extractFirstMediaUrl, findThumbnailUrl, ResizedImages, generateResizedImagesSharp, generateUUID, getFileExtension, howManyMedia } from '@/lib/server-utils' // 썸네일 생성
 import { vercelBlobUrl } from '@/constants/vercelblobURL';
+import createDOMPurify from 'dompurify';
+import { JSDOM } from 'jsdom';
 import * as cheerio from 'cheerio';
 
 const VIDEO_FORMATS = [
@@ -23,14 +25,11 @@ const VIDEO_FORMATS = [
     // 기존 코드에 있던 ".ts"를 포함하려면 여기에 추가해야 합니다.
 ];
 
-const getDOMPurify = async (htmlData: string) => {
-  // dynamic import() 사용
-  const { default: DOMPurify } = await import("isomorphic-dompurify");
-
-  // 불러온 DOMPurify 인스턴스를 사용하여 HTML 정제 (Sanitization)
-  const cleanHtml = DOMPurify.sanitize(htmlData);
-  
-  return cleanHtml;
+const getDOMPurify = async (rawHtml: string) => {
+  const window = new JSDOM('').window;
+  const DOMPurify = createDOMPurify(window);
+  // 특별한 설정이 필요 없다면 옵션 없이 사용합니다.
+  return DOMPurify.sanitize(rawHtml);
 };
 
 // 게시물 생성 폼 제출을 처리하는 서버 액션
