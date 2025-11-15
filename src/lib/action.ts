@@ -56,13 +56,13 @@ const TIPTAP_SANITIZE_CONFIG = {
   // 스타일을 허용할지 여부 (Tiptap에서 텍스트 색상 등을 쓸 때 필요합니다)
   allowedStyles: {
     '*': {
-      'text-align': [/.*/],
-      'color': [/.*/],
-      'background-color': [/.*/],
-      'width': [/.*/],
-      'height': [/.*/],
-      'margin': [/.*/],
-      'padding': [/.*/],
+      'text-align': [/^(left|right|center|justify)$/],
+      'color': [/^[a-zA-Z0-9(),.\s#%-]+$/],
+      'background-color': [/^[a-zA-Z0-9(),.\s#%-]+$/],
+      'width': [/^\d+(px|em|rem|%)?$/],
+      'height': [/^\d+(px|em|rem|%)?$/],
+      'margin': [/^[0-9\spxrem%\-]+$/],
+      'padding': [/^[0-9\spxrem%\-]+$/],
     }
   },
 
@@ -73,7 +73,6 @@ const TIPTAP_SANITIZE_CONFIG = {
 // 게시물 생성 폼 제출을 처리하는 서버 액션
 // @param formData 폼 데이터를 포함하는 객체
 export async function handleCreatePost(formData: FormData) {
-  console.log("시작은 하냐?");
   // FormData 객체에서 필드 값을 추출합니다.
   const title = formData.get('title') as string;
   const category_select = formData.get('category_select') as string || "diary";
