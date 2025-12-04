@@ -20,7 +20,7 @@ export interface PostCardProps {
 export const BANNER_ITEMS: PostCardProps[] = [
   {
     id: 1,
-    title: "Webtools Lite: 가벼운 웹 도구 모음 🚀",
+    title: "Webtools Lite: 경량 웹 도구 모음 🚀",
     thumbnailUrl:
       `${vercelBlobUrl}%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202025-10-27%20130217.png`,
     url: "https://github.com/ProjectWJ/webtools_lite_extension",
@@ -29,7 +29,7 @@ export const BANNER_ITEMS: PostCardProps[] = [
   },
   {
     id: 2,
-    title: "Labs: Redux 연습 환경 구축 (시작하기)",
+    title: "Labs: Redux 연습 환경 구축 (미완성)",
     thumbnailUrl:
       `${vercelBlobUrl}default_thumbnail.png`,
     url: "/labs",

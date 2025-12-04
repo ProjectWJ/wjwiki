@@ -33,6 +33,12 @@ export function BlogCard({
   slug,
   variant = "default",
 }: BlogCardProps) {
+  const formattedDate = new Date(date).toLocaleDateString('ko-KR', {
+/*     year: 'numeric', ex) 2025년 1월 1일
+    month: 'short',
+    day: 'numeric', */
+  });
+
   const currentCategory = CATEGORIES.find((item) => {
     if(item.value === category){
       return item;
@@ -111,7 +117,7 @@ export function BlogCard({
 
           <div className="flex items-center justify-between pt-2 border-t border-transparent">
             <time className="text-blog-base dark:text-muted-foreground font-bold text-base sm:text-lg tracking-tight">
-              {date}
+              {formattedDate}
             </time>
             <button
               onClick={(e) => {
