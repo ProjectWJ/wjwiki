@@ -121,3 +121,8 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* posts/[id] 문서 내용의 p 태그는 최소 24p의 높이를 가지도록 설정 */
+#main-content p {
+  min-height: 24px;
+}
