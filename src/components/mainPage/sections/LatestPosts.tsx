@@ -60,7 +60,7 @@ export async function LatestPosts() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
             {newPosts ? newPosts.posts.map((post, index) => {
-              if(index > 5){
+              if(index > 7){
                 return;
               }
               return (
