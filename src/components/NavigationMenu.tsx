@@ -71,16 +71,18 @@ export function NavigationMenuDemo() {
   const isMobile = useIsMobile()
 
   return (
-    <NavigationMenu className="z-30 px-4" viewport={isMobile}>
-      <NavigationMenuList className="flex-wrap">
-        <NavigationMenuItem>
-          <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-            <Link href="/">
-{/*               <span className="font-bold">WJwiki</span> */}
-              <NaviLogo />
-            </Link>
-          </NavigationMenuLink>
-        </NavigationMenuItem>
+    <NavigationMenu className="z-30 ml-4 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]" viewport={isMobile}>
+      <NavigationMenuList className="">
+        {!isMobile ?
+          <NavigationMenuItem>
+            <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+              <Link href="/">
+  {/*               <span className="font-bold">WJwiki</span> */}
+                <NaviLogo />
+              </Link>
+            </NavigationMenuLink>
+          </NavigationMenuItem>
+        : ""}
         <NavigationMenuItem>
           <NavigationMenuTrigger>Blog</NavigationMenuTrigger>
           <NavigationMenuContent>
@@ -150,7 +152,7 @@ export function NavigationMenuDemo() {
         </NavigationMenuItem>
         <NavigationMenuItem>
           <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-            <Link href="/labs">Labs</Link>
+            <Link href="/portfolio">Portfolio</Link>
           </NavigationMenuLink>
         </NavigationMenuItem>
       </NavigationMenuList>
