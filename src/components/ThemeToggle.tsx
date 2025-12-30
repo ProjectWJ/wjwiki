@@ -33,7 +33,7 @@ export function ThemeToggle() {
   const currentTheme = theme === "system" ? resolvedTheme : theme;
 
   return (
-    <div className="relative flex items-center ml-auto pl-4 pr-2">
+    <div className="relative flex items-center ml-auto sm:pl-4 pl-2 pr-2">
       <Button
         type="button"
         variant="ghost"

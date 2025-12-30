@@ -31,7 +31,7 @@ export default async function LoginMenu() {
   const session = await auth(); // 🚨 서버 컴포넌트에서 세션 정보 가져오기
 
   return (
-    <div className='relative flex items-center pl-2 pr-4'>
+    <div className='relative flex items-center pl-2 pr-2 sm:pr-4'>
       {/* 로그인 상태에 따른 버튼 분기 처리 */}
       {session?.user ? (
         <>

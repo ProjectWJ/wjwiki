@@ -71,7 +71,7 @@ export function NavigationMenuDemo() {
   const isMobile = useIsMobile()
 
   return (
-    <NavigationMenu className="z-30 ml-4 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]" viewport={isMobile}>
+    <NavigationMenu className="z-30 sm:px-4" viewport={isMobile}>
       <NavigationMenuList className="">
         {!isMobile ?
           <NavigationMenuItem>
