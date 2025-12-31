@@ -1,4 +1,5 @@
 import { vercelBlobUrl } from "./vercelblobURL";
+import homebg from "../app/images/homebg.jpg"
 
 
 export interface PostCardProps {
@@ -29,10 +30,11 @@ export const BANNER_ITEMS: PostCardProps[] = [
   },
   {
     id: 2,
-    title: "Labs: Redux 연습 환경 구축 (미완성)",
+    title: "WJwiki - ProjectWJ의 블로그입니다.",
     thumbnailUrl:
-      `${vercelBlobUrl}default_thumbnail.png`,
-    url: "/labs",
+      // `${vercelBlobUrl}default_thumbnail.png`,
+      `${homebg.src}`,
+    url: "/",
     date: new Date().toISOString(),
     author: { name: "ProjectWJ" },
   },
