@@ -11,6 +11,8 @@ import { vercelBlobUrl } from '@/constants/vercelblobURL';
 // import DOMPurify from 'isomorphic-dompurify';
 import sanitize, { Attributes } from "sanitize-html";
 import * as cheerio from 'cheerio';
+import { auth } from '@/auth';
+import { Session } from 'next-auth';
 
 const VIDEO_FORMATS = [
     ".mp4",
@@ -81,9 +83,22 @@ const TIPTAP_SANITIZE_CONFIG = {
   }
 };
 
+async function loginAuth(): Promise<Session> {
+  const session = await auth();
+  
+  if (!session || !session.user) {
+    throw new Error("Unauthorized");
+  }
+
+  return session;
+}
+
 // 게시물 생성 폼 제출을 처리하는 서버 액션
 // @param formData 폼 데이터를 포함하는 객체
 export async function handleCreatePost(formData: FormData) {
+
+  const session = await loginAuth();
+
   // FormData 객체에서 필드 값을 추출합니다.
   const title = formData.get('title') as string;
   const category_select = formData.get('category_select') as string || "diary";
@@ -166,6 +181,9 @@ export async function handleCreatePost(formData: FormData) {
  * @returns {void}
  */
 export async function handleUpdatePost(formData: FormData): Promise<void> {
+
+    const session = await loginAuth();
+
     // 1. 데이터 추출 및 유효성 검사
     const id = formData.get('id') as string;
     const title = formData.get('title') as string;
@@ -322,6 +340,9 @@ export async function handleUpdatePost(formData: FormData): Promise<void> {
  * @returns {void}
  */
 export async function handleDeletePost(id: string): Promise<void> {
+
+    const session = await loginAuth();
+
     const postId = parseInt(id, 10);
 
     if (isNaN(postId)) {

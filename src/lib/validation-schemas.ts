@@ -4,8 +4,10 @@
 import { z } from 'zod';
 
 export const LoginSchema = z.object({
-    email: z.string().email("유효한 이메일 형식이 아닙니다."),
-    password: z.string().min(8, "비밀번호는 최소 8자 이상이어야 합니다."),
+    email: z.email("유효한 이메일 형식이 아닙니다."),
+    password: z.string()
+    .min(8, "비밀번호 입력이 유효하지 않습니다.")
+    .max(30, "비밀번호 입력이 유효하지 않습니다.")
 });
 // export type TLoginSchema = z.infer<typeof LoginSchema>;
 

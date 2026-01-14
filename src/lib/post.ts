@@ -56,7 +56,7 @@ export async function getPostsByCategory(category: string, page: number): Promis
     const where: { category?: string; is_published?: boolean } = {};
 
     // 🔸 1. 로그인하지 않은 사용자에게는 공개 게시물만 보여줌
-    if (!session) {
+    if (!session || !session.user) {
       where.is_published = true;
     }
 
