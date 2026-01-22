@@ -1,9 +1,9 @@
-import { Spinner } from '@/components/ui/spinner';
-import { CATEGORIES } from '../constants/categories'
-import SideBar from './SideBar';
-import { EmptyNotFound } from '../components/ui/empty'
+import { Spinner } from "@/components/ui/spinner";
+import { CATEGORIES } from "../constants/categories";
+import SideBar from "./SideBar";
+import { EmptyNotFound } from "../components/ui/empty";
 import "@/app/markdownStyle.css";
-import { DeleteModalProvider } from './DeleteModalContext';
+import { DeleteModalProvider } from "./DeleteModalContext";
 
 interface Post {
   id: string; // number로 바꾸기?
@@ -27,7 +27,7 @@ interface PostDetailPageProps {
   isLoading?: boolean;
   relatedPosts?: Post[];
   children?: React.ReactNode;
-  isAdmin: boolean
+  isAdmin: boolean;
 }
 
 export function PostDetailPage({
@@ -35,7 +35,7 @@ export function PostDetailPage({
   isLoading = false,
   // relatedPosts = [],
   children,
-  isAdmin
+  isAdmin,
 }: PostDetailPageProps) {
   if (isLoading) {
     return (
@@ -53,35 +53,32 @@ export function PostDetailPage({
     );
   }
 
-  const categoryObject = CATEGORIES.find(
-    (c) => c.value === post.category
-  );
+  const categoryObject = CATEGORIES.find((c) => c.value === post.category);
 
   const currentCategory = categoryObject
     ? categoryObject.label // 찾은 객체가 있으면 label을 사용
     : post.category; // 없으면 원본 post.category를 사용
 
   const cDateObj = new Date(post.created_at);
-  const createDate = `${cDateObj.getFullYear()}. ${cDateObj.getMonth() + 1}. ${cDateObj.getDate()}. ${String(cDateObj.getHours()).padStart(2, '0')}:${String(cDateObj.getMinutes()).padStart(2, '0')}`;
+  const createDate = `${cDateObj.getFullYear()}. ${cDateObj.getMonth() + 1}. ${cDateObj.getDate()}. ${String(cDateObj.getHours()).padStart(2, "0")}:${String(cDateObj.getMinutes()).padStart(2, "0")}`;
 
   const dateObj = new Date(post.updated_at);
-  const updatedDate = `${dateObj.getFullYear()}. ${dateObj.getMonth() + 1}. ${dateObj.getDate()}. ${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
+  const updatedDate = `${dateObj.getFullYear()}. ${dateObj.getMonth() + 1}. ${dateObj.getDate()}. ${String(dateObj.getHours()).padStart(2, "0")}:${String(dateObj.getMinutes()).padStart(2, "0")}`;
 
   return (
     <div className="w-full">
       {/* Header Section */}
       <header className="mb-8 md:mb-12 flex flex-col items-center gap-6 md:gap-8">
-
         {/* Title */}
-        {post.is_published ?
+        {post.is_published ? (
           <h1 className="text-3xl md:text-5xl font-bold text-foreground text-center max-w-3xl leading-tight">
             {post.title}
           </h1>
-        :
+        ) : (
           <h1 className="text-3xl md:text-5xl italic text-gray-500 font-bold text-foreground text-center max-w-3xl leading-tight">
             {post.title + "(비공개)"}
           </h1>
-        }
+        )}
 
         {/* Meta Information */}
         <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 text-sm text-muted-foreground">
@@ -142,11 +139,9 @@ export function PostDetailPage({
       {/* Main Content Area */}
       <div className="flex flex-col gap-8 lg:gap-12 lg:grid lg:grid-cols-[1fr_minmax(0,_120ch)_1fr] lg:justify-items-center">
         {/* Article Content */}
-      <article className="flex-1 w-full min-w-0 lg:col-start-2">
+        <article className="flex-1 w-full min-w-0 lg:col-start-2">
           {/* Content */}
-          <div className="markdown-body">
-            {children}
-          </div>
+          <div className="markdown-body">{children}</div>
         </article>
 
         {/* SideBar Componant  */}
@@ -155,7 +150,6 @@ export function PostDetailPage({
           <SideBar postId={parseInt(post.id)} isAdmin={isAdmin} />
         </DeleteModalProvider>
       </div>
-      
     </div>
   );
 }

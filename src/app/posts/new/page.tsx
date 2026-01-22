@@ -1,5 +1,5 @@
 // 새 글 작성 페이지
-import PostForm from '@/components/PostForm';
+import PostForm from "@/components/PostForm";
 
 export default function NewPostPage() {
   return (

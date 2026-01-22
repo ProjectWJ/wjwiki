@@ -1,5 +1,5 @@
 // components/DeleteButton.tsx
-'use client';
+"use client";
 
 import { Trash } from "lucide-react";
 import { useDeleteModal } from "./DeleteModalContext";

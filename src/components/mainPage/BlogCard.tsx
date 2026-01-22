@@ -10,7 +10,7 @@ interface BlogCardProps {
   excerpt: string;
   date: string;
   category: string;
-//   categories?: string[];
+  //   categories?: string[];
   image?: string;
   slug: string;
   variant?: "default" | "featured";
@@ -21,7 +21,7 @@ const categoryColors: Record<string, string> = {
   "기술 노트": "bg-amber-500",
   "프로젝트 로그": "bg-blue-500",
   "메모, 팁": "bg-teal-400",
-  "일기": "bg-violet-400",
+  일기: "bg-violet-400",
 };
 
 export function BlogCard({
@@ -33,14 +33,14 @@ export function BlogCard({
   slug,
   variant = "default",
 }: BlogCardProps) {
-  const formattedDate = new Date(date).toLocaleDateString('ko-KR', {
-/*     year: 'numeric', ex) 2025년 1월 1일
+  const formattedDate = new Date(date).toLocaleDateString("ko-KR", {
+    /*     year: 'numeric', ex) 2025년 1월 1일
     month: 'short',
     day: 'numeric', */
   });
 
   const currentCategory = CATEGORIES.find((item) => {
-    if(item.value === category){
+    if (item.value === category) {
       return item;
     }
   });
@@ -60,7 +60,7 @@ export function BlogCard({
         `}
       >
         <div className="flex flex-col h-full p-6 sm:p-8 gap-4">
-{/*           {categories.length > 0 && (
+          {/*           {categories.length > 0 && (
             <div className="flex gap-2 flex-wrap items-start overflow-hidden relative">
               {categories.slice(0, 3).map((category, idx) => (
                 <span

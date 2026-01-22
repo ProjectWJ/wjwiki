@@ -1,59 +1,73 @@
 // src/lib/server-utils.ts
 
 import { prisma } from "./db";
-import sharp from 'sharp';
+import sharp from "sharp";
 import { put } from "@vercel/blob";
 import { vercelBlobUrl } from "@/constants/vercelblobURL";
 
 /**
  * User-Agent 문자열을 파싱하여 OS 및 브라우저 정보를 추출
  */
-export function parseUserAgent(userAgentString: string): { os: string, browser: string } {
-    let os = '알 수 없는 OS';
-    let browser = '알 수 없는 브라우저';
+export function parseUserAgent(userAgentString: string): {
+  os: string;
+  browser: string;
+} {
+  let os = "알 수 없는 OS";
+  let browser = "알 수 없는 브라우저";
 
-    if (!userAgentString) {
-        return { os, browser };
-    }
-
-    // --- OS 파싱 ---
-    if (userAgentString.includes('Win')) {
-        os = 'Windows';
-    } else if (userAgentString.includes('Mac') || userAgentString.includes('Darwin')) {
-        os = 'macOS';
-    } else if (userAgentString.includes('Linux')) {
-        os = 'Linux';
-    } else if (userAgentString.includes('Android')) {
-        os = 'Android';
-    } else if (userAgentString.includes('iOS') || userAgentString.includes('iPhone')) {
-        os = 'iOS';
-    }
-
-    // --- 브라우저 파싱 ---
-    // User-Agent 문자열은 복잡하므로 Chrome/Firefox/Safari 등 주요 브라우저만 간단히 감지합니다.
-    if (userAgentString.includes('Edg/')) {
-        browser = 'Edge';
-    } else if (userAgentString.includes('Chrome') && !userAgentString.includes('Chromium')) {
-        browser = 'Chrome';
-    } else if (userAgentString.includes('Firefox')) {
-        browser = 'Firefox';
-    } else if (userAgentString.includes('Safari') && !userAgentString.includes('Chrome')) {
-        browser = 'Safari';
-    }
-    
-    // 모바일 환경에서의 OS/브라우저 재정의 (모바일은 브라우저 이름 대신 디바이스 이름이 흔함)
-    if (os === 'Android' || os === 'iOS') {
-        if (userAgentString.includes('CriOS')) {
-            browser = 'Chrome Mobile (iOS)';
-        } else if (userAgentString.includes('FxiOS')) {
-            browser = 'Firefox Mobile (iOS)';
-        } else if (userAgentString.includes('Safari') && os === 'iOS') {
-            browser = 'Safari Mobile';
-        }
-    }
-
-
+  if (!userAgentString) {
     return { os, browser };
+  }
+
+  // --- OS 파싱 ---
+  if (userAgentString.includes("Win")) {
+    os = "Windows";
+  } else if (
+    userAgentString.includes("Mac") ||
+    userAgentString.includes("Darwin")
+  ) {
+    os = "macOS";
+  } else if (userAgentString.includes("Linux")) {
+    os = "Linux";
+  } else if (userAgentString.includes("Android")) {
+    os = "Android";
+  } else if (
+    userAgentString.includes("iOS") ||
+    userAgentString.includes("iPhone")
+  ) {
+    os = "iOS";
+  }
+
+  // --- 브라우저 파싱 ---
+  // User-Agent 문자열은 복잡하므로 Chrome/Firefox/Safari 등 주요 브라우저만 간단히 감지합니다.
+  if (userAgentString.includes("Edg/")) {
+    browser = "Edge";
+  } else if (
+    userAgentString.includes("Chrome") &&
+    !userAgentString.includes("Chromium")
+  ) {
+    browser = "Chrome";
+  } else if (userAgentString.includes("Firefox")) {
+    browser = "Firefox";
+  } else if (
+    userAgentString.includes("Safari") &&
+    !userAgentString.includes("Chrome")
+  ) {
+    browser = "Safari";
+  }
+
+  // 모바일 환경에서의 OS/브라우저 재정의 (모바일은 브라우저 이름 대신 디바이스 이름이 흔함)
+  if (os === "Android" || os === "iOS") {
+    if (userAgentString.includes("CriOS")) {
+      browser = "Chrome Mobile (iOS)";
+    } else if (userAgentString.includes("FxiOS")) {
+      browser = "Firefox Mobile (iOS)";
+    } else if (userAgentString.includes("Safari") && os === "iOS") {
+      browser = "Safari Mobile";
+    }
+  }
+
+  return { os, browser };
 }
 
 /**
@@ -62,11 +76,11 @@ export function parseUserAgent(userAgentString: string): { os: string, browser: 
  * @returns 확장자 (예: .jpg) 또는 빈 문자열
  */
 export function getFileExtension(filename: string): string {
-    const parts = filename.split('.');
-    if (parts.length > 1) {
-        return '.' + parts.pop()?.toLowerCase();
-    }
-    return '';
+  const parts = filename.split(".");
+  if (parts.length > 1) {
+    return "." + parts.pop()?.toLowerCase();
+  }
+  return "";
 }
 
 /**
@@ -74,83 +88,77 @@ export function getFileExtension(filename: string): string {
  * @returns 고유 식별자 문자열
  */
 export function generateUUID(): string {
-    return crypto.randomUUID();
+  return crypto.randomUUID();
 }
-
 
 // 게시글 내용에서 첫 번째 이미지 또는 비디오 URL을 추출
 export function extractFirstMediaUrl(content: string): string | null {
+  // img, video 태그 찾기
+  const mediaRegex =
+    /<(img|video)[^>]*\s+src=(["'])(https?:\/\/[^\s"']+)\2[^>]*>/i;
 
-    // img, video 태그 찾기
-    const mediaRegex = /<(img|video)[^>]*\s+src=(["'])(https?:\/\/[^\s"']+)\2[^>]*>/i;
+  //const match = content.match(markdownRegex);
+  const match = content.match(mediaRegex);
 
-    //const match = content.match(markdownRegex);
-    const match = content.match(mediaRegex);
-    
+  if (match && match.length > 3) return match[3]; // match[2]가 src URL
 
-    if (match && match.length > 3)
-        return match[3]; // match[2]가 src URL
-    
-    return null;
+  return null;
 }
 
 export const VIDEO_FORMATS = [
-    ".mp4",
-    ".wmv",
-    ".flv",
-    ".mpeg",
-    ".mov",
-    ".asf",
-    ".f4v",
-    ".avi",
-    ".mkv",
-    // 기존 코드에 있던 ".ts"를 포함하려면 여기에 추가
+  ".mp4",
+  ".wmv",
+  ".flv",
+  ".mpeg",
+  ".mov",
+  ".asf",
+  ".f4v",
+  ".avi",
+  ".mkv",
+  // 기존 코드에 있던 ".ts"를 포함하려면 여기에 추가
 ];
 /**
  * medium_url을 받아 thumbnail_url을 탐색
  */
-export async function findThumbnailUrl(medium_url: string | null): Promise<string> {
+export async function findThumbnailUrl(
+  medium_url: string | null,
+): Promise<string> {
+  if (!medium_url) return `${vercelBlobUrl}default_thumbnail.png`;
 
-    if (!medium_url)
-        return `${vercelBlobUrl}default_thumbnail.png`;
+  // 영상이면 지정 썸네일 반환
+  const isVideo = getFileExtension(medium_url);
+  if (VIDEO_FORMATS.includes(isVideo))
+    return `${vercelBlobUrl}default_thumbnail_video.png`;
 
-    // 영상이면 지정 썸네일 반환
-    const isVideo = getFileExtension(medium_url);
-    if(VIDEO_FORMATS.includes(isVideo))
-        return `${vercelBlobUrl}default_thumbnail_video.png`
+  // 외부의 url이면
+  if (medium_url && !medium_url.startsWith(vercelBlobUrl)) return medium_url;
 
-    // 외부의 url이면
-    if (medium_url && !medium_url.startsWith(vercelBlobUrl))
-        return medium_url;
+  const mediaUrl = await prisma.media.findFirst({
+    where: { medium_url: medium_url },
+    select: { thumbnail_url: true },
+  });
 
-    const mediaUrl = await prisma.media.findFirst({
-        where: { medium_url: medium_url },
-        select: { thumbnail_url: true }
-    })
+  if (!mediaUrl || !mediaUrl.thumbnail_url)
+    return `${vercelBlobUrl}default_thumbnail.png`;
 
-    if (!mediaUrl || !mediaUrl.thumbnail_url) 
-        return `${vercelBlobUrl}default_thumbnail.png`;
-
-    return mediaUrl.thumbnail_url;
+  return mediaUrl.thumbnail_url;
 }
-
 
 // 본문의 모든 img, video 태그 목록 추출해서 id만 넘겨주기
 export function howManyMedia(content: string) {
+  // <img>와 <video> 태그의 src 속성을 모두 탐색
+  const htmlRegex =
+    /<(img|video)[^>]*\s+src=(["'])(https?:\/\/[^\s"']+)\2[^>]*>/gi;
 
-    // <img>와 <video> 태그의 src 속성을 모두 탐색
-    const htmlRegex = /<(img|video)[^>]*\s+src=(["'])(https?:\/\/[^\s"']+)\2[^>]*>/gi;
+  // matchAll로 모든 매치 찾기
+  const matches = Array.from(content.matchAll(htmlRegex), (mat) => mat[3]);
 
-    // matchAll로 모든 매치 찾기
-    const matches = Array.from(content.matchAll(htmlRegex), mat => mat[3]);
+  if (matches.length > 0) {
+    return matches;
+  }
 
-    if(matches.length > 0){
-        return matches;
-    }
-
-    return null;
+  return null;
 }
-
 
 /**
  * 원본 이미지를 바탕으로 다중 해상도 이미지를 만들어 반환
@@ -162,35 +170,57 @@ export interface ResizedImages {
   originalUrl: string;
 }
 
-export async function generateResizedImagesSharp(originalUrl: string): Promise<ResizedImages> {
-    const mimeType = getFileExtension(originalUrl);
+export async function generateResizedImagesSharp(
+  originalUrl: string,
+): Promise<ResizedImages> {
+  const mimeType = getFileExtension(originalUrl);
 
-    // 동영상이면 즉시 반환
-    if(mimeType === ".mp4" || mimeType === ".mov" || mimeType === ".avi" ||
-        mimeType === ".wmv" || mimeType === ".asf" || mimeType === ".mkv" ||
-        mimeType === ".flv" || mimeType === ".f4v" || mimeType === ".ts" ||
-        mimeType === ".mpeg") {
-            return {
-                thumbnailUrl: `${vercelBlobUrl}default_thumbnail_video.png`,
-                mediumUrl: originalUrl,
-                originalUrl: originalUrl
-            }
-        }
-
-    const response = await fetch(originalUrl);
-    const buffer = Buffer.from(await response.arrayBuffer());
-
-    // 썸네일
-    const thumbnailBuffer = await sharp(buffer).resize({ width: 200 }).webp().toBuffer();
-    const thumbnailBlob = await put(generateUUID() + ".webp", thumbnailBuffer, { access: 'public', addRandomSuffix: true });
-
-    // 중간 화질
-    const mediumBuffer = await sharp(buffer).resize({ width: 800 }).webp().toBuffer();
-    const mediumBlob = await put(generateUUID() + ".webp", mediumBuffer, { access: 'public', addRandomSuffix: true });
-
+  // 동영상이면 즉시 반환
+  if (
+    mimeType === ".mp4" ||
+    mimeType === ".mov" ||
+    mimeType === ".avi" ||
+    mimeType === ".wmv" ||
+    mimeType === ".asf" ||
+    mimeType === ".mkv" ||
+    mimeType === ".flv" ||
+    mimeType === ".f4v" ||
+    mimeType === ".ts" ||
+    mimeType === ".mpeg"
+  ) {
     return {
-        thumbnailUrl: thumbnailBlob.url,
-        mediumUrl: mediumBlob.url,
-        originalUrl: originalUrl,
+      thumbnailUrl: `${vercelBlobUrl}default_thumbnail_video.png`,
+      mediumUrl: originalUrl,
+      originalUrl: originalUrl,
     };
+  }
+
+  const response = await fetch(originalUrl);
+  const buffer = Buffer.from(await response.arrayBuffer());
+
+  // 썸네일
+  const thumbnailBuffer = await sharp(buffer)
+    .resize({ width: 200 })
+    .webp()
+    .toBuffer();
+  const thumbnailBlob = await put(generateUUID() + ".webp", thumbnailBuffer, {
+    access: "public",
+    addRandomSuffix: true,
+  });
+
+  // 중간 화질
+  const mediumBuffer = await sharp(buffer)
+    .resize({ width: 800 })
+    .webp()
+    .toBuffer();
+  const mediumBlob = await put(generateUUID() + ".webp", mediumBuffer, {
+    access: "public",
+    addRandomSuffix: true,
+  });
+
+  return {
+    thumbnailUrl: thumbnailBlob.url,
+    mediumUrl: mediumBlob.url,
+    originalUrl: originalUrl,
+  };
 }

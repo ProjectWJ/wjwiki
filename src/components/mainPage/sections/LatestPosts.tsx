@@ -3,7 +3,7 @@ import { getPostsByCategory } from "@/lib/post";
 import Link from "next/link";
 
 export async function LatestPosts() {
-    const newPosts = await getPostsByCategory("all", 1);
+  const newPosts = await getPostsByCategory("all", 1);
 
   return (
     <section className="py-16 sm:py-20 lg:py-24 bg-background dark:bg-background transition-colors duration-300">
@@ -18,23 +18,25 @@ export async function LatestPosts() {
             </p>
           </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
-            {newPosts ? newPosts.posts.map((post, index) => {
-              if(index > 5){
-                return;
-              }
-              return (
-                  <BlogCard
-                  key={post.id}
-                  title={post.title}
-                  excerpt={post.summary || "..."}
-                  date={post.updated_at.toLocaleDateString()}
-                  category={post.category}
-                  slug={post.id.toString()}
-                  />
-              )
-            }) : ""}
-        </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
+            {newPosts
+              ? newPosts.posts.map((post, index) => {
+                  if (index > 5) {
+                    return;
+                  }
+                  return (
+                    <BlogCard
+                      key={post.id}
+                      title={post.title}
+                      excerpt={post.summary || "..."}
+                      date={post.updated_at.toLocaleDateString()}
+                      category={post.category}
+                      slug={post.id.toString()}
+                    />
+                  );
+                })
+              : ""}
+          </div>
 
           <div className="mt-12 sm:mt-16 text-center">
             <Link

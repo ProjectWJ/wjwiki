@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image, { StaticImageData } from "next/image";
 import { useState } from "react";
-import { CATEGORIES } from "@/constants/categories"
+import { CATEGORIES } from "@/constants/categories";
 
 export function CategoryShowcase() {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
@@ -43,18 +43,18 @@ export function CategoryShowcase() {
                   `}
                 >
                   <div className="absolute inset-0">
-                  <Image
-                    src={category.image}
-                    alt={category.label}
-                    fill // 또는 layout="fill" (Next.js 13 이전)을 사용하여 부모 요소에 채웁니다.
-                    className={`
+                    <Image
+                      src={category.image}
+                      alt={category.label}
+                      fill // 또는 layout="fill" (Next.js 13 이전)을 사용하여 부모 요소에 채웁니다.
+                      className={`
                       w-full h-full object-cover
                       transition-all duration-700 ease-out
                       ${hoveredId === category.value ? "scale-110" : "scale-100"}
                     `}
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // 반응형 크기를 지정하여 성능을 개선합니다. (선택 사항이지만 권장됨)
-                    priority={false} // (선택 사항) 로딩 우선 순위가 높으면 'true'로 설정합니다.
-                  />
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // 반응형 크기를 지정하여 성능을 개선합니다. (선택 사항이지만 권장됨)
+                      priority={false} // (선택 사항) 로딩 우선 순위가 높으면 'true'로 설정합니다.
+                    />
                     <div
                       className={`
                         absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20
@@ -72,7 +72,7 @@ export function CategoryShowcase() {
                         ${hoveredId === category.value ? "translate-y-0 opacity-100" : "translate-y-2 opacity-90"}
                       `}
                     >
-{/*                       <div className="mb-3">
+                      {/*                       <div className="mb-3">
                         <span className="inline-block px-4 py-1.5 rounded-full bg-white/20 backdrop-blur-sm text-white text-sm font-bold">
                           {category.postCount} 게시글
                         </span>

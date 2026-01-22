@@ -1,7 +1,7 @@
 // src/lib/post.ts
-import { auth } from '@/auth';
-import { prisma } from '@/lib/db';
-import { CATEGORIES } from '@/constants/categories';
+import { auth } from "@/auth";
+import { prisma } from "@/lib/db";
+import { CATEGORIES } from "@/constants/categories";
 
 interface GetPostsResultValue {
   posts: {
@@ -13,7 +13,7 @@ interface GetPostsResultValue {
     is_published: boolean;
     summary: string | null;
     thumbnail_url: string;
-  }[],
+  }[];
   count: number;
 }
 
@@ -22,12 +22,15 @@ const POSTS_PER_PAGE = 12;
 
 /**
  * 카테고리 및 페이지 번호에 따라 게시물을 조회
- * 
+ *
  * @param category - 게시물 카테고리 (e.g., "tech", "daily", "all")
  * @param page - 현재 페이지 번호 (1부터 시작)
  * @returns Prisma가 반환하는 게시물 객체 배열
  */
-export async function getPostsByCategory(category: string, page: number): Promise<GetPostsResultValue | null> {
+export async function getPostsByCategory(
+  category: string,
+  page: number,
+): Promise<GetPostsResultValue | null> {
   // page 값이 1보다 작을 경우 1로 고정
   const actualPage = Math.max(1, page);
 
@@ -91,15 +94,17 @@ export async function getPostsByCategory(category: string, page: number): Promis
   }
 }
 
-
 /**
  * 입력받은 검색값에 따라 게시물을 조회
- * 
+ *
  * @param query - 입력받은 검색값 (제목, 내용)
  * @param page - 현재 페이지 번호 (1부터 시작)
  * @returns Prisma가 반환하는 게시물 객체 배열
  */
-export async function getPostsBySearch(query: string, page: number): Promise<GetPostsResultValue | null> {
+export async function getPostsBySearch(
+  query: string,
+  page: number,
+): Promise<GetPostsResultValue | null> {
   // page 값이 1보다 작을 경우 안전하게 1로 고정
   const actualPage = Math.max(1, page);
 
@@ -117,10 +122,13 @@ export async function getPostsBySearch(query: string, page: number): Promise<Get
      * Prisma에서 사용할 where 조건 객체
      * - 로그인 여부와 category에 따라 필터 조건이 다르게 설정
      */
-    const where: { 
-      category?: string; 
+    const where: {
+      category?: string;
       is_published?: boolean;
-      OR?: ({ title: { contains: string } } | { content: { contains: string } })[];
+      OR?: (
+        | { title: { contains: string } }
+        | { content: { contains: string } }
+      )[];
     } = {};
 
     if (query) {
@@ -160,7 +168,7 @@ export async function getPostsBySearch(query: string, page: number): Promise<Get
       }),
       prisma.post.count({ where }), // 게시물 전체 개수 카운트
     ]);
-    
+
     return { posts, count };
   } catch (error) {
     console.error(`Failed to fetch posts by search: ${category}`, error);
@@ -168,10 +176,9 @@ export async function getPostsBySearch(query: string, page: number): Promise<Get
   }
 }
 
-
 /**
  * 카테고리별 전체 게시물 개수를 반환하는 함수
- * 
+ *
  * @param category - 게시물 카테고리 ("all" 포함)
  * @returns 해당 카테고리에 속한 게시물 개수 (number)
  */
@@ -201,7 +208,6 @@ export async function getPostsBySearch(query: string, page: number): Promise<Get
   }
 } */
 
-
 // [id]에서 사용하는 id를 이용해 개별 게시물을 조회하는 함수 (동적 라우팅용)
 export async function getPostById(id: number) {
   try {
@@ -213,20 +219,20 @@ export async function getPostById(id: number) {
 
     // 개별 게시물 조회
     const post = await prisma.post.findUnique({
-      where
+      where,
     });
 
-    if(post) {
+    if (post) {
       return {
         ...post,
         id: String(post.id),
-      }
+      };
     }
 
     return null;
   } catch (error) {
-    console.error('Failed to fetch post by id:', error);
-    throw new Error('게시글 불러오기 실패');
+    console.error("Failed to fetch post by id:", error);
+    throw new Error("게시글 불러오기 실패");
   }
 }
 
@@ -244,8 +250,9 @@ interface PostCreateData {
 // 새 게시물을 생성하고 DB에 저장
 // @param data 제목, 요약, 내용 등을 포함한 게시물 데이터
 // @returns 생성된 게시물 객체
-export async function createPost(data: PostCreateData) {  
-  const { title, category, content, is_published, summary, thumbnail_url } = data;
+export async function createPost(data: PostCreateData) {
+  const { title, category, content, is_published, summary, thumbnail_url } =
+    data;
 
   // thubnail_url이 제공되지 않으면 null 또는 undefined로 처리해서 pirsma 스키마와 맞춤
   const finalThumbnailUrl = thumbnail_url?.trim() || undefined;
@@ -261,6 +268,6 @@ export async function createPost(data: PostCreateData) {
       // create_at 등은 DB 설정에 따라 자동 생성
       // 수동 설정이 필요하면 여기에 작성
       created_at: new Date(),
-    }
+    },
   });
 }

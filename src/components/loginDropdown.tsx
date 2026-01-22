@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { CircleUserRound } from "lucide-react"
+import { useState } from "react";
+import { CircleUserRound } from "lucide-react";
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -12,7 +12,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,23 +21,28 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { useFormStatus } from "react-dom"
-import { Spinner } from "./ui/spinner"
+} from "@/components/ui/dropdown-menu";
+import { useFormStatus } from "react-dom";
+import { Spinner } from "./ui/spinner";
 
 interface DropdownProps {
   // onSignOut은 서버 액션이므로 (formData: FormData) => Promise<void> 형태의 함수
-  onSignOut: () => Promise<void>; 
+  onSignOut: () => Promise<void>;
 }
 
 export function DropdownMenuDialog({ onSignOut }: DropdownProps) {
-  const [showLogoutDialog, setShowLogoutDialog] = useState(false)
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
   return (
     <>
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
-          <Button className="hover:cursor-pointer" variant="outline" aria-label="Open menu" size="icon-sm">
+          <Button
+            className="hover:cursor-pointer"
+            variant="outline"
+            aria-label="Open menu"
+            size="icon-sm"
+          >
             {/* account 로고 */}
             <CircleUserRound />
           </Button>
@@ -46,23 +51,30 @@ export function DropdownMenuDialog({ onSignOut }: DropdownProps) {
           <DropdownMenuLabel>ProjectWJ</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem 
-                className="hover:cursor-pointer"
-                onClick={() => {location.href="/posts/new"}}>
-                글쓰기
+            <DropdownMenuItem
+              className="hover:cursor-pointer"
+              onClick={() => {
+                location.href = "/posts/new";
+              }}
+            >
+              글쓰기
             </DropdownMenuItem>
-            <DropdownMenuItem 
-                className="hover:cursor-pointer"
-                onClick={() => {location.href="/admin"}}>
-                관리(미구현)
+            <DropdownMenuItem
+              className="hover:cursor-pointer"
+              onClick={() => {
+                location.href = "/admin";
+              }}
+            >
+              관리(미구현)
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem 
-                className="hover:cursor-pointer"
-                onSelect={() => setShowLogoutDialog(true)}>
-                로그아웃
+            <DropdownMenuItem
+              className="hover:cursor-pointer"
+              onSelect={() => setShowLogoutDialog(true)}
+            >
+              로그아웃
             </DropdownMenuItem>
           </DropdownMenuGroup>
         </DropdownMenuContent>
@@ -71,31 +83,33 @@ export function DropdownMenuDialog({ onSignOut }: DropdownProps) {
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>로그아웃하시겠습니까?</DialogTitle>
-            <DialogDescription>
-            </DialogDescription>
+            <DialogDescription></DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <DialogClose asChild>
               <Button variant="outline">취소</Button>
             </DialogClose>
             <form action={onSignOut}>
-                <LogoutSubmitButton />
+              <LogoutSubmitButton />
             </form>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
-  )
+  );
 }
 
 function LogoutSubmitButton() {
   const { pending } = useFormStatus();
 
   return (
-    <Button variant="outline" type="submit" disabled={pending}
+    <Button
+      variant="outline"
+      type="submit"
+      disabled={pending}
       className="bg-red-400 text-white hover:bg-red-500 hover:text-white w-full"
     >
-      {pending ? <Spinner /> : '로그아웃'}
+      {pending ? <Spinner /> : "로그아웃"}
     </Button>
   );
 }

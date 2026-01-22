@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import Link from "next/link"
+import * as React from "react";
+import Link from "next/link";
 
-import { useIsMobile } from "@/hooks/use-mobile"
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -12,39 +12,45 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu"
-import { CATEGORIES } from "@/constants/categories"
-import { NaviLogo } from "./LogoSize"
-
+} from "@/components/ui/navigation-menu";
+import { CATEGORIES } from "@/constants/categories";
+import { NaviLogo } from "./LogoSize";
 
 function ListItemMap() {
-  return(
-    CATEGORIES.map((c, index) => {
-      return (
-        <ListItem key={index} href={"/posts/all?category=" + c.value} title={c.label}>
-          {c.detail}
-        </ListItem>
-      )
-    })
-  )
+  return CATEGORIES.map((c, index) => {
+    return (
+      <ListItem
+        key={index}
+        href={"/posts/all?category=" + c.value}
+        title={c.label}
+      >
+        {c.detail}
+      </ListItem>
+    );
+  });
 }
 
 export function NavigationMenuDemo() {
-  const isMobile = useIsMobile()
+  const isMobile = useIsMobile();
 
   return (
     <NavigationMenu className="z-30 sm:px-4" viewport={isMobile}>
       <NavigationMenuList className="">
-        {!isMobile ?
+        {!isMobile ? (
           <NavigationMenuItem>
-            <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+            <NavigationMenuLink
+              asChild
+              className={navigationMenuTriggerStyle()}
+            >
               <Link href="/">
-  {/*               <span className="font-bold">WJwiki</span> */}
+                {/*               <span className="font-bold">WJwiki</span> */}
                 <NaviLogo />
               </Link>
             </NavigationMenuLink>
           </NavigationMenuItem>
-        : ""}
+        ) : (
+          ""
+        )}
         <NavigationMenuItem>
           <NavigationMenuTrigger>Blog</NavigationMenuTrigger>
           <NavigationMenuContent>
@@ -91,14 +97,15 @@ export function NavigationMenuDemo() {
                 href="https://github.com/ProjectWJ/webtools_lite_extension"
                 title="Webtools Lite"
               >
-                웹 페이지에서 유용하게 활용할 수 있는 다기능 도구 모음 확장프로그램입니다.
+                웹 페이지에서 유용하게 활용할 수 있는 다기능 도구 모음
+                확장프로그램입니다.
               </ListItem>
             </ul>
           </NavigationMenuContent>
         </NavigationMenuItem>
       </NavigationMenuList>
     </NavigationMenu>
-  )
+  );
 }
 
 function ListItem({
@@ -118,5 +125,5 @@ function ListItem({
         </Link>
       </NavigationMenuLink>
     </li>
-  )
+  );
 }

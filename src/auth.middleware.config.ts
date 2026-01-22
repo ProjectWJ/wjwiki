@@ -5,8 +5,8 @@
 import type { NextAuthConfig } from "next-auth";
 
 export const middlewareAuthConfig: NextAuthConfig = {
-    pages: {
-        signIn: "/login",
-    },
-    providers: [],
+  pages: {
+    signIn: "/login",
+  },
+  providers: [],
 };

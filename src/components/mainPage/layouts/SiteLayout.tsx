@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 
-
 interface SiteLayoutProps {
   children: ReactNode;
 }

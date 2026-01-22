@@ -1,70 +1,105 @@
 // Server Actions 함수들 모아두는 곳
-'use server';
+"use server";
 
-import { redirect } from 'next/navigation';
-import { createPost } from '@/lib/post';
-import { del, copy } from '@vercel/blob';
-import { prisma } from '@/lib/db';
-import { revalidatePath } from 'next/cache';
-import { extractFirstMediaUrl, findThumbnailUrl, ResizedImages, generateResizedImagesSharp, generateUUID, getFileExtension, howManyMedia } from '@/lib/server-utils' // 썸네일 생성
-import { vercelBlobUrl } from '@/constants/vercelblobURL';
+import { redirect } from "next/navigation";
+import { createPost } from "@/lib/post";
+import { del, copy } from "@vercel/blob";
+import { prisma } from "@/lib/db";
+import { revalidatePath } from "next/cache";
+import {
+  extractFirstMediaUrl,
+  findThumbnailUrl,
+  ResizedImages,
+  generateResizedImagesSharp,
+  generateUUID,
+  getFileExtension,
+  howManyMedia,
+} from "@/lib/server-utils"; // 썸네일 생성
+import { vercelBlobUrl } from "@/constants/vercelblobURL";
 import sanitize, { Attributes } from "sanitize-html";
-import * as cheerio from 'cheerio';
-import { auth } from '@/auth';
-import { Session } from 'next-auth';
+import * as cheerio from "cheerio";
+import { auth } from "@/auth";
+import { Session } from "next-auth";
 
 const VIDEO_FORMATS = [
-    ".mp4",
-    ".wmv",
-    ".flv",
-    ".mpeg",
-    ".mov",
-    ".asf",
-    ".f4v",
-    ".avi",
-    ".mkv",
-    // 기존 코드에 있던 ".ts"를 포함하려면 여기에 추가해야 함
+  ".mp4",
+  ".wmv",
+  ".flv",
+  ".mpeg",
+  ".mov",
+  ".asf",
+  ".f4v",
+  ".avi",
+  ".mkv",
+  // 기존 코드에 있던 ".ts"를 포함하려면 여기에 추가해야 함
 ];
 
 const TIPTAP_SANITIZE_CONFIG = {
   // 기본 허용 태그에 Tiptap이 자주 쓰는 블록 태그(제목, 테이블, 미디어 등)를 추가합니다.
   allowedTags: sanitize.defaults.allowedTags.concat([
-    'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 
-    'p', 'div', 'span', 'br', 'hr',
-    'img', 'iframe', 'video', 
-    'pre', 'code', 'blockquote', 
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "p",
+    "div",
+    "span",
+    "br",
+    "hr",
+    "img",
+    "iframe",
+    "video",
+    "pre",
+    "code",
+    "blockquote",
     // 테이블 관련 태그
-    'table', 'thead', 'tbody', 'tr', 'td', 'th',
+    "table",
+    "thead",
+    "tbody",
+    "tr",
+    "td",
+    "th",
   ]),
-  
+
   // 기본 허용 속성에 추가로 필요한 속성들을 정의합니다.
   allowedAttributes: {
     ...sanitize.defaults.allowedAttributes,
     // <a> 태그 속성 (타겟, 네임 등)
-    a: ['href', 'name', 'target', 'rel'], 
+    a: ["href", "name", "target", "rel"],
     // <img> 태그 속성 (이미지 크기)
-    img: ['src', 'alt', 'width', 'height', 'loading'], 
+    img: ["src", "alt", "width", "height", "loading"],
     // <iframe>, <video> 태그 속성
-    iframe: ['src', 'width', 'height', 'frameborder', 'allowfullscreen', 'allow', 'referrerpolicy', 'scrolling'], 
-    video: ['src', 'controls', 'width', 'height', 'autoplay', 'loop', 'muted'],
+    iframe: [
+      "src",
+      "width",
+      "height",
+      "frameborder",
+      "allowfullscreen",
+      "allow",
+      "referrerpolicy",
+      "scrolling",
+    ],
+    video: ["src", "controls", "width", "height", "autoplay", "loop", "muted"],
     // Tiptap이 사용하는 모든 태그(*)에 공통으로 필요한 속성 (스타일, 클래스, 데이터 속성)
-    '*': ['class', 'style', 'data-*', 'align'], 
+    "*": ["class", "style", "data-*", "align"],
   },
 
   // iframe을 허용하는 경우, 보안을 위해 허용할 도메인만 지정합니다. (필수)
-  allowedIframeHostnames: ['www.youtube.com'],
+  allowedIframeHostnames: ["www.youtube.com"],
 
   // 스타일을 허용할지 여부 (Tiptap에서 텍스트 색상 등을 쓸 때 필요합니다)
   allowedStyles: {
-    '*': {
-      'text-align': [/^(left|right|center|justify)$/],
-      'color': [/^[a-zA-Z0-9(),.\s#%-]+$/],
-      'background-color': [/^[a-zA-Z0-9(),.\s#%-]+$/],
-      'width': [/^\d+(px|em|rem|%)?$/],
-      'height': [/^\d+(px|em|rem|%)?$/],
-      'margin': [/^[0-9\spxrem%\-]+$/],
-      'padding': [/^[0-9\spxrem%\-]+$/],
-    }
+    "*": {
+      "text-align": [/^(left|right|center|justify)$/],
+      color: [/^[a-zA-Z0-9(),.\s#%-]+$/],
+      "background-color": [/^[a-zA-Z0-9(),.\s#%-]+$/],
+      width: [/^\d+(px|em|rem|%)?$/],
+      height: [/^\d+(px|em|rem|%)?$/],
+      margin: [/^[0-9\spxrem%\-]+$/],
+      padding: [/^[0-9\spxrem%\-]+$/],
+    },
   },
 
   // HTML 주석 제거
@@ -74,17 +109,19 @@ const TIPTAP_SANITIZE_CONFIG = {
   transformTags: {
     // TagName과 Attributes 타입을 사용합니다.
     a: (tagName: string, attribs: Attributes) => {
-        // attribs가 Attributes 타입이므로 객체 속성에 안전하게 접근할 수 있습니다.
-        attribs.rel = attribs.rel ? `${attribs.rel} noopener noreferrer` : 'noopener noreferrer';
-        // sanitize-html Transformer는 Tag 형태({ tagName?, attribs? })를 반환해야 합니다.
-        return { tagName, attribs };
-    }
-  }
+      // attribs가 Attributes 타입이므로 객체 속성에 안전하게 접근할 수 있습니다.
+      attribs.rel = attribs.rel
+        ? `${attribs.rel} noopener noreferrer`
+        : "noopener noreferrer";
+      // sanitize-html Transformer는 Tag 형태({ tagName?, attribs? })를 반환해야 합니다.
+      return { tagName, attribs };
+    },
+  },
 };
 
 async function loginAuth(): Promise<Session> {
   const session = await auth();
-  
+
   if (!session || !session.user) {
     throw new Error("Unauthorized");
   }
@@ -95,15 +132,15 @@ async function loginAuth(): Promise<Session> {
 // 게시물 생성 폼 제출을 처리하는 서버 액션
 // @param formData 폼 데이터를 포함하는 객체
 export async function handleCreatePost(formData: FormData) {
-
   const session = await loginAuth();
 
   // FormData 객체에서 필드 값을 추출합니다.
-  const title = formData.get('title') as string;
-  const category_select = formData.get('category_select') as string || "diary";
-  const rawContent = formData.get('content') as string;
+  const title = formData.get("title") as string;
+  const category_select =
+    (formData.get("category_select") as string) || "diary";
+  const rawContent = formData.get("content") as string;
   const content = sanitize(rawContent, TIPTAP_SANITIZE_CONFIG); // xss 정화
-  const is_published = formData.get('is_published') === 'on' ? false : true; // 체크박스가 off일 때 true
+  const is_published = formData.get("is_published") === "on" ? false : true; // 체크박스가 off일 때 true
   const summary = cheerio.load(content).text().trim().substring(0, 50); // 요약은 내용의 앞 50자로 자동 생성
   const firstMedia = extractFirstMediaUrl(content); // 첫 번째 미디어
   const thumbnail_url = await findThumbnailUrl(firstMedia);
@@ -129,7 +166,7 @@ export async function handleCreatePost(formData: FormData) {
       summary,
       thumbnail_url: thumbnail_url,
     });
-    
+
     newPostId = newPost.id;
   } catch (error) {
     console.error("게시물 생성 중 오류 발생:", error);
@@ -138,40 +175,35 @@ export async function handleCreatePost(formData: FormData) {
   }
 
   // media가 있고, createPost가 성공하면 본문에 포함된 모든 미디어를 USED로 변경
-  if(mediaArray) {
-
+  if (mediaArray) {
     // 비공개 상태인지에 따라 다른 쿼리
-    if(is_published === false){
-      await prisma.media.updateMany ({
-        where: { medium_url: { in: mediaArray }, status: 'PENDING'},
+    if (is_published === false) {
+      await prisma.media.updateMany({
+        where: { medium_url: { in: mediaArray }, status: "PENDING" },
         data: {
           status: "USED",
           post_id: newPostId,
-          is_public: false
-        }
-      })
-    }
-    else{
-      await prisma.media.updateMany ({
-        where: { medium_url: { in: mediaArray }, status: 'PENDING'},
+          is_public: false,
+        },
+      });
+    } else {
+      await prisma.media.updateMany({
+        where: { medium_url: { in: mediaArray }, status: "PENDING" },
         data: {
           status: "USED",
           post_id: newPostId,
-          is_public: true
-        }
-      })
+          is_public: true,
+        },
+      });
     }
-
   }
 
   // 공개 게시물이면 거기로, 아니면 전체 게시물로 이동
-  if(is_published === true){
+  if (is_published === true) {
     redirect(`/posts/${newPostId}`);
+  } else {
+    redirect("/posts/all");
   }
-  else {
-    redirect('/posts/all');
-  }
-
 }
 
 /**
@@ -180,54 +212,55 @@ export async function handleCreatePost(formData: FormData) {
  * @returns {void}
  */
 export async function handleUpdatePost(formData: FormData): Promise<void> {
+  const session = await loginAuth();
 
-    const session = await loginAuth();
-
-    // 1. 데이터 추출 및 유효성 검사
-    const id = formData.get('id') as string;
-    const title = formData.get('title') as string;
-    const category_select = formData.get('category_select') as string || "diary";
-    const legacyContent = formData.get("legacy_content") as string;
-    const rawContent = formData.get('content') as string;
-    const content = sanitize(rawContent, TIPTAP_SANITIZE_CONFIG); // xss 정화
-    const legacyIs_published = formData.get('legacy_is_published') === 'on' ? false : true;
-    const is_published = formData.get('is_published') === 'on' ? false : true; // 체크박스가 off일 때 true
-/*     const summary = content.substring(0, 50); // 요약은 내용의 앞 50자로 자동 생성
+  // 1. 데이터 추출 및 유효성 검사
+  const id = formData.get("id") as string;
+  const title = formData.get("title") as string;
+  const category_select =
+    (formData.get("category_select") as string) || "diary";
+  const legacyContent = formData.get("legacy_content") as string;
+  const rawContent = formData.get("content") as string;
+  const content = sanitize(rawContent, TIPTAP_SANITIZE_CONFIG); // xss 정화
+  const legacyIs_published =
+    formData.get("legacy_is_published") === "on" ? false : true;
+  const is_published = formData.get("is_published") === "on" ? false : true; // 체크박스가 off일 때 true
+  /*     const summary = content.substring(0, 50); // 요약은 내용의 앞 50자로 자동 생성
     const firstMedia = extractFirstMediaUrl(content); // 첫 번째 미디어
  */
-    if (!id || !title || !content) {
-        // 더 상세한 오류 처리 필요
-        throw new Error("필수 정보(ID, 제목, 내용)가 누락되었습니다.");
-    }
-    
-    const postId = parseInt(id, 10);
-    if (isNaN(postId)) {
-        throw new Error("유효하지 않은 게시글 ID입니다.");
-    }
+  if (!id || !title || !content) {
+    // 더 상세한 오류 처리 필요
+    throw new Error("필수 정보(ID, 제목, 내용)가 누락되었습니다.");
+  }
 
+  const postId = parseInt(id, 10);
+  if (isNaN(postId)) {
+    throw new Error("유효하지 않은 게시글 ID입니다.");
+  }
 
-    // 게시글을 비공개로 전환하는 경우
-    if (legacyIs_published === true && is_published === false){
-      // 미디어 전체를 새 URL로 갈아끼우고 변경
-      const replicateResult = await replicateMediaAndGetNewUrls(postId, content);
+  // 게시글을 비공개로 전환하는 경우
+  if (legacyIs_published === true && is_published === false) {
+    // 미디어 전체를 새 URL로 갈아끼우고 변경
+    const replicateResult = await replicateMediaAndGetNewUrls(postId, content);
 
-      // 새 썸네일 생성
-      const newFirstMedia = extractFirstMediaUrl(replicateResult);
-      const newThumbnailUrl = newFirstMedia ? await findThumbnailUrl(newFirstMedia) : `${vercelBlobUrl}default_thumbnail.png`;
-      
-      await prisma.post.update({
-        where: { id: postId },
-        data: {
-          title,
-          category: category_select,
-          content: replicateResult,
-          updated_at: new Date(),
-          is_published: false,
-          summary: cheerio.load(replicateResult).text().trim().substring(0, 50),
-          thumbnail_url: newThumbnailUrl,
-        }
-      });
+    // 새 썸네일 생성
+    const newFirstMedia = extractFirstMediaUrl(replicateResult);
+    const newThumbnailUrl = newFirstMedia
+      ? await findThumbnailUrl(newFirstMedia)
+      : `${vercelBlobUrl}default_thumbnail.png`;
 
+    await prisma.post.update({
+      where: { id: postId },
+      data: {
+        title,
+        category: category_select,
+        content: replicateResult,
+        updated_at: new Date(),
+        is_published: false,
+        summary: cheerio.load(replicateResult).text().trim().substring(0, 50),
+        thumbnail_url: newThumbnailUrl,
+      },
+    });
 
     // 기존 미디어를 media DB 및 blob 저장소에서 모두 삭제
     const delLegacyMediaArray = howManyMedia(legacyContent);
@@ -237,64 +270,64 @@ export async function handleUpdatePost(formData: FormData): Promise<void> {
       deleteMediaAndBlob(delLegacyMediaArray, "legacy"),
       deleteMediaAndBlob(delMediaArray, "current"),
     ]);
-
   } else {
-      // 게시글을 비공개로 전환하지 않는 경우 DB 업데이트 로직
-      const newFirstMedia = extractFirstMediaUrl(content);
-      const newThumbnailUrl = newFirstMedia ? await findThumbnailUrl(newFirstMedia) : `${vercelBlobUrl}default_thumbnail.png`;
+    // 게시글을 비공개로 전환하지 않는 경우 DB 업데이트 로직
+    const newFirstMedia = extractFirstMediaUrl(content);
+    const newThumbnailUrl = newFirstMedia
+      ? await findThumbnailUrl(newFirstMedia)
+      : `${vercelBlobUrl}default_thumbnail.png`;
 
-      try {
-          await prisma.post.update({
-              where: { id: postId },
-              data: {
-                  title: title,
-                  category: category_select,
-                  content: content,
-                  updated_at: new Date(),
-                  is_published: true,
-                  summary: cheerio.load(content).text().trim().substring(0, 50),
-                  thumbnail_url: newThumbnailUrl,
-              },
-          });
+    try {
+      await prisma.post.update({
+        where: { id: postId },
+        data: {
+          title: title,
+          category: category_select,
+          content: content,
+          updated_at: new Date(),
+          is_published: true,
+          summary: cheerio.load(content).text().trim().substring(0, 50),
+          thumbnail_url: newThumbnailUrl,
+        },
+      });
+    } catch (error) {
+      console.error("게시글 수정 실패: ", error);
+      // 사용자에게 상세 오류 메시지를 전달하지 않고 일반적인 오류를 던집니다.
+      throw new Error("게시글을 수정하는 도중 오류가 발생했습니다.");
+    }
 
-      } catch (error) {
-          console.error("게시글 수정 실패: ", error);
-          // 사용자에게 상세 오류 메시지를 전달하지 않고 일반적인 오류를 던집니다.
-          throw new Error("게시글을 수정하는 도중 오류가 발생했습니다.");
+    // media가 있고, createPost가 성공하면 본문에 포함된 모든 미디어를 USED로 변경
+    try {
+      // 컨텐츠에 써진 모든 미디어 찾기
+      const mediaArray = howManyMedia(content);
+
+      // 기존에 쓰인 모든 미디어 목록
+      const legacyMediaArray = howManyMedia(legacyContent);
+      let scheduledDeleteMedia;
+
+      if (legacyMediaArray) {
+        // 현재 미디어 배열이 없으면 전체 삭제 예정
+        scheduledDeleteMedia = !mediaArray
+          ? legacyMediaArray
+          : legacyMediaArray.filter((item) => !mediaArray.includes(item));
       }
 
-      // media가 있고, createPost가 성공하면 본문에 포함된 모든 미디어를 USED로 변경
-      try {
-        // 컨텐츠에 써진 모든 미디어 찾기
-        const mediaArray = howManyMedia(content);
+      // 사용하는 미디어를 USED로 업데이트
+      if (mediaArray && mediaArray.length > 0) {
+        await prisma.media.updateMany({
+          where: {
+            medium_url: { in: mediaArray },
+          },
+          data: {
+            status: "USED",
+            is_public: is_published ? true : false, // 기본값 true
+            post_id: postId,
+            updated_at: new Date(),
+          },
+        });
+      }
 
-        // 기존에 쓰인 모든 미디어 목록
-        const legacyMediaArray = howManyMedia(legacyContent);
-        let scheduledDeleteMedia;
-
-        if (legacyMediaArray) {
-          // 현재 미디어 배열이 없으면 전체 삭제 예정
-          scheduledDeleteMedia = !mediaArray
-            ? legacyMediaArray
-            : legacyMediaArray.filter(item => !mediaArray.includes(item));
-        }
-
-        // 사용하는 미디어를 USED로 업데이트
-        if (mediaArray && mediaArray.length > 0) {
-          await prisma.media.updateMany({
-            where: {
-              medium_url: { in: mediaArray }
-            },
-            data: {
-              status: "USED",
-              is_public: is_published ? true : false, // 기본값 true
-              post_id: postId,
-              updated_at: new Date(),
-            },
-          });
-        }
-
-/*         // 더 이상 사용하지 않는 미디어를 SCHEDULED_FOR_DELETION로 업데이트
+      /*         // 더 이상 사용하지 않는 미디어를 SCHEDULED_FOR_DELETION로 업데이트
         if (scheduledDeleteMedia && scheduledDeleteMedia.length > 0) {
           await prisma.media.updateMany({
             where: {
@@ -311,26 +344,24 @@ export async function handleUpdatePost(formData: FormData): Promise<void> {
       if (scheduledDeleteMedia && scheduledDeleteMedia.length > 0) {
         await deleteMediaAndBlob(scheduledDeleteMedia, "legacy_public");
       }
-
-      } catch (error) {
-        console.error("Media 테이블 수정 실패: ", error);
-        throw new Error("Media 테이블을 수정하는 도중 오류가 발생했습니다.")
-      }
+    } catch (error) {
+      console.error("Media 테이블 수정 실패: ", error);
+      throw new Error("Media 테이블을 수정하는 도중 오류가 발생했습니다.");
     }
+  }
 
-    // 3. 캐시 갱신 (선택 사항: 캐시된 목록 페이지를 갱신)
-    // /posts 경로의 데이터 캐시를 무효화하여 수정된 내용이 즉시 반영되게 합니다.
-    revalidatePath('/posts');
-    revalidatePath(`/posts/${id}`); // 상세 페이지 캐시도 갱신
+  // 3. 캐시 갱신 (선택 사항: 캐시된 목록 페이지를 갱신)
+  // /posts 경로의 데이터 캐시를 무효화하여 수정된 내용이 즉시 반영되게 합니다.
+  revalidatePath("/posts");
+  revalidatePath(`/posts/${id}`); // 상세 페이지 캐시도 갱신
 
-    // 4. 리다이렉션: 수정된 게시글의 상세 페이지로 이동
-    // 공개 게시물이면 거기로, 아니면 전체 게시물로 이동
-    if(is_published === true){
-      redirect(`/posts/${id}`);
-    }
-    else {
-      redirect('/posts/all');
-    }
+  // 4. 리다이렉션: 수정된 게시글의 상세 페이지로 이동
+  // 공개 게시물이면 거기로, 아니면 전체 게시물로 이동
+  if (is_published === true) {
+    redirect(`/posts/${id}`);
+  } else {
+    redirect("/posts/all");
+  }
 }
 
 /**
@@ -339,30 +370,29 @@ export async function handleUpdatePost(formData: FormData): Promise<void> {
  * @returns {void}
  */
 export async function handleDeletePost(id: string): Promise<void> {
+  const session = await loginAuth();
 
-    const session = await loginAuth();
+  const postId = parseInt(id, 10);
 
-    const postId = parseInt(id, 10);
+  if (isNaN(postId)) {
+    throw new Error("유효하지 않은 게시글 ID입니다.");
+  }
 
-    if (isNaN(postId)) {
-        throw new Error("유효하지 않은 게시글 ID입니다.");
-    }
-    
-    // 1. 🚨 게시글을 삭제하기 전에 내용을 조회하여 미디어 URL을 확보합니다.
-    const postToDelete = await prisma.post.findUnique({
-        where: { id: postId }
-    });
+  // 1. 🚨 게시글을 삭제하기 전에 내용을 조회하여 미디어 URL을 확보합니다.
+  const postToDelete = await prisma.post.findUnique({
+    where: { id: postId },
+  });
 
-    if (!postToDelete) {
-        // 이미 삭제되었거나 존재하지 않는 경우
-        console.log("게시글이 이미 삭제되었습니다.");
-        revalidatePath('/posts'); 
-        redirect('/posts');
-    }
+  if (!postToDelete) {
+    // 이미 삭제되었거나 존재하지 않는 경우
+    console.log("게시글이 이미 삭제되었습니다.");
+    revalidatePath("/posts");
+    redirect("/posts");
+  }
 
-    // 1. DB 삭제 로직
-    try {
-/*       // 3일 후 삭제되도록 예약 시간을 설정합니다.
+  // 1. DB 삭제 로직
+  try {
+    /*       // 3일 후 삭제되도록 예약 시간을 설정합니다.
       const scheduledDeleteTime = new Date();
       scheduledDeleteTime.setDate(scheduledDeleteTime.getDate() + 3); // 3일 후
 
@@ -378,54 +408,62 @@ export async function handleDeletePost(id: string): Promise<void> {
         },
       }); */
 
-      // 괜히 유예기간 주지 않는 게 좋을듯
-      // 삭제가 무서우면 유예기간 X 백업 O
+    // 괜히 유예기간 주지 않는 게 좋을듯
+    // 삭제가 무서우면 유예기간 X 백업 O
 
-      // 해당 id에서 사용된 모든 미디어 불러오기
-      const mediaList = await prisma.media.findMany({
-        where: { post_id: postId }
-      })
+    // 해당 id에서 사용된 모든 미디어 불러오기
+    const mediaList = await prisma.media.findMany({
+      where: { post_id: postId },
+    });
 
-      // 미디어 삭제
-      if (mediaList.length > 0) {
-        for (const media of mediaList) {
-          // 동영상이면 영상 하나만 폐기하면 됨
-          if (VIDEO_FORMATS.includes(media.mime_type)){
-            await del(media.blob_url);
-            console.log("Blob Delete Complete:", media.original_name);
-            continue;
-          }
-
-          // Blob에서 이미지 파일들 폐기
-          const urlsToDelete = [media.blob_url, media.medium_url, media.thumbnail_url]
-            .filter((url): url is string => !!url); // null/undefined/빈 문자열 제외
-
-          await Promise.all(urlsToDelete.map(url => del(url)));
-          console.log("Blob Delete Complete:", urlsToDelete);
+    // 미디어 삭제
+    if (mediaList.length > 0) {
+      for (const media of mediaList) {
+        // 동영상이면 영상 하나만 폐기하면 됨
+        if (VIDEO_FORMATS.includes(media.mime_type)) {
+          await del(media.blob_url);
+          console.log("Blob Delete Complete:", media.original_name);
+          continue;
         }
 
-        // DB에서 파일들 폐기
-        await prisma.media.deleteMany({
-          where: { post_id: postId }
-        });
-        console.log("prisma Media Delete Complete:", JSON.stringify(mediaList, null, 2));
+        // Blob에서 이미지 파일들 폐기
+        const urlsToDelete = [
+          media.blob_url,
+          media.medium_url,
+          media.thumbnail_url,
+        ].filter((url): url is string => !!url); // null/undefined/빈 문자열 제외
+
+        await Promise.all(urlsToDelete.map((url) => del(url)));
+        console.log("Blob Delete Complete:", urlsToDelete);
       }
 
-      await prisma.post.delete({
-          where: { id: postId },
+      // DB에서 파일들 폐기
+      await prisma.media.deleteMany({
+        where: { post_id: postId },
       });
-      console.log("Posts Delete Complete: " + postId);
-    } catch (error) {
-        console.error("게시글 삭제 또는 미디어 정리 예약 실패:", error);
-        throw new Error("게시글 및 관련 미디어를 처리하는 도중 오류가 발생했습니다.");
+      console.log(
+        "prisma Media Delete Complete:",
+        JSON.stringify(mediaList, null, 2),
+      );
     }
 
-    // 2. 캐시 갱신 (목록 페이지와 삭제된 상세 페이지 경로 모두 갱신)
-    revalidatePath('/posts/all');
-    revalidatePath(`/posts/${id}`); // 상세 페이지 캐시 무효화
+    await prisma.post.delete({
+      where: { id: postId },
+    });
+    console.log("Posts Delete Complete: " + postId);
+  } catch (error) {
+    console.error("게시글 삭제 또는 미디어 정리 예약 실패:", error);
+    throw new Error(
+      "게시글 및 관련 미디어를 처리하는 도중 오류가 발생했습니다.",
+    );
+  }
 
-    // 3. 리다이렉션: 삭제 후 게시글 목록으로 이동
-    redirect('/posts/all'); 
+  // 2. 캐시 갱신 (목록 페이지와 삭제된 상세 페이지 경로 모두 갱신)
+  revalidatePath("/posts/all");
+  revalidatePath(`/posts/${id}`); // 상세 페이지 캐시 무효화
+
+  // 3. 리다이렉션: 삭제 후 게시글 목록으로 이동
+  redirect("/posts/all");
 }
 
 /**
@@ -435,7 +473,10 @@ export async function handleDeletePost(id: string): Promise<void> {
  * @param content 수정 중인 게시글 내용 (textarea에서 입력된 상태)
  * @returns 새로 복제된 미디어 URL이 적용된 content
  */
-async function replicateMediaAndGetNewUrls(postId: number, content: string): Promise<string> {
+async function replicateMediaAndGetNewUrls(
+  postId: number,
+  content: string,
+): Promise<string> {
   // 0️⃣ content에서 medium_url 추출
   const mediaArray = howManyMedia(content); // 현재 textarea에서 수정된 컨텐츠 안의 medium_url 배열
   if (!mediaArray) return content; // 미디어가 없으면 바로 원본 content 반환
@@ -444,74 +485,91 @@ async function replicateMediaAndGetNewUrls(postId: number, content: string): Pro
   // => content에 있는 medium_url을 키로 blob_url 매핑
   const blobMap = await prisma.media.findMany({
     where: { medium_url: { in: mediaArray } },
-    select: { blob_url: true, medium_url: true, thumbnail_url: true }
+    select: { blob_url: true, medium_url: true, thumbnail_url: true },
   });
-  const mediumToBlobMap = new Map(blobMap.map(m => [m.medium_url, m.blob_url]));
+  const mediumToBlobMap = new Map(
+    blobMap.map((m) => [m.medium_url, m.blob_url]),
+  );
 
   // 2️⃣ 병렬 복제 작업을 위한 Promise 배열 생성
   const replicationPromises = mediaArray.map(async (mediumUrl) => {
-      try {
-          const oldBlobUrl = mediumToBlobMap.get(mediumUrl);
-          if (!oldBlobUrl) throw new Error(`Blob not found for mediumUrl: ${mediumUrl}`);
+    try {
+      const oldBlobUrl = mediumToBlobMap.get(mediumUrl);
+      if (!oldBlobUrl)
+        throw new Error(`Blob not found for mediumUrl: ${mediumUrl}`);
 
-          // 2-1️⃣ Vercel Blob 복제
-          const mime_type = getFileExtension(oldBlobUrl);
-          const newBlob = await copy(oldBlobUrl, generateUUID() + mime_type, { access: 'public' });
+      // 2-1️⃣ Vercel Blob 복제
+      const mime_type = getFileExtension(oldBlobUrl);
+      const newBlob = await copy(oldBlobUrl, generateUUID() + mime_type, {
+        access: "public",
+      });
 
-          // 2-2️⃣ 썸네일, mediumUrl 등 리사이징된 이미지 생성
-          const fileURL: ResizedImages = await generateResizedImagesSharp(newBlob.url);
+      // 2-2️⃣ 썸네일, mediumUrl 등 리사이징된 이미지 생성
+      const fileURL: ResizedImages = await generateResizedImagesSharp(
+        newBlob.url,
+      );
 
-          // 2-3️⃣ 새 Media 레코드 DB에 생성
-          await prisma.media.create({
-              data: {
-                  blob_url: newBlob.url,                       // 새 복제 Blob URL
-                  original_name: generateUUID() + mime_type,    // newBlob.pathname.split('/').pop() || 'replicated-file',
-                  mime_type: mime_type,                        // 파일 확장자
-                  uploaded_by: "projectwj",                    // uploader 정보
-                  status: "USED",                              // 사용 중인 미디어로 상태 설정
-                  created_at: new Date(),
-                  updated_at: new Date(),
-                  is_public: false,                            // 비공개용으로 마킹
-                  post_id: postId,                             // 게시글 ID 연결
-                  medium_url: fileURL.mediumUrl,               // 새 medium_url
-                  thumbnail_url: fileURL.thumbnailUrl,        // 썸네일 URL
-              }
-          });
+      // 2-3️⃣ 새 Media 레코드 DB에 생성
+      await prisma.media.create({
+        data: {
+          blob_url: newBlob.url, // 새 복제 Blob URL
+          original_name: generateUUID() + mime_type, // newBlob.pathname.split('/').pop() || 'replicated-file',
+          mime_type: mime_type, // 파일 확장자
+          uploaded_by: "projectwj", // uploader 정보
+          status: "USED", // 사용 중인 미디어로 상태 설정
+          created_at: new Date(),
+          updated_at: new Date(),
+          is_public: false, // 비공개용으로 마킹
+          post_id: postId, // 게시글 ID 연결
+          medium_url: fileURL.mediumUrl, // 새 medium_url
+          thumbnail_url: fileURL.thumbnailUrl, // 썸네일 URL
+        },
+      });
 
-          // 2-4️⃣ 교체용 정보 반환
-          return {
-            newUrl: fileURL.mediumUrl,     // 새 medium_url
-            oldUrl: mediumUrl,             // 기존 medium_url
-            newFilename: newBlob.pathname.split('/').pop(), // 파일명
-          };
-
-      } catch (error) {
-          console.error(`[Security] Failed to replicate Blob URL ${mediumUrl}. Skipping replication.`, error);
-          throw new Error("복제 작업에 실패했습니다.");
-      }
+      // 2-4️⃣ 교체용 정보 반환
+      return {
+        newUrl: fileURL.mediumUrl, // 새 medium_url
+        oldUrl: mediumUrl, // 기존 medium_url
+        newFilename: newBlob.pathname.split("/").pop(), // 파일명
+      };
+    } catch (error) {
+      console.error(
+        `[Security] Failed to replicate Blob URL ${mediumUrl}. Skipping replication.`,
+        error,
+      );
+      throw new Error("복제 작업에 실패했습니다.");
+    }
   });
 
   // 3️⃣ 모든 복제 작업 병렬 실행
-  const replicationResults = (await Promise.all(replicationPromises)).filter(result => result !== null);
+  const replicationResults = (await Promise.all(replicationPromises)).filter(
+    (result) => result !== null,
+  );
 
   // 4️⃣ content 안의 기존 medium_url을 새 medium_url로 교체
   let newContent = content;
-  replicationResults.forEach(result => {
-      if (!result) return;
+  replicationResults.forEach((result) => {
+    if (!result) return;
 
-      // 1️⃣ 정규식에서 사용할 수 있도록 특수 문자 이스케이프
-      const escapedOldUrl = result.oldUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    // 1️⃣ 정규식에서 사용할 수 있도록 특수 문자 이스케이프
+    const escapedOldUrl = result.oldUrl.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-      // 2️⃣ <img> 또는 <video> 태그의 src 속성을 찾는 정규식
-      // src="OLD_URL" 또는 src='OLD_URL' 모두 처리
-      const htmlSrcRegex = new RegExp(`<(img|video)([^>]*?)\\s+src=(["'])${escapedOldUrl}\\3([^>]*)>`, 'gi');
+    // 2️⃣ <img> 또는 <video> 태그의 src 속성을 찾는 정규식
+    // src="OLD_URL" 또는 src='OLD_URL' 모두 처리
+    const htmlSrcRegex = new RegExp(
+      `<(img|video)([^>]*?)\\s+src=(["'])${escapedOldUrl}\\3([^>]*)>`,
+      "gi",
+    );
 
-      // 3️⃣ 새로운 태그로 교체
-      newContent = newContent.replace(htmlSrcRegex, (_match, tagName, beforeAttrs, quote, afterAttrs) => {
-          return `<${tagName}${beforeAttrs} src=${quote}${result.newUrl}${quote}${afterAttrs}>`;
-      });
+    // 3️⃣ 새로운 태그로 교체
+    newContent = newContent.replace(
+      htmlSrcRegex,
+      (_match, tagName, beforeAttrs, quote, afterAttrs) => {
+        return `<${tagName}${beforeAttrs} src=${quote}${result.newUrl}${quote}${afterAttrs}>`;
+      },
+    );
   });
-/*   replicationResults.forEach(result => {
+  /*   replicationResults.forEach(result => {
       if (!result) return;
 
       // 4-1️⃣ 정규식에서 사용할 수 있도록 특수 문자 이스케이프
@@ -537,7 +595,6 @@ async function replicateMediaAndGetNewUrls(postId: number, content: string): Pro
   return newContent;
 }
 
-
 // 불필요 미디어 삭제(Update에서 공개->비공개 전환할 때 사용)
 async function deleteMediaAndBlob(mediaArray: string[] | null, label: string) {
   if (!mediaArray || mediaArray.length === 0) return;
@@ -546,23 +603,26 @@ async function deleteMediaAndBlob(mediaArray: string[] | null, label: string) {
   const transaction = prisma.$transaction(async (tx) => {
     // blob에서 삭제할 목록 찾기
     const mediaList = await tx.media.findMany({
-      where: { medium_url: { in: mediaArray }}
-    })
+      where: { medium_url: { in: mediaArray } },
+    });
 
     try {
       // blob에서 파일들 삭제
       for (const media of mediaList) {
         // 동영상이면 영상 하나만 폐기하면 됨
-        if (VIDEO_FORMATS.includes(media.mime_type)){
+        if (VIDEO_FORMATS.includes(media.mime_type)) {
           await del(media.blob_url);
           console.log("Blob Delete Complete:", media.original_name);
           continue;
         }
 
-        const urlsToDelete = [media.blob_url, media.medium_url, media.thumbnail_url]
-          .filter((url): url is string => !!url); // null/undefined/빈 문자열 제외
+        const urlsToDelete = [
+          media.blob_url,
+          media.medium_url,
+          media.thumbnail_url,
+        ].filter((url): url is string => !!url); // null/undefined/빈 문자열 제외
 
-        await Promise.all(urlsToDelete.map(url => del(url)));
+        await Promise.all(urlsToDelete.map((url) => del(url)));
       }
 
       console.log(`✅ Vercel Blob에서 삭제 완료 [${label}]:`, mediaList);

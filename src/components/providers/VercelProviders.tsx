@@ -1,14 +1,13 @@
-'use client';
+"use client";
 
-import { Analytics  } from "@vercel/analytics/next";
-import { SpeedInsights } from '@vercel/speed-insights/next';
-
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export function VercelProviders() {
-    return (
-        <>
-        <Analytics  />
-        <SpeedInsights />  
-        </>
-    )
+  return (
+    <>
+      <Analytics />
+      <SpeedInsights />
+    </>
+  );
 }

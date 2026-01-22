@@ -1,6 +1,7 @@
 /* github-markdown-css 내용 불러오기 */
-@import 'github-markdown-css/github-markdown-light.css';
-@import 'github-markdown-css/github-markdown-dark.css' (prefers-color-scheme: dark);
+@import "github-markdown-css/github-markdown-light.css";
+@import "github-markdown-css/github-markdown-dark.css"
+  (prefers-color-scheme: dark);
 
 /* Tailwind에 영향을 받지 않도록 범위를 고정 */
 .markdown-body {
@@ -13,10 +14,10 @@
 }
 
 /* 모바일 환경에서는 padding 완화 */
-@media screen and (max-width: 768px){
-    .markdown-body{
-        padding: 0.5rem;
-    }
+@media screen and (max-width: 768px) {
+  .markdown-body {
+    padding: 0.5rem;
+  }
 }
 
 /* optional: 배경이나 링크 색상만 재정의 */

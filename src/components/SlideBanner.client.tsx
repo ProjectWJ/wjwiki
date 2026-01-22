@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import * as React from 'react';
-import NextImage from 'next/image';
-import Link from 'next/link';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
-import { BANNER_ITEMS } from '@/constants/slidebanners'; // 배너에 쓰이는 상수 아이템들
+import * as React from "react";
+import NextImage from "next/image";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
+import { BANNER_ITEMS } from "@/constants/slidebanners"; // 배너에 쓰이는 상수 아이템들
 
 // 자동 재생 간격 (밀리초)
 const INTERVAL_TIME = 5000;
@@ -128,14 +128,14 @@ export function SlideBanner({ className }: { className?: string }) {
   const handleMouseLeave = () => setIsPlaying(true);
 
   // Progress 바의 색상 클래스 결정 (재생 중 / 정지 중)
-  const progressColor = isPlaying ? 'bg-white' : 'bg-gray-500';
+  const progressColor = isPlaying ? "bg-white" : "bg-gray-500";
 
   return (
     <div
       // 최상위 래퍼: 마우스 이벤트를 감지하고 overflow-hidden으로 슬라이드 영역을 클립
       className={cn(
         "relative w-full mx-auto overflow-hidden rounded-3xl mt-12",
-        className
+        className,
       )}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -182,11 +182,11 @@ export function SlideBanner({ className }: { className?: string }) {
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
             {/* 텍스트/메타 정보(오버레이의 최상단에 위치) */}
             <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-12 text-white z-10">
-                <div className="space-y-2 max-h-[120px] md:max-h-none overflow-hidden pb-12 md:pb-0">
-                    <h2 className="text-2xl md:text-4xl font-bold line-clamp-2 leading-tight">
-                        {item.title}
-                    </h2>
-                </div>
+              <div className="space-y-2 max-h-[120px] md:max-h-none overflow-hidden pb-12 md:pb-0">
+                <h2 className="text-2xl md:text-4xl font-bold line-clamp-2 leading-tight">
+                  {item.title}
+                </h2>
+              </div>
             </div>
           </Link>
         ))}
@@ -240,7 +240,10 @@ export function SlideBanner({ className }: { className?: string }) {
 
         {/* 진행률 표시줄(컨트롤 패널과 겹치지 않게 절대 위치로 배치) */}
         <div className="absolute -bottom-3 left-0 right-0 h-1 bg-black/50 z-20">
-            <Progress value={progress} className={cn("h-full transition-colors", progressColor)} />
+          <Progress
+            value={progress}
+            className={cn("h-full transition-colors", progressColor)}
+          />
         </div>
       </div>
     </div>

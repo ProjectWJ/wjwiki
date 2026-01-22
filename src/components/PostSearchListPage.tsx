@@ -1,6 +1,6 @@
-import { Spinner } from '@/components/ui/spinner';
-import { PostCard } from './PostCard';
-import { EmptyNotFound } from './ui/empty';
+import { Spinner } from "@/components/ui/spinner";
+import { PostCard } from "./PostCard";
+import { EmptyNotFound } from "./ui/empty";
 
 interface Post {
   id: number;
@@ -52,20 +52,19 @@ export function PostSearchListPage({
 
   const trendingPosts = posts.slice(0, 12);
 
-
   return (
     <div className="w-full">
-        <section className="mb-14 md:mb-20">
-            <div className="text-center mb-8 md:mb-12 space-y-3">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-                {"검색된 게시글"}
-              </h2>
-              <p className="text-base md:text-lg text-muted-foreground">
-                {"검색된 모든 카테고리의 글을 찾아볼 수 있습니다"}
-              </p>
-              <p className="text-start text-lg mb-4">{totalPosts} Posts</p>
-            </div>
-        </section>
+      <section className="mb-14 md:mb-20">
+        <div className="text-center mb-8 md:mb-12 space-y-3">
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground">
+            {"검색된 게시글"}
+          </h2>
+          <p className="text-base md:text-lg text-muted-foreground">
+            {"검색된 모든 카테고리의 글을 찾아볼 수 있습니다"}
+          </p>
+          <p className="text-start text-lg mb-4">{totalPosts} Posts</p>
+        </div>
+      </section>
 
       {/* Trending Post Section */}
       {trendingPosts.length > 0 && (
@@ -85,7 +84,6 @@ export function PostSearchListPage({
           </div>
         </section>
       )}
-      
     </div>
   );
 }

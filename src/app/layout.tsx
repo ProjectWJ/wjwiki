@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Nunito } from "next/font/google";
 import "./globals.css";
-import { Toaster } from "@/components/ui/sonner"
+import { Toaster } from "@/components/ui/sonner";
 import { VercelProviders } from "@/components/providers/VercelProviders";
 import { ThemeProvider } from "@/components/mainPage/ThemeProvider";
-
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,7 +35,9 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <meta charSet="utf-8" />
       <head />
-      <body className={`bg-background text-foreground ${geistSans.variable} ${geistMono.variable} ${nunito.variable} antialiased`}>
+      <body
+        className={`bg-background text-foreground ${geistSans.variable} ${geistMono.variable} ${nunito.variable} antialiased`}
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

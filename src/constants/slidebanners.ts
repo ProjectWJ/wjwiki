@@ -1,6 +1,5 @@
 import { vercelBlobUrl } from "./vercelblobURL";
-import homebg from "../app/images/homebg.jpg"
-
+import homebg from "../app/images/homebg.jpg";
 
 export interface PostCardProps {
   id: number;
@@ -12,7 +11,7 @@ export interface PostCardProps {
     avatarUrl?: string | null;
   };
   date: Date | string;
-  variant?: 'default' | 'horizontal' | 'featured';
+  variant?: "default" | "horizontal" | "featured";
   className?: string;
   url?: string;
 }
@@ -22,8 +21,7 @@ export const BANNER_ITEMS: PostCardProps[] = [
   {
     id: 1,
     title: "Webtools Lite: 경량 웹 도구 모음 🚀",
-    thumbnailUrl:
-      `${vercelBlobUrl}%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202025-10-27%20130217.png`,
+    thumbnailUrl: `${vercelBlobUrl}%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202025-10-27%20130217.png`,
     url: "https://github.com/ProjectWJ/webtools_lite_extension",
     date: new Date().toISOString(),
     author: { name: "ProjectWJ" },

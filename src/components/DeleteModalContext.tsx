@@ -1,7 +1,13 @@
 // components/DeleteModalContext.tsx
-'use client';
+"use client";
 
-import { createContext, useContext, useState, useTransition, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useTransition,
+  ReactNode,
+} from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,7 +27,9 @@ interface DeleteModalContextType {
   openModal: (postId: number) => void;
 }
 
-const DeleteModalContext = createContext<DeleteModalContextType | undefined>(undefined);
+const DeleteModalContext = createContext<DeleteModalContextType | undefined>(
+  undefined,
+);
 
 export function DeleteModalProvider({ children }: { children: ReactNode }) {
   const [postId, setPostId] = useState<number | null>(null);
@@ -39,7 +47,7 @@ export function DeleteModalProvider({ children }: { children: ReactNode }) {
         if (isRedirectError(error)) {
           // 리디렉션은 성공적인 동작이므로, 성공 토스트를 띄우고 에러를 다시 던져서
           // Next.js 런타임이 리디렉션을 완료하도록 합니다.
-          toast.success("게시글이 삭제되었습니다."); 
+          toast.success("게시글이 삭제되었습니다.");
           throw error; // 리다이렉트가 완료되도록 에러를 다시 던지기
         }
 
@@ -57,16 +65,23 @@ export function DeleteModalProvider({ children }: { children: ReactNode }) {
     >
       {children}
 
-      <AlertDialog open={!!postId} onOpenChange={(open) => !open && setPostId(null)}>
+      <AlertDialog
+        open={!!postId}
+        onOpenChange={(open) => !open && setPostId(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>게시글을 삭제하시겠습니까?</AlertDialogTitle>
             <AlertDialogDescription>
-              이 작업은 되돌릴 수 없습니다. 해당 게시글이 서버에서 완전히 삭제됩니다.
+              이 작업은 되돌릴 수 없습니다. 해당 게시글이 서버에서 완전히
+              삭제됩니다.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={pending} onClick={() => setPostId(null)}>
+            <AlertDialogCancel
+              disabled={pending}
+              onClick={() => setPostId(null)}
+            >
               취소
             </AlertDialogCancel>
             <AlertDialogAction

@@ -16,16 +16,10 @@ export function ThemeToggle() {
   if (!mounted) {
     return (
       <div className="relative flex items-center ml-auto">
-        <Button
-          type="button" 
-          variant="ghost" 
-          size="icon" 
-          className="h-8 w-8"
-        >
+        <Button type="button" variant="ghost" size="icon" className="h-8 w-8">
           <Sun className="h-5 w-5" />
         </Button>
       </div>
-
     );
   }
 
