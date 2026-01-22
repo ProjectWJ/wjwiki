@@ -1,19 +1,19 @@
 // src/auth.config.ts
 
-import type { NextAuthConfig } from "next-auth"; // NextAuth v5 타입 사용
+import type { NextAuthConfig } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { prisma } from '@/lib/db'; // 기존 prisma 임포트 유지
+import { prisma } from '@/lib/db';
 import bcrypt from 'bcryptjs';
-import { sendLoginAlertEmail } from '@/lib/email'; // 🚨 (새로 생성한 파일)
-import { parseUserAgent } from '@/lib/server-utils'; // 🚨 (User-Agent 파싱 함수)
-import crypto from 'crypto'; // Node.js 기본 모듈 (토큰 생성을 위해)
+import { sendLoginAlertEmail } from '@/lib/email';
+import { parseUserAgent } from '@/lib/server-utils';
+import crypto from 'crypto';
 import { cookies } from 'next/headers';
 import { verifyTotpCode } from '@/lib/totp';
 import { LoginSchema, OTPSchema } from '@/lib/validation-schemas'; // Zod 스키마 임포트
 
-// 🚨 로그인 검증 로직을 포함한 NextAuth 설정 (authOptions 대신 authConfig 사용)
+// 로그인 검증 로직을 포함한 NextAuth 설정
 export const authConfig: NextAuthConfig = {
-    // 🚨 v5에서는 JWT 세션이 기본이므로 session: { strategy: "jwt" }는 제거합니다.
+    // v5에서는 JWT 세션이 기본
 
     providers: [
         CredentialsProvider({
@@ -28,7 +28,7 @@ export const authConfig: NextAuthConfig = {
                 tempToken: { label: "임시 토큰", type: "text", required: false },
             },
 
-            // 🚨 인증 함수 (핵심 로직)
+            // 인증 함수 (핵심 로직)
             async authorize(credentials, req) {
 
                 // 입력값 검증
@@ -37,13 +37,13 @@ export const authConfig: NextAuthConfig = {
                     const validationResult = LoginSchema.safeParse({email: credentials.email, password: credentials.password});
 
                     if (!validationResult.success) {
-                        // Zod 검증 실패 시, NextAuth는 null을 반환하면 자동으로 로그인 실패로 처리합니다.
-                        // 오류 메시지를 던져 클라이언트에게 전달할 수도 있습니다.
+                        // Zod 검증 실패 시, NextAuth는 null을 반환하면 자동으로 로그인 실패로 처리
+                        // 오류 메시지를 던져 클라이언트에게 전달할 수도 있음
                         const firstError = validationResult.error.issues[0].message;
                         console.error("Login validation failed:", firstError);
                         
-                        // NextAuth는 여기서 Error를 throw하면 인증 실패 메시지로 클라이언트에게 전달합니다.
-                        // throw new Error(firstError); // 사용자에게 구체적인 메시지를 보여주려면 활성화
+                        // NextAuth는 여기서 Error를 throw하면 인증 실패 메시지로 클라이언트에게 전달
+                        // throw new Error(firstError); 사용자에게 구체적인 메시지를 보여주려면 활성화
                         return null; // NextAuth 표준: 인증 실패
                     }
                 } else {
@@ -64,7 +64,7 @@ export const authConfig: NextAuthConfig = {
 
 
                 // **********************************
-                // 🚨 2단계 로그인 (TOTP 코드 + 임시 토큰)
+                // 2단계 로그인 (TOTP 코드 + 임시 토큰)
                 // **********************************
                 if (tempToken && totpCode) {
                     // 1. 임시 토큰으로 사용자 찾기 (DB 쿼리)
@@ -85,13 +85,13 @@ export const authConfig: NextAuthConfig = {
                     const is2faValid = verifyTotpCode(user.twoFactorSecret, totpCode as string);
 
                     if (is2faValid) {
-                        // 3. 🚨 최종 성공: DB에서 임시 토큰 삭제 후 사용자 객체 반환
+                        // 3. 최종 성공: DB에서 임시 토큰 삭제 후 사용자 객체 반환
                         await prisma.user.update({
                             where: { id: user.id },
                             data: { temp2FaToken: null, tempTokenExpiresAt: null },
                         });
 
-                        // 🚨 추가: 이메일 전송을 위해 요청 헤더에서 IP와 User-Agent 정보를 추출합니다.
+                        // 추가: 이메일 전송을 위해 요청 헤더에서 IP와 User-Agent 정보를 추출
                         const ip = req?.headers.get('x-forwarded-for') || req?.headers.get('x-real-ip') || ''; 
                         const userAgent = req?.headers.get('user-agent') || '';
 
@@ -108,7 +108,7 @@ export const authConfig: NextAuthConfig = {
                 }
 
                 // **********************************
-                // 🚨 1단계 로그인 (Email + Password)
+                // 1단계 로그인 (Email + Password)
                 // **********************************
                 if (!email || !password) {
                     return null; // 이메일 또는 비밀번호 누락
@@ -132,14 +132,14 @@ export const authConfig: NextAuthConfig = {
                     return null; // 비밀번호 불일치
                 }
 
-                // 4. 🚨 2FA 로직 분기 시작
+                // 4. 2FA 로직 분기 시작
                 // 4-1. 2FA가 활성화된 경우
                 if (user.isTwoFactorEnabled && user.twoFactorSecret) {
-                    // 1. 🚨 임시 토큰 생성 (UUID 또는 강력한 난수)
+                    // 1. 임시 토큰 생성 (UUID 또는 강력한 난수)
                     const tempToken = crypto.randomBytes(32).toString('hex');
-                    const expiryDate = new Date(Date.now() + 5 * 60 * 1000); // 5분 만료 설정
+                    const expiryDate = new Date(Date.now() + 5 * 60 * 1000); // 만료 설정
 
-                    // 2. 🚨 DB에 토큰 저장 (Prisma 사용)
+                    // 2. DB에 토큰 저장
                     await prisma.user.update({
                         where: { id: user.id },
                         data: { 
@@ -150,21 +150,21 @@ export const authConfig: NextAuthConfig = {
 
                     // B) 1단계: 비밀번호만 검증된 경우 (totpCode가 전달되지 않음)
                     if (!totpCode) {
-                        // 3. 🚨 핵심: 임시 토큰을 HTTP-Only 쿠키로 설정하여 클라이언트에게 전달
+                        // 3. 핵심: 임시 토큰을 HTTP-Only 쿠키로 설정하여 클라이언트에게 전달
                         (await
-                            // 3. 🚨 핵심: 임시 토큰을 HTTP-Only 쿠키로 설정하여 클라이언트에게 전달
+                            // 3. 핵심: 임시 토큰을 HTTP-Only 쿠키로 설정하여 클라이언트에게 전달
                             cookies()).set('2fa-temp-token', tempToken, {
-                            httpOnly: true, // 🚨 JavaScript 접근 불가 (가장 중요)
+                            httpOnly: true, // JavaScript 접근 불가
                             secure: process.env.NODE_ENV === 'production', // HTTPS에서만 전송
                             maxAge: 5 * 60, // 5분
                             path: '/2fa-verify', // /2fa-verify 페이지에서만 쿠키 접근 가능
                             sameSite: 'lax',
                         });
-                        // 🚨 throw 대신 임시 객체를 반환합니다. (이 객체가 signIn 콜백으로 전달됨)
+                        // throw 대신 임시 객체를 반환 (이 객체가 signIn 콜백으로 전달됨)
                         return { 
                             id: user.id, 
                             email: user.email, 
-                            is2FaRequired: true, // 🚨 이 플래그가 signIn 콜백으로 전달됨
+                            is2FaRequired: true, // 이 플래그가 signIn 콜백으로 전달됨
                             name: user.name
                         };
                     } 
@@ -174,7 +174,7 @@ export const authConfig: NextAuthConfig = {
                     return null;
                 }
 
-                // 🚨 추가: 이메일 전송을 위해 요청 헤더에서 IP와 User-Agent 정보를 추출합니다.
+                // 이메일 전송을 위해 요청 헤더에서 IP와 User-Agent 정보를 추출
                 const ip = req?.headers.get('x-forwarded-for') || req?.headers.get('x-real-ip') || ''; 
                 const userAgent = req?.headers.get('user-agent') || '';
 
@@ -183,7 +183,7 @@ export const authConfig: NextAuthConfig = {
                     id: user.id,
                     email: user.email,
                     name: user.name,
-                    // 🚨 signIn 콜백으로 전달하기 위한 임시 필드
+                    // signIn 콜백으로 전달하기 위한 임시 필드
                     ipAddress: ip,       
                     userAgent: userAgent 
                 };
@@ -196,18 +196,18 @@ export const authConfig: NextAuthConfig = {
         signIn: "/login",
     },
 
-    // 🚨 1. 세션(Session) 설정: 쿠키 기반 세션 정책 정의
+    // 1. 세션(Session) 설정: 쿠키 기반 세션 정책 정의
     session: {
         strategy: "jwt", // JWT 기반 세션 사용
         // 세션 만료 시간 (로그인 유지 기간)
         maxAge: 2 * 60 * 60, // 2시간
 
         // 사용자가 활동 중일 때 세션을 갱신하는 주기: 24시간 (초 단위)
-        // 이 시간 내에 활동하면 maxAge가 리셋됩니다.
+        // 이 시간 내에 활동하면 maxAge가 리셋
         updateAge: 1 * 60 * 60, // 1시간
     },
 
-    // 🚨 2. JWT (JSON Web Token) 설정
+    // 2. JWT (JSON Web Token) 설정
     jwt: {
         // JWT의 만료 시간을 세션과 동일하게 설정합니다. (기본값은 session.maxAge와 동일)
         maxAge: 2 * 60 * 60, // 2시간
@@ -215,25 +215,25 @@ export const authConfig: NextAuthConfig = {
 
     // 4. 콜백 설정: 세션에 사용자 ID 포함 (필수)
     callbacks: {
-        // 🚨 2FA 중단 로직 및 로그인 알림 발송 분기
+        // 2FA 중단 로직 및 로그인 알림 발송 분기
         async signIn({ user, account }) {
 
             // Credentials Provider를 통해서만 실행
             if (account?.provider === "credentials" && user) {
 
-                // 🚨 핵심: 2FA 필요 플래그 확인
+                // 핵심: 2FA 필요 플래그 확인
                 if ((user as { is2FaRequired?: boolean }).is2FaRequired === true) { 
                     // 💡 세션 생성을 막는 대신, 리다이렉트 URL을 반환합니다.
-                    // NextAuth는 signIn 콜백에서 문자열 URL이 반환되면 그곳으로 리다이렉트합니다.
+                    // NextAuth는 signIn 콜백에서 문자열 URL이 반환되면 그곳으로 리다이렉트
                     // 리다이렉트 url 리턴
                     console.log("--- 1FA Success ---");
 
                     return `/2fa-verify`;
                 }
 
-                // 2. 🚨 최종 로그인 성공 시 (2FA 완료 또는 2FA 비활성화 사용자)
+                // 2. 최종 로그인 성공 시 (2FA 완료 또는 2FA 비활성화 사용자)
                 if (user.email) {
-                    // 이메일 알림 발송 로직은 최종 로그인 성공 시에만 실행됩니다.
+                    // 이메일 알림 발송 로직은 최종 로그인 성공 시에만 실행
 
                     // IP 및 User-Agent 정보를 포함한 타입 확장 (authorize에서 반환된 임시 필드)
                     const extendedUser = user as typeof user & { ipAddress?: string, userAgent?: string };
@@ -269,7 +269,7 @@ export const authConfig: NextAuthConfig = {
                 token.id = user.id;
             }
 
-            // 2. 🚨 추가 로직: 토큰 만료 시간 확인
+            // 2. 추가 로직: 토큰 만료 시간 확인
             const now = Math.floor(Date.now() / 1000); // 현재 UNIX 시간 (초)
             
             // token.exp는 JWT 자체의 만료 시간입니다.

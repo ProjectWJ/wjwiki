@@ -5,43 +5,6 @@ import Image, { StaticImageData } from "next/image";
 import { useState } from "react";
 import { CATEGORIES } from "@/constants/categories"
 
-
-/* interface Category {
-  id: string;
-  name: string;
-  description: string;
-  image: StaticImageData;
-  postCount: number;
-  slug: string;
-}
-
-const categories: Category[] = [
-  {
-    id: "1",
-    name: "개발",
-    description: "웹 개발, 프로그래밍, 기술 스택에 관한 이야기",
-    image: photoDevelop,
-    postCount: 24,
-    slug: "development",
-  },
-  {
-    id: "2",
-    name: "디자인",
-    description: "UI/UX, 그래픽 디자인, 창의적인 작업물",
-    image: photoDesign,
-    postCount: 18,
-    slug: "design",
-  },
-  {
-    id: "3",
-    name: "일상",
-    description: "생각의 조각들과 일상의 기록",
-    image: photoDiary,
-    postCount: 32,
-    slug: "life",
-  },
-]; */
-
 export function CategoryShowcase() {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 

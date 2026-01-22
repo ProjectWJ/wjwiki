@@ -1,5 +1,5 @@
 // app/providers/ThemeProvider.tsx
-'use client'; // 👈 클라이언트 컴포넌트임을 명시
+'use client';
 
 import * as React from 'react';
 import { ThemeProvider as NextThemesProvider } from 'next-themes';

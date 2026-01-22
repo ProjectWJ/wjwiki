@@ -29,7 +29,6 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     return;
   }
 
-  // Fetch posts from database
   const results = await getPostsBySearch(queryParse.data.q, currentPage)
 
   if (!results) {
@@ -37,12 +36,11 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     return;
   }
 
-  // Transform posts to include author information if needed
   const transformedPosts = results.posts.map(post => ({
     ...post,
     author: {
-      name: 'ProjectWJ', // Replace with actual author data from your DB
-      avatarUrl: null, // Replace with actual avatar URL from your DB
+      name: 'ProjectWJ',
+      avatarUrl: null,
     }
   }));
 

@@ -1,14 +1,13 @@
 // Server Actions 함수들 모아두는 곳
-'use server'; // 이 함수를 서버 액션으로 명시합니다.
+'use server';
 
 import { redirect } from 'next/navigation';
 import { createPost } from '@/lib/post';
 import { del, copy } from '@vercel/blob';
 import { prisma } from '@/lib/db';
-import { revalidatePath } from 'next/cache'; // 데이터 갱신을 위해 필요
+import { revalidatePath } from 'next/cache';
 import { extractFirstMediaUrl, findThumbnailUrl, ResizedImages, generateResizedImagesSharp, generateUUID, getFileExtension, howManyMedia } from '@/lib/server-utils' // 썸네일 생성
 import { vercelBlobUrl } from '@/constants/vercelblobURL';
-// import DOMPurify from 'isomorphic-dompurify';
 import sanitize, { Attributes } from "sanitize-html";
 import * as cheerio from 'cheerio';
 import { auth } from '@/auth';
@@ -24,7 +23,7 @@ const VIDEO_FORMATS = [
     ".f4v",
     ".avi",
     ".mkv",
-    // 기존 코드에 있던 ".ts"를 포함하려면 여기에 추가해야 합니다.
+    // 기존 코드에 있던 ".ts"를 포함하려면 여기에 추가해야 함
 ];
 
 const TIPTAP_SANITIZE_CONFIG = {
@@ -363,7 +362,7 @@ export async function handleDeletePost(id: string): Promise<void> {
 
     // 1. DB 삭제 로직
     try {
-/*       // 🚨 3일 후 삭제되도록 예약 시간을 설정합니다.
+/*       // 3일 후 삭제되도록 예약 시간을 설정합니다.
       const scheduledDeleteTime = new Date();
       scheduledDeleteTime.setDate(scheduledDeleteTime.getDate() + 3); // 3일 후
 

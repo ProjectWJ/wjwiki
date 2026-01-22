@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { authenticate } from '@/lib/auth.actions';
-import { useActionState } from 'react'; // 폼 상태 관리를 위해 임포트
+import { useActionState } from 'react';
 import { useFormStatus } from "react-dom"
 import { Spinner } from "./ui/spinner"
 import { Button } from "./ui/button";

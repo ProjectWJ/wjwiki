@@ -62,7 +62,7 @@ export function PostListPage({
     <div className="w-full">
       {/* Featured Post */}
       <section className="mb-14 md:mb-20">
-        <PostCard
+{/*         <PostCard
           id={featured.id}
           title={featured.title}
           thumbnailUrl={featured.thumbnail_url}
@@ -70,7 +70,7 @@ export function PostListPage({
           date={featured.created_at}
           isPublished={featured.is_published}
           variant="featured"
-        />
+        /> */}
       </section>
 
       {/* Popular Post Section */}
@@ -134,14 +134,7 @@ export function PostListPage({
       {/* Trending Post Section */}
       {trendingPosts.length > 0 && (
         <section className="mb-14 md:mb-20">
-{/*           <div className="text-center mb-8 md:mb-12 space-y-3">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-              {currentCategory ? currentCategory.label : "모든 게시글"}
-            </h2>
-            <p className="text-base md:text-lg text-muted-foreground">
-              {currentCategory ? currentCategory.introduce : "모든 카테고리의 글을 찾아볼 수 있습니다"}
-            </p>
-          </div> */}
+
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {trendingPosts.map((post) => (

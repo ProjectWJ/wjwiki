@@ -2,8 +2,6 @@
 
 import Link from 'next/link';
 import { JSX } from 'react';
-// FaGithub는 react-icons/fa(Font Awesome)에서 가져온 GitHub 아이콘입니다.
-// 다른 아이콘 라이브러리의 GitHub 아이콘(예: AiFillGithub)을 사용하셔도 됩니다.
 import { FaGithub } from 'react-icons/fa'; 
 
 /**
@@ -22,8 +20,8 @@ const GithubIconLink = (
     JSX.Element => {
   const targetProps = newTab ? { target: '_blank', rel: 'noopener noreferrer' } : {};
   
-  // Next.js의 <Link>는 자식 요소에 href를 전달하기 때문에,
-  // <a> 태그를 직접 자식으로 사용하고 거기에 props를 분산해 전달합니다.
+  // Next.js의 <Link>는 자식 요소에 href를 전달하기 때문에
+  // <a> 태그를 직접 자식으로 사용하고 거기에 props를 분산해 전달
   return (
     <Link 
         href={href} 

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { deleteBlobFile } from '@/lib/blob-utils'; // 🚨 Blob 삭제 유틸리티 임포트
+import { deleteBlobFile } from '@/lib/blob-utils';
 
 /**
  * 미사용 미디어를 정리하는 Cron Job API Route입니다.

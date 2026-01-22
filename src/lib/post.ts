@@ -17,26 +17,24 @@ interface GetPostsResultValue {
   count: number;
 }
 
-// ✅ 페이지당 게시물 개수를 상수로 정의
+// 페이지당 게시물 개수
 const POSTS_PER_PAGE = 12;
 
 /**
- * ✅ 카테고리 및 페이지 번호에 따라 게시물을 조회하는 함수
+ * 카테고리 및 페이지 번호에 따라 게시물을 조회
  * 
  * @param category - 게시물 카테고리 (e.g., "tech", "daily", "all")
  * @param page - 현재 페이지 번호 (1부터 시작)
  * @returns Prisma가 반환하는 게시물 객체 배열
  */
 export async function getPostsByCategory(category: string, page: number): Promise<GetPostsResultValue | null> {
-  // 🔹 page 값이 1보다 작을 경우 안전하게 1로 고정
+  // page 값이 1보다 작을 경우 1로 고정
   const actualPage = Math.max(1, page);
 
-  // 🔹 Prisma의 skip 옵션에서 사용할 오프셋 계산
-  //    예: page=1 → skip=0, page=2 → skip=12, page=3 → skip=24 ...
+  // Prisma의 skip 옵션에서 사용할 오프셋 계산
   const skipAmount = (actualPage - 1) * POSTS_PER_PAGE;
 
-  // 🔹 카테고리 유효성 검사 ('all'은 예외적으로 허용)
-  //    category가 사전에 정의된 CATEGORIES에 없으면 에러 발생
+  // 카테고리 유효성 검사 ('all' 허용)
   if (
     category !== "all" &&
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -46,29 +44,29 @@ export async function getPostsByCategory(category: string, page: number): Promis
   }
 
   try {
-    // ✅ 현재 로그인 세션 정보 가져오기
+    // 현재 로그인 세션 정보 가져오기
     const session = await auth();
 
     /**
-     * ✅ Prisma에서 사용할 where 조건 객체
-     *  - 로그인 여부와 category에 따라 필터 조건이 다르게 설정됨
+     * Prisma에서 사용할 where 조건 객체
+     * - 로그인 여부와 category에 따라 필터 조건이 다르게 설정됨
      */
     const where: { category?: string; is_published?: boolean } = {};
 
-    // 🔸 1. 로그인하지 않은 사용자에게는 공개 게시물만 보여줌
+    // 1. 로그인하지 않은 사용자에게는 공개 게시물만 보여줌
     if (!session || !session.user) {
       where.is_published = true;
     }
 
-    // 🔸 2. category가 'all'이 아닐 때만 카테고리 필터 추가
+    // 2. category가 'all'이 아닐 때만 카테고리 필터 추가
     if (category !== "all") {
       where.category = category;
     }
 
-    // ✅ Prisma로 게시물 목록 조회
+    // Prisma로 게시물 목록 조회
     const [posts, count] = await Promise.all([
       prisma.post.findMany({
-        where, // 동적으로 만든 조건 객체 사용
+        where,
         select: {
           id: true,
           title: true,
@@ -95,30 +93,29 @@ export async function getPostsByCategory(category: string, page: number): Promis
 
 
 /**
- * ✅ 입력받은 검색값에 따라 게시물을 조회하는 함수
+ * 입력받은 검색값에 따라 게시물을 조회
  * 
  * @param query - 입력받은 검색값 (제목, 내용)
  * @param page - 현재 페이지 번호 (1부터 시작)
  * @returns Prisma가 반환하는 게시물 객체 배열
  */
 export async function getPostsBySearch(query: string, page: number): Promise<GetPostsResultValue | null> {
-  // 🔹 page 값이 1보다 작을 경우 안전하게 1로 고정
+  // page 값이 1보다 작을 경우 안전하게 1로 고정
   const actualPage = Math.max(1, page);
 
-  // 🔹 Prisma의 skip 옵션에서 사용할 오프셋 계산
-  //    예: page=1 → skip=0, page=2 → skip=12, page=3 → skip=24 ...
+  // Prisma의 skip 옵션에서 사용할 오프셋 계산
   const skipAmount = (actualPage - 1) * POSTS_PER_PAGE;
 
-  // 🔹 카테고리는 all로 고정
+  // 카테고리는 all로 고정
   const category = "all";
 
   try {
-    // ✅ 현재 로그인 세션 정보 가져오기
+    // 현재 로그인 세션 정보 가져오기
     const session = await auth();
 
     /**
-     * ✅ Prisma에서 사용할 where 조건 객체
-     *  - 로그인 여부와 category에 따라 필터 조건이 다르게 설정됨
+     * Prisma에서 사용할 where 조건 객체
+     * - 로그인 여부와 category에 따라 필터 조건이 다르게 설정
      */
     const where: { 
       category?: string; 
@@ -133,20 +130,20 @@ export async function getPostsBySearch(query: string, page: number): Promise<Get
       ];
     }
 
-    // 🔸 1. 로그인하지 않은 사용자에게는 공개 게시물만 보여줌
+    // 1. 로그인하지 않은 사용자에게는 공개 게시물만 보여줌
     if (!session) {
       where.is_published = true;
     }
 
-    // 🔸 2. category가 'all'이 아닐 때만 카테고리 필터 추가
+    // 2. category가 'all'이 아닐 때만 카테고리 필터 추가
     if (category !== "all") {
       where.category = category;
     }
 
-    // ✅ Prisma로 게시물 목록 조회, 수 카운트
+    // Prisma로 게시물 목록 조회, 수 카운트
     const [posts, count] = await Promise.all([
       prisma.post.findMany({
-        where, // 동적으로 만든 조건 객체 사용
+        where,
         select: {
           id: true,
           title: true,
@@ -173,7 +170,7 @@ export async function getPostsBySearch(query: string, page: number): Promise<Get
 
 
 /**
- * ✅ 카테고리별 전체 게시물 개수를 반환하는 함수
+ * 카테고리별 전체 게시물 개수를 반환하는 함수
  * 
  * @param category - 게시물 카테고리 ("all" 포함)
  * @returns 해당 카테고리에 속한 게시물 개수 (number)
@@ -181,21 +178,21 @@ export async function getPostsBySearch(query: string, page: number): Promise<Get
 /* export async function getPostCountByCategory(category: string) {
   const session = await auth();
 
-  // 🔹 게시물 개수 조회에도 같은 where 로직 사용
+  // 게시물 개수 조회에도 같은 where 로직 사용
   const where: { category?: string; is_published?: boolean } = {};
 
-  // 🔸 로그인하지 않은 경우 → 공개 게시물만 카운트
+  // 로그인하지 않은 경우 → 공개 게시물만 카운트
   if (!session) {
     where.is_published = true;
   }
 
-  // 🔸 특정 카테고리 지정 시 → 해당 카테고리만 카운트
+  // 특정 카테고리 지정 시 → 해당 카테고리만 카운트
   if (category !== "all") {
     where.category = category;
   }
 
   try {
-    // ✅ Prisma로 조건에 맞는 게시물 개수를 세어 반환
+    // Prisma로 조건에 맞는 게시물 개수를 세어 반환
     const count = await prisma.post.count({ where });
     return count;
   } catch (error) {

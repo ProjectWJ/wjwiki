@@ -24,7 +24,6 @@ interface LoginAlertData {
 export async function sendLoginAlertEmail(toEmail: string, data: LoginAlertData) {
     const { loginTime, os, browser, ip } = data;
 
-    // HTML 본문 작성
     const htmlBody = `
         <p><strong>[로그인 감지]</strong></p>
         <p>관리자 계정 로그인이 감지되었습니다. 본인 확인이 필요한 경우 즉시 비밀번호를 변경해 주세요.</p>

@@ -1,7 +1,7 @@
 // 본문에 삽입한 미디어 파일 업로드 api
 import { put } from "@vercel/blob";
 import { NextResponse } from "next/server";
-import { getFileExtension } from '@/lib/server-utils'; // 🚨 새로 만든 유틸리티 임포트
+import { getFileExtension } from '@/lib/server-utils'; // 새로 만든 유틸리티 임포트
 import { prisma } from '@/lib/db' // model
 import { generateResizedImagesSharp, ResizedImages } from "@/lib/server-utils";
 
@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     const originalFilename = searchParams.get('filename');
     let fileURL: ResizedImages;
 
-    // 가상의 사용자 ID 설정 (🚨 메타데이터 및 DB 저장을 위해 추가)
+    // 가상의 사용자 ID 설정 (메타데이터 및 DB 저장을 위해 추가)
     const currentUserId = "projectwj"; 
 
     // request.body를 stream으로 직접 처리해 blob에 업로드
@@ -33,9 +33,6 @@ export async function POST(request: Request) {
 
     // 1. 확장자 추출
     const extension = getFileExtension(originalFilename);
-    
-    // 2. UUID로 새로운 파일 이름 생성
-    // const newFilename = generateUUID() + extension; 
 
     // put 함수를 사용해 vercel blob storage에 파일 업로드
     try {
@@ -47,7 +44,7 @@ export async function POST(request: Request) {
 
         const resizedImages = await generateResizedImagesSharp(blob.url);
 
-        // 3. Media 테이블에 메타데이터 저장(원본, 썸네일, 상세보기 모두 하나의 row로 관리)
+        // 2. Media 테이블에 메타데이터 저장(원본, 썸네일, 상세보기 모두 하나의 row로 관리)
         // (Prisma의 id는 자동 생성되는 숫자형 PK)
         const originalFile = await prisma.media.create({
             data: {
@@ -69,7 +66,7 @@ export async function POST(request: Request) {
             }
         })
 
-        // 4. 파일의 URL들 반환
+        // 3. 파일의 URL들 반환
         fileURL = {
             thumbnailUrl: originalFile.thumbnail_url as string,
             mediumUrl: originalFile.medium_url as string,
@@ -81,7 +78,6 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "파일 업로드 실패"}, { status: 500 });
     }
 
-    // return NextResponse.json(resBlob);
     // 3. 응답에 원본 파일 이름 포함 (DB 저장을 위해)
     return NextResponse.json({ 
         url: fileURL, // 

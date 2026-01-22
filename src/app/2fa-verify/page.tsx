@@ -1,4 +1,5 @@
 // app/2fa-verify/page.tsx
+
 import { cookies } from 'next/headers';
 import { prisma } from '@/lib/db';
 import TwoFaVerifyClient from './TwoFaVerifyClient';
@@ -11,7 +12,7 @@ import TwoFaVerifyClient from './TwoFaVerifyClient';
     브라우저 개발자 도구로 쿠키 조작해도 DB 유효성 검증에서 막힘
 
     2FA 과정 완료 시 authenticate 서버 액션이 DB에서 토큰을 삭제하면,
-    /2fa-verify 재접근 시 바로 로그인 페이지로 튕김 (완벽한 일회성 흐름)
+    /2fa-verify 재접근 시 바로 로그인 페이지로 튕김
 */
 
 function renderForbiddenHtml() {

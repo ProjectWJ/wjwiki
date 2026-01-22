@@ -18,7 +18,7 @@ export async function authenticate(prevState: string | undefined,
 
   // 2단계 로그인 로직
   if (totpCode) {
-    // 🚨 2단계 로그인 시, 비밀번호 대신 쿠키에서 임시 토큰을 가져와야 합니다.
+    // 2단계 로그인 시, 비밀번호 대신 쿠키에서 임시 토큰을 가져와야 합니다.
     // 현재 Server Action은 form data만 받으므로, 임시 토큰을 form에 추가하거나,
     // Server Action 내에서 cookies().get()을 사용하여 토큰을 가져와야 합니다.
 
@@ -28,11 +28,11 @@ export async function authenticate(prevState: string | undefined,
         return '인증 시간이 만료되었거나 토큰이 없습니다.';
     }
     
-    // 🚨 authorize 함수에 토큰을 전달하는 것이 중요합니다.
+    // authorize 함수에 토큰을 전달하는 것이 중요합니다.
     // credentials 객체에 totpCode 외에 임시 토큰을 전달하도록 auth.config.ts의 credentials 정의를 수정해야 합니다.
     try {
       await signIn('credentials', { 
-          tempToken, // 🚨 임시 토큰을 전달 (credentials에 추가해야 함)
+          tempToken, // 임시 토큰을 전달 (credentials에 추가해야 함)
           totpCode,
           redirectTo: '/posts/all'
       });

@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import NextImage from 'next/image'; // new Image()랑 겹쳐서 별칭 설정
+import NextImage from 'next/image';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';

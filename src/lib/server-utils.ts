@@ -1,6 +1,4 @@
 // src/lib/server-utils.ts
-// 기존 파일명 utils
-// shadcn이랑 충돌하길래 수정
 
 import { prisma } from "./db";
 import sharp from 'sharp';
@@ -8,7 +6,7 @@ import { put } from "@vercel/blob";
 import { vercelBlobUrl } from "@/constants/vercelblobURL";
 
 /**
- * User-Agent 문자열을 파싱하여 OS 및 브라우저 정보를 추출합니다.
+ * User-Agent 문자열을 파싱하여 OS 및 브라우저 정보를 추출
  */
 export function parseUserAgent(userAgentString: string): { os: string, browser: string } {
     let os = '알 수 없는 OS';
@@ -59,7 +57,7 @@ export function parseUserAgent(userAgentString: string): { os: string, browser: 
 }
 
 /**
- * 파일 확장자를 추출합니다.
+ * 파일 확장자를 추출
  * @param filename 원본 파일 이름 (예: my_image.jpg)
  * @returns 확장자 (예: .jpg) 또는 빈 문자열
  */
@@ -72,25 +70,16 @@ export function getFileExtension(filename: string): string {
 }
 
 /**
- * 암호학적으로 안전한 UUID를 생성합니다. (RFC4122 v4)
+ * 안전한 UUID를 생성
  * @returns 고유 식별자 문자열
  */
 export function generateUUID(): string {
-    // node:crypto 모듈을 사용하여 UUID v4를 생성
-    // Next.js Server Component 또는 API Route 환경에서 사용 가능
     return crypto.randomUUID();
 }
 
-/**
- * 게시글 내용에서 첫 번째 이미지 또는 비디오 URL을 추출합니다.
- * 마크다운 형식: ![캡션](URL)
- * @param content 게시글 내용 (마크다운)
- * @returns 첫 번째 미디어 URL 문자열 또는 null
- */
+
+// 게시글 내용에서 첫 번째 이미지 또는 비디오 URL을 추출
 export function extractFirstMediaUrl(content: string): string | null {
-    // 마크다운 이미지/링크 패턴 (Markdown Link/Image Pattern)
-    // ![...](URL) 형태를 찾습니다. ![video:...](URL)도 찾습니다.
-    //const markdownRegex = /!\[(?:video:[^\]]+|[^\]]*)\]\((https?:\/\/[^\s)]+)\)/;
 
     // img, video 태그 찾기
     const mediaRegex = /<(img|video)[^>]*\s+src=(["'])(https?:\/\/[^\s"']+)\2[^>]*>/i;
@@ -98,10 +87,9 @@ export function extractFirstMediaUrl(content: string): string | null {
     //const match = content.match(markdownRegex);
     const match = content.match(mediaRegex);
     
-/*     if (match && match.length > 0)
-       return match[1];         // match[1]은 괄호 안의 URL입니다. */
+
     if (match && match.length > 3)
-        return match[3]; // match[2]가 src URL입니다.
+        return match[3]; // match[2]가 src URL
     
     return null;
 }
@@ -116,11 +104,10 @@ export const VIDEO_FORMATS = [
     ".f4v",
     ".avi",
     ".mkv",
-    // 기존 코드에 있던 ".ts"를 포함하려면 여기에 추가해야 합니다.
+    // 기존 코드에 있던 ".ts"를 포함하려면 여기에 추가
 ];
 /**
- * medium_url을 받아 thumbnail_url을 찾아줍니다.
- * 
+ * medium_url을 받아 thumbnail_url을 탐색
  */
 export async function findThumbnailUrl(medium_url: string | null): Promise<string> {
 
@@ -151,14 +138,11 @@ export async function findThumbnailUrl(medium_url: string | null): Promise<strin
 // 본문의 모든 img, video 태그 목록 추출해서 id만 넘겨주기
 export function howManyMedia(content: string) {
 
-/*     const markdownRegex = /!\[.*?\]\((https?:\/\/[^\s\)]+)\)/g;
-    const match = Array.from(content.matchAll(markdownRegex), mat => mat[1]); */
-    
-    // <img>와 <video> 태그의 src 속성을 모두 찾음
+    // <img>와 <video> 태그의 src 속성을 모두 탐색
     const htmlRegex = /<(img|video)[^>]*\s+src=(["'])(https?:\/\/[^\s"']+)\2[^>]*>/gi;
+
     // matchAll로 모든 매치 찾기
     const matches = Array.from(content.matchAll(htmlRegex), mat => mat[3]);
-
 
     if(matches.length > 0){
         return matches;
@@ -169,8 +153,7 @@ export function howManyMedia(content: string) {
 
 
 /**
- * 원본 이미지를 바탕으로 다중 해상도 이미지를 만들어 반환합니다.
- * 게시글 등록 / 수정 시에 실행되어야 하는 
+ * 원본 이미지를 바탕으로 다중 해상도 이미지를 만들어 반환
  */
 
 export interface ResizedImages {
@@ -197,11 +180,11 @@ export async function generateResizedImagesSharp(originalUrl: string): Promise<R
     const response = await fetch(originalUrl);
     const buffer = Buffer.from(await response.arrayBuffer());
 
-    // 1️⃣ 썸네일
+    // 썸네일
     const thumbnailBuffer = await sharp(buffer).resize({ width: 200 }).webp().toBuffer();
     const thumbnailBlob = await put(generateUUID() + ".webp", thumbnailBuffer, { access: 'public', addRandomSuffix: true });
 
-    // 2️⃣ 중간 화질
+    // 중간 화질
     const mediumBuffer = await sharp(buffer).resize({ width: 800 }).webp().toBuffer();
     const mediumBlob = await put(generateUUID() + ".webp", mediumBuffer, { access: 'public', addRandomSuffix: true });
 

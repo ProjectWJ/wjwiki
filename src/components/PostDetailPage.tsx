@@ -155,16 +155,7 @@ export function PostDetailPage({
           <SideBar postId={parseInt(post.id)} isAdmin={isAdmin} />
         </DeleteModalProvider>
       </div>
-
-      {/* Mobile Share Actions */}
-{/*       <div className="flex lg:hidden items-center justify-center gap-4 mt-8 md:mt-12">
-        <button
-          className="w-10 h-10 flex items-center justify-center rounded-xl bg-muted hover:bg-muted/80 transition-colors"
-          aria-label="Copy link"
-        >
-          <LinkIcon className="w-6 h-6 text-muted-foreground" />
-        </button>
-      </div> */}
+      
     </div>
   );
 }

@@ -30,7 +30,6 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const singleCategory = Array.isArray(category) ? category[0] : category;
   const currentPage = page ? page : 1;
 
-  // Fetch posts from database
   const results = await getPostsByCategory(singleCategory || "all", currentPage)
 
   if (!results) {
@@ -38,12 +37,11 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     return;
   }
 
-  // Transform posts to include author information if needed
   const transformedPosts = results.posts.map(post => ({
     ...post,
     author: {
-      name: 'ProjectWJ', // Replace with actual author data from your DB
-      avatarUrl: null, // Replace with actual avatar URL from your DB
+      name: 'ProjectWJ',
+      avatarUrl: null,
     }
   }));
 
@@ -77,31 +75,3 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     </>
   );
 }
-
-
-/*   return (
-    <>
-        <PostDetailProgress />
-        <div className="bg-card text-card-foreground sticky z-50 top-2 shadow-xl rounded-2xl flex justify-between items-center container mx-auto px-4 py-4">
-          <NavigationMenuDemo />
-          <ThemeToggle />
-          <LoginMenu />
-        </div>
-      
-      <main className="container mx-auto px-4 py-8 md:py-12">
-        <SlideBanner />
-        <PostListPage
-          posts={transformedPosts}
-          currentPage={currentPage}
-          totalPages={totalPages}
-        />
-        <CustomPagination 
-          currentPage={currentPage}
-          totalPages={totalPages}
-        />
-              
-        <Footer />
-      </main>
-    </>
-  );
-} */

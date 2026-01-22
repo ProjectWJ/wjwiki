@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
     if(!originalMedia.is_public) {
         const session = await auth();
         
-        if (!session || !session.user) { // !session?.user
+        if (!session || !session.user) {
             return new NextResponse('Access Denied.', { status: 403 });
         }
     }
@@ -56,7 +56,6 @@ export async function GET(req: NextRequest) {
         headers.set('Content-Type', contentType);
         headers.set('Cache-Control', 'public, max-age=31536000, immutable');
         headers.set('Content-Disposition', `inline; filename="${filename}"; filename*=UTF-8''${filename};`);
-        //  filename*=UTF-8''${filename}
         return new NextResponse(Buffer.from(arrayBuffer), {
             status: 200,
             headers,

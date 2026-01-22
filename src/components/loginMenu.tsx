@@ -1,6 +1,6 @@
 // 로그인, 로그아웃 헤더
 import Link from 'next/link';
-import { auth, signOut } from '@/auth'; // auth와 signOut 임포트
+import { auth, signOut } from '@/auth';
 import { DropdownMenuDialog } from './loginDropdown';
 import { CircleUserRound } from 'lucide-react';
 import { Button } from './ui/button';
@@ -28,7 +28,7 @@ async function handleSignOut() {
 
 
 export default async function LoginMenu() {
-  const session = await auth(); // 🚨 서버 컴포넌트에서 세션 정보 가져오기
+  const session = await auth(); // 서버 컴포넌트에서 세션 정보 가져오기
 
   return (
     <div className='relative flex items-center pl-2 pr-2 sm:pr-4'>

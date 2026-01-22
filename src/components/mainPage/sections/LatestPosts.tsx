@@ -2,46 +2,6 @@ import { BlogCard } from "@/components/mainPage/BlogCard";
 import { getPostsByCategory } from "@/lib/post";
 import Link from "next/link";
 
-/* 
-const samplePosts = [
-  {
-    id: "1",
-    title: "Guide to Creating a Website",
-    excerpt:
-      "These steps and button labels are crafted to be intuitive and user-friendly, guiding the user through the website creation process with clarity and ease. Learn how to build modern, responsive websites from scratch.",
-    date: "THU, 4 MAY 23",
-    categories: ["WORK", "PERSONAL", "GENERAL"],
-    slug: "guide-to-creating-website",
-  },
-  {
-    id: "2",
-    title: "Passwords For Work",
-    excerpt:
-      "Best practices for managing passwords securely in professional environments. Learn about password managers, 2FA, and security protocols that keep your work safe.",
-    date: "THU, 4 MAY 23",
-    categories: ["WORK", "PERSONAL"],
-    slug: "passwords-for-work",
-  },
-  {
-    id: "3",
-    title: "What is good design",
-    excerpt:
-      "Join 1.3k + readers in exploring the principles of effective design. Understanding user needs, creating intuitive interfaces, and building beautiful experiences.",
-    date: "THU, 4 MAY 23",
-    categories: ["DESIGN"],
-    slug: "what-is-good-design",
-  },
-  {
-    id: "4",
-    title: "My Template",
-    excerpt:
-      "A comprehensive guide to creating and using design templates effectively. Save time, maintain consistency, and improve your workflow with reusable components.",
-    date: "FRI, 28 APR 23",
-    categories: ["WORK", "DESIGN"],
-    slug: "my-template",
-  },
-]; */
-
 export async function LatestPosts() {
     const newPosts = await getPostsByCategory("all", 1);
 
@@ -60,7 +20,7 @@ export async function LatestPosts() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
             {newPosts ? newPosts.posts.map((post, index) => {
-              if(index > 7){
+              if(index > 5){
                 return;
               }
               return (

@@ -3,8 +3,6 @@
 import * as React from "react"
 import { Progress } from "@/components/ui/progress"
 
-// 스크롤 위치를 비율로 계산하는 커스텀 훅을 사용하는 것이 좋습니다.
-// 하지만 여기서는 간단한 예시를 위해 컴포넌트 내에 구현합니다.
 export function PostDetailProgress() {
   const [progress, setProgress] = React.useState(0);
 

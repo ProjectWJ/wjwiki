@@ -19,10 +19,10 @@ export type UploadedFileResponse = {
 };
 
 export default function PostForm() {
-    const [htmlContent, setHtmlContent] = useState(''); // html 텍스트
+    const [htmlContent, setHtmlContent] = useState('');
     const [markContent, setMarkContent] = useState('');
 
-    // ⭐ 수정: TiptapEditor가 변환 후 보내주는 것
+    // TiptapEditor가 변환 후 보내주는 것
     // useCallback으로 무한루프 방지
     const handleContentChange = useCallback((html: string, markdown: string) => {
         setHtmlContent(html);

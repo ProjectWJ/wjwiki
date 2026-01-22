@@ -12,8 +12,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { handleDeletePost } from "../lib/action"; // 서버 액션 경로
-import { toast } from "sonner"; // 토스트 사용 시
+import { handleDeletePost } from "../lib/action";
+import { toast } from "sonner";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { Spinner } from "./ui/spinner";
 
@@ -57,10 +57,6 @@ export function DeleteModalProvider({ children }: { children: ReactNode }) {
     >
       {children}
 
-      {/* ✅ 실제 모달은 여기에 렌더링됩니다.
-        이 컴포넌트는 SideBar(sticky)의 부모에 위치하므로
-        스태킹 컨텍스트에 갇히지 않습니다.
-      */}
       <AlertDialog open={!!postId} onOpenChange={(open) => !open && setPostId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -87,7 +83,6 @@ export function DeleteModalProvider({ children }: { children: ReactNode }) {
   );
 }
 
-// 2. 트리거 버튼에서 사용할 커스텀 훅
 export function useDeleteModal() {
   const context = useContext(DeleteModalContext);
   if (!context) {

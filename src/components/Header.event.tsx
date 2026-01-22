@@ -1,10 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Header } from './Header'; // 2단계에서 수정할 Header 컴포넌트
-
-// 고정 헤더가 콘텐츠를 가리는 것을 방지하기 위한 패딩 값
-// const HEADER_HEIGHT_PX = '6rem';
+import { Header } from './Header';
 
 interface PostLayoutProps {
     children: React.ReactNode;
@@ -16,12 +13,12 @@ export function NaviEventListener({ children, loginMenu }: PostLayoutProps) {
     const [isVisible, setIsVisible] = useState(true);
     const [lastScrollY, setLastScrollY] = useState(0);
 
-    // 2. 클릭/터치 토글 함수: 현재 상태를 반전시킵니다.
+    // 2. 클릭/터치 토글 함수: 현재 상태를 반전
     const handleToggle = useCallback(() => {
         setIsVisible(prev => !prev);
     }, []);
 
-    // 3. 스크롤 로직: 스크롤 방향에 따라 isVisible 상태를 변경합니다.
+    // 3. 스크롤 방향에 따라 isVisible 상태를 변경
     const handleScroll = useCallback(() => {
         const currentScrollY = window.scrollY;
 
@@ -31,7 +28,7 @@ export function NaviEventListener({ children, loginMenu }: PostLayoutProps) {
         // 스크롤을 내릴 때: 사라지기 (100px 이상 스크롤해야 숨김 시작)
         } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
             setIsVisible(false);
-        // 스크롤을 올릴 때: 다시 보이게 (선택적)
+        // 스크롤을 올릴 때: 다시 보이게
         } else if (currentScrollY < lastScrollY) {
              setIsVisible(true);
         }
@@ -50,14 +47,13 @@ export function NaviEventListener({ children, loginMenu }: PostLayoutProps) {
 
     return (
         <>
-            {/* Header에는 isVisible 상태만 전달하여 클래스를 동적으로 적용합니다. */}
+            {/* Header에는 isVisible 상태만 전달하여 클래스를 동적으로 적용 */}
             <Header isVisible={isVisible} loginMenu={loginMenu} /> 
             
-            {/* 이 영역을 클릭/터치할 때 Header가 토글되도록 이벤트를 적용합니다. */}
+            {/* 이 영역을 클릭/터치할 때 Header가 토글되도록 이벤트를 적용 */}
             <div 
                 id='header-event-range'
                 className="w-full h-full"
-/*                 style={{ paddingTop: HEADER_HEIGHT_PX }} */
                 onClick={handleToggle}
             >
                 {/* 서버 컴포넌트에서 전달된 모든 콘텐츠 (PostDetailPage, Footer 등) */}

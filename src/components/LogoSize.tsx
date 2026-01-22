@@ -4,9 +4,7 @@ import logo_white from '../app/images/logo_white.png';
 import logo_black from '../app/images/logo_black.png';
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
-import { useState, useEffect } from 'react'; // useState와 useEffect를 임포트합니다.
-
-// 로고 이미지 파일 경로를 직접 사용하므로, Next.js Image 컴포넌트에서 요구하는 형식에 맞게 임포트합니다.
+import { useState, useEffect } from 'react';
 
 /**
  * 네비게이션 로고 컴포넌트
@@ -66,15 +64,11 @@ export function FooterLogo(){
     if (isMounted) {
         logoSrc = resolvedTheme === 'dark' ? logo_white : logo_black;
     }
-    
-    // console.log는 클라이언트 측에서만 실행되도록 남겨두거나, 제거하는 것이 좋습니다.
-    // console.log("logoSrc: " + logoSrc); 
 
     return (
         <Image
             width={64}
             height={64}
-            // src={logoSrc}는 이제 isMounted 상태에 따라 결정됩니다.
             src={logoSrc}
             alt="projectwj logo"
         />

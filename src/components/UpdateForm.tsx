@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { handleUpdatePost } from '@/lib/action'; // 기존의 서버 액션 함수 임포트
+import { handleUpdatePost } from '@/lib/action';
 import dynamic from 'next/dynamic';
 import { Checkbox } from './ui/checkbox';
 import { Label } from './ui/label';
@@ -33,8 +33,8 @@ export interface PostEditProps {
 }
 
 export default function PostForm(postProps: PostEditProps) {
-    const [htmlContent, setHtmlContent] = useState(postProps.post.content); // html 텍스트
-    const [markContent, setMarkContent] = useState(postProps.post.content); // 마크다운 문법으로 변환해줘야 함
+    const [htmlContent, setHtmlContent] = useState(postProps.post.content);
+    const [markContent, setMarkContent] = useState(postProps.post.content);
 
     // useCallback으로 감싸서 무한루프 방지
     const handleContentChange = useCallback((html: string, markdown: string) => {

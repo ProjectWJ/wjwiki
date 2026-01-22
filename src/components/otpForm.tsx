@@ -80,10 +80,10 @@ function TOTPFormContent({
 
     return (
         <>
-            {/* ⭐ 중요: InputOTP는 일반적인 <input>이 아니며,
-                자동으로 폼 데이터를 구성하지 않을 수 있습니다. 
+            {/* InputOTP는 일반적인 <input>이 아니며,
+                자동으로 폼 데이터를 구성하지 않을 수 있음 
                 따라서 name 속성과 함께 hidden input을 추가하여
-                formData에 totpCode가 확실히 포함되도록 합니다.
+                formData에 totpCode가 확실히 포함되도록 함
             */}
             <input 
                 type="hidden" 

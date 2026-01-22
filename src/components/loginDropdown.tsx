@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-// import { MoreHorizontalIcon } from "lucide-react"
 import { CircleUserRound } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -25,19 +24,14 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useFormStatus } from "react-dom"
 import { Spinner } from "./ui/spinner"
-/* import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea" */
 
 interface DropdownProps {
-  // onSignOut은 서버 액션이므로 (formData: FormData) => Promise<void> 형태의 함수입니다.
+  // onSignOut은 서버 액션이므로 (formData: FormData) => Promise<void> 형태의 함수
   onSignOut: () => Promise<void>; 
 }
 
 export function DropdownMenuDialog({ onSignOut }: DropdownProps) {
   const [showLogoutDialog, setShowLogoutDialog] = useState(false)
-  // const [showShareDialog, setShowShareDialog] = useState(false)
 
   return (
     <>
@@ -62,13 +56,6 @@ export function DropdownMenuDialog({ onSignOut }: DropdownProps) {
                 onClick={() => {location.href="/admin"}}>
                 관리(미구현)
             </DropdownMenuItem>
-{/*             <DropdownMenuItem onSelect={() => setShowNewDialog(true)}>
-              New File...
-            </DropdownMenuItem> */}
-{/*             <DropdownMenuItem onSelect={() => setShowShareDialog(true)}>
-              Share...
-            </DropdownMenuItem> */}
-{/*             <DropdownMenuItem disabled>Download</DropdownMenuItem> */}
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
@@ -87,12 +74,6 @@ export function DropdownMenuDialog({ onSignOut }: DropdownProps) {
             <DialogDescription>
             </DialogDescription>
           </DialogHeader>
-{/*           <FieldGroup className="pb-3">
-            <Field>
-              <FieldLabel htmlFor="filename">File Name</FieldLabel>
-              <Input id="filename" name="filename" placeholder="document.txt" />
-            </Field>
-          </FieldGroup> */}
           <DialogFooter>
             <DialogClose asChild>
               <Button variant="outline">취소</Button>

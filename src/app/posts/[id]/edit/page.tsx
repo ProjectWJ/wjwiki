@@ -1,15 +1,15 @@
 // app/posts/[id]/edit/page.tsx
-import { getPostById } from '@/lib/post'; // 2번에서 만든 DB 함수 임포트
+import { getPostById } from '@/lib/post';
 import { notFound } from 'next/navigation';
 import UpdateForm from '@/components/UpdateForm';
 
 // 서버 컴포넌트: props로 URL 파라미터를 받습니다.
 export default async function PostEditPage({ params }: { params: Promise<{ id: string }> }) {
-    const { id } = await params; // ✅ 여기서 await로 resolve
+    const { id } = await params;
     // 1. 게시글 데이터 가져오기
     const post = await getPostById(parseInt(id, 10));
 
-    // 2. 데이터가 없으면 404 페이지 표시
+    // 2. 데이터가 없으면 404
     if (!post) {
         notFound();
     }
@@ -18,8 +18,6 @@ export default async function PostEditPage({ params }: { params: Promise<{ id: s
     return (
         <main className="container mx-auto p-6">
             <div className="mb-6">
-                {/* 🚨 PostEditForm은 현재 Server Action을 호출해야 하므로, 
-                'use client' 폼으로 분리하거나, Server Action을 직접 호출해야 합니다. */}
             </div>
             <UpdateForm post={post} />
         </main>
@@ -27,7 +25,7 @@ export default async function PostEditPage({ params }: { params: Promise<{ id: s
     );
 }
 
-// 🚨 옵션: 메타데이터 설정
+// 간단한 메타데이터 설정
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     const post = await getPostById(parseInt(id, 10));
