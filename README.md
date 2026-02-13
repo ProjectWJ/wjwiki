@@ -5,6 +5,8 @@
 > **"직접 기획하고 개발하여 운영 중인 개인 기술 블로그"**
 >
 > 기존 플랫폼의 제약에서 벗어나 원하는 기능을 자유롭게 구현하고 학습한 기술을 실제 서비스에 적용해 보기 위해 개발한 Next.js 기반 블로그 프로젝트입니다.
+> 
+> 블로그 포스팅 문서 모바일 환경 기준 퍼포먼스 90점 이상을 유지하며, 미드레인지 기기에서도 쾌적한 UX를 제공합니다.
 
 <br/>
 
@@ -33,6 +35,7 @@
 
 방문자분들은 비회원 상태의 기능만 사용하실 수 있으므로, 관리자 로그인 상태는 아래의 시연 자료와 코드를 통해 확인하실 수 있습니다.
 
+
 ### 1. 주요 UX
 누구나 접근하여 체험할 수 있는 기능입니다.
 
@@ -40,6 +43,7 @@
 * **게시글 검색**
 * **PC, 태블릿, 모바일 별 반응형 UI**
 * **다크 모드**
+
 
 ### 2. 관리자 UI
 
@@ -54,6 +58,22 @@
 
 ![Direct Edit Demo GIF](글_상세페이지에서_수정버튼_눌러서_에디터로_가는_움짤.gif)
 * **관련 코드:** `src/components/post/PostActionButtons.tsx` (관련 컴포넌트 링크)
+
+
+### 3. 시스템 아키텍처
+안정적인 서비스 운영을 위해 보이지 않는 백엔드 로직과 보안 프로세스를 구축했습니다.
+
+**Enterprise-Level Security (보안)**
+* **2FA:** ID/PW 외에 **TOTP(Google Authenticator)** 인증을 추가하여 관리자 계정 보안 강화
+* **Email Alert**: nodemailer를 활용해 로그인 시 알림 이메일 발송 
+* **Secure Asset Proxy:** 비공개 이미지 접근 시 서버 측 프록시를 통해 권한을 검증하고, 익명 사용자의 원본 URL 접근 차단
+* **XSS Protection:** `rehype-sanitize`를 적용하여 마크다운 렌더링 시 악성 스크립트 주입 방지
+* **RBAC Middleware:** Next.js Middleware를 활용해 경로별 접근 권한 제어
+
+**Smart Media Pipeline (최적화 및 운영)**
+* **Orphaned Media GC (가비지 컬렉션):** 게시글 작성 중 업로드되었으나 최종적으로 사용되지 않은 '고아 파일'을 Cron Job으로 자동 감지 및 삭제하여 스토리지 비용 절감
+* **Adaptive Image Serving:** 업로드된 이미지를 WebP 포맷 및 다양한 해상도로 자동 변환/압축하여 LCP 성능 최적화
+* **Metadata Separation:** 파일 바이너리는 Blob Storage에, 메타데이터는 DB(Media Table)로 분리 설계하여 데이터 무결성 확보
 
 <br/>
 
@@ -81,12 +101,6 @@ Next.js의 Server Action은 클라이언트에서 직접 호출 가능한 공개
 
 <br/>
 
-## 성능 최적화
-* **이미지 최적화:** `next/image` 및 WebP 포맷 변환을 통해 고해상도 에셋의 용량을 평균 **70% 절감**하고 LCP(Largest Contentful Paint)를 개선했습니다.
-* **Lighthouse 점수:** 블로그 포스팅 문서 모바일 환경 기준 퍼포먼스 **90점 이상**을 유지하며, 미드레인지 기기에서도 쾌적한 UX를 제공합니다.
-
-<br/>
-
 ## 디렉토리 구조
 ```bash
  ┣ 📂prisma  
@@ -96,28 +110,11 @@ Next.js의 Server Action은 클라이언트에서 직접 호출 가능한 공개
  ┣ 📂src  
  ┃ ┣ 📂app  
  ┃ ┃ ┣ 📂2fa-verify         # 2차 인증(OTP) 페이지
- ┃ ┃ ┣ 📂api
- ┃ ┃ ┃ ┣ 📂auth  
- ┃ ┃ ┃ ┃ ┗ 📂[...nextauth]  # 로그인 요청 라우팅
- ┃ ┃ ┃ ┣ 📂cron  
- ┃ ┃ ┃ ┃ ┗ 📂cleanup        # Vercel Blob 스토리지 자동 정리 cron
- ┃ ┃ ┃ ┣ 📂media            # 스토리지 내 원본 파일 접근 처리 프록시
- ┃ ┃ ┃ ┗ 📂upload           # 스토리지에 파일 업로드 라우팅
- ┃ ┃ ┣ 📂images             # 내부에서 쓰이는 이미지 에셋
+ ┃ ┃ ┣ 📂api                # 라우트 핸들러
+ ┃ ┃ ┣ 📂images             # 내부 이미지 에셋
  ┃ ┃ ┣ 📂login              # 로그인 페이지
- ┃ ┃ ┣ 📂posts              # 게시글 목록 페이지
- ┃ ┃ ┃ ┣ 📂all              # 목록 전체보기 페이지
- ┃ ┃ ┃ ┣ 📂new              # 새 게시글 작성 페이지
- ┃ ┃ ┃ ┣ 📂search           # 검색 대응 페이지
- ┃ ┃ ┃ ┗ 📂[id]             # 게시글 상세보기 페이지
- ┃ ┃ ┃ ┃ ┗ 📂edit           # 게시글 수정 페이지
+ ┃ ┃ ┣ 📂posts              # 게시글 페이지
  ┃ ┃ ┣ 📂terms              # 약관 및 개인정보처리방침
- ┃ ┃ ┣ 📜editor.css         # 텍스트 에디터 스타일
- ┃ ┃ ┣ 📜favicon.ico  
- ┃ ┃ ┣ 📜globals.css
- ┃ ┃ ┣ 📜layout.tsx  
- ┃ ┃ ┣ 📜markdownStyle.css  # 게시글 상세보기 대응 스타일
- ┃ ┃ ┗ 📜page.tsx  
  ┃ ┣ 📂components           # UI 컴포넌트
  ┃ ┃ ┣ 📂mainPage           # 메인 화면 UI
  ┃ ┃ ┣ 📂providers          # 전역 UI 관련
@@ -128,5 +125,4 @@ Next.js의 Server Action은 클라이언트에서 직접 호출 가능한 공개
  ┃ ┣ 📜auth.config.ts       # 로그인 처리 및 인증 설정
  ┃ ┣ 📜auth.middleware.config.ts  
  ┃ ┣ 📜auth.ts  
- ┃ ┗ 📜middleware.ts  
- ┗ 📂WYSIWYG_texteditor_doc # 텍스트 에디터 참고자료
+ ┃ ┗ 📜middleware.ts        # 라우트 보호 미들웨어
