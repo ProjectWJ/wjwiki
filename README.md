@@ -26,7 +26,7 @@
 | **Database**       | **Neon DB**                 | Serverless 환경에 최적화된 DB 연결 및 확장성 고려          |
 | **Infrastructure** | **Vercel**                  | 프론트엔드 배포 및 Serverless Functions, 스토리지 통합 관리 |
 | **Auth**           | **NextAuth.js (v5)**        | 보안성 높은 인증 시스템 구축 (JWT Strategy)             |
-| **Validation**     | **Zod**                     | 런타임 데이터 검증 및 타입 안전성 확보                      |
+| **Validation**     | **Zod**                     | 런타임 데이터 검증                      |
 
 
 <br/>
@@ -97,7 +97,7 @@ Next.js의 Server Action은 클라이언트에서 직접 호출 가능한 공개
 **[해결 과정]**
 **심층 방어** 원칙을 적용하여 보안 계층을 강화했습니다.
 * **Authentication:** 모든 CUD 및 비공개 데이터 조회 Action 함수 최상단에 세션 검증 로직(`auth 확인 절차`) 을 강제했습니다.
-* **Validation:** **Zod**를 도입하여 클라이언트로부터 넘어오는 모든 입력값의 타입과 형식을 서버 사이드에서 이중으로 검증하여 무결성이 깨진 데이터의 DB 유입을 원천 차단했습니다.
+* **Validation:** **Zod**를 도입하여 클라이언트로부터 넘어오는 모든 입력값의 형식을 서버 사이드에서 이중으로 검증하여 무결성이 깨진 데이터의 DB 유입을 차단했습니다.
 
 <br/>
 
