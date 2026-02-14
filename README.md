@@ -10,7 +10,7 @@
 >
 > 기존 플랫폼의 제약에서 벗어나 원하는 기능을 자유롭게 구현하고 학습한 기술을 실제 서비스에 적용해 보기 위해 개발한 Next.js 기반 블로그 프로젝트입니다.
 > 
-> 블로그 포스팅 문서 모바일 환경 기준 퍼포먼스 90점 이상을 유지하며, 미드레인지 기기에서도 쾌적한 UX를 제공합니다.
+> 블로그 포스팅 목록 페이지 기준 미드레인지 모바일 환경에서 퍼포먼스 90점 이상을 유지하여 쾌적한 UX를 제공합니다.
 
 <br/>
 
@@ -18,6 +18,7 @@
 
 [WJwiki](https://wjwiki.vercel.app/)
 
+<br/>
 <br/>
 
 ## 기술 스택
@@ -34,6 +35,7 @@
 
 
 <br/>
+<br/>
 
 ## 주요 기능
 
@@ -48,6 +50,7 @@
 * **PC, 태블릿, 모바일 별 반응형 UI**
 * **다크 모드**
 
+<br/>
 
 ### 2. 관리자 UI
 
@@ -63,7 +66,9 @@
 https://github.com/ProjectWJ/wjwiki/blob/main/src/components/loginMenu.tsx &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- 로그인 상태에 따른 분기 처리
 https://github.com/ProjectWJ/wjwiki/blob/main/src/components/loginDropdown.tsx &nbsp;&nbsp;&nbsp;- 관리자 퀵메뉴
 
-<br />
+<br/>
+<hr/>
+<br/>
 
 <p align="center">
  <img alt="수정" src="https://github.com/user-attachments/assets/bfdc9ec9-5f0c-4934-868b-50275d216da4">
@@ -77,6 +82,7 @@ https://github.com/ProjectWJ/wjwiki/blob/main/src/app/posts/%5Bid%5D/page.tsx &n
 https://github.com/ProjectWJ/wjwiki/blob/main/src/components/SideBar.tsx &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- 관리자 사이드바
 https://github.com/ProjectWJ/wjwiki/blob/main/src/components/SideBarDefault.tsx &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- 방문자 사이드바
 
+<br/>
 
 ### 3. 시스템 아키텍처
 안정적인 서비스 운영을 위해 보이지 않는 백엔드 로직과 보안 프로세스를 구축했습니다.
@@ -94,6 +100,23 @@ https://github.com/ProjectWJ/wjwiki/blob/main/src/components/SideBarDefault.tsx 
 * **Metadata Separation:** 파일 바이너리는 Blob Storage에, 메타데이터는 DB(Media Table)로 분리 설계하여 데이터 무결성 확보
 
 <br/>
+<br/>
+
+## 성능 최적화
+
+사용자 경험(UX)의 핵심인 속도를 정량적으로 측정하고 개선했습니다.
+
+<p align="center">
+  <img width="800" alt="스피드 인사이트" src="https://github.com/user-attachments/assets/e1112791-96dd-41ef-a2d4-6164bd0aca29" />
+</p>
+
+* **Monitoring:** Vercel Speed Insights를 연동하여 실제 사용자(Real User)의 퍼포먼스를 추적합니다.
+* **Optimization Strategy:**
+    * **Content Pages (Score 100):** 정보 전달이 목적인 블로그 목록/상세 페이지는 이미지 최적화(WebP)와 CLS 방지를 통해 **보급형 모바일 기기(Galaxy A52s 5G)에서도 만점**을 달성했습니다.
+    * **Landing Page (Visual Impact):** 메인 페이지는 시각적 경험을 위해 고해상도 그래픽을 사용하여, 성능 점수보다는 심미적 완성도에 자원을 배분했습니다.
+
+<br />
+<br />
 
 ## 핵심 기술적 의사결정 및 트러블슈팅
 
@@ -103,10 +126,12 @@ https://github.com/ProjectWJ/wjwiki/blob/main/src/components/SideBarDefault.tsx 
 
 **[해결 과정]**
 * **시도 (Proxy):** 이미지 요청을 미들웨어로 검증하려 했으나, CDN 캐싱 이점을 잃어 로딩 속도가 저하됨을 확인했습니다.
-* **해결 (Asset Rotation):** 게시글 비공개 전환 시, 기존 이미지를 **폐기(Delete)**하고 새로운 난수 경로로 **복제(Copy)**하여 링크를 물리적으로 교체하는 로직을 구현했습니다.
+* **해결 (Asset Rotation):** 게시글 비공개 전환 시, 기존 이미지를 폐기*하고 새로운 난수 경로로 복제하여 링크를 물리적으로 교체하는 로직을 구현했습니다.
 
 **[성과]**
 관리자의 게시글 비공개 시의 작업 처리 시간이 소폭 증가했으나, 일반 사용자에게는 **네이티브 CDN 속도**를 제공하면서도 **데이터 격리**를 달성하는 최적의 트레이드오프를 찾아냈습니다.
+
+<br />
 
 ### 2. Defense in Depth: Server Action 보안 강화
 **[문제 상황]**
@@ -118,6 +143,7 @@ Next.js의 Server Action은 클라이언트에서 직접 호출 가능한 공개
 * **Validation:** **Zod**를 도입하여 클라이언트로부터 넘어오는 모든 입력값의 형식을 서버 사이드에서 이중으로 검증하여 무결성이 깨진 데이터의 DB 유입을 차단했습니다.
 
 <br/>
+<br />
 
 ## 디렉토리 구조
 ```bash
