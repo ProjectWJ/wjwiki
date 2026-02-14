@@ -1,6 +1,10 @@
 # WJwiki
 
-![Project Cover Image](대표_이미지_경로_혹은_배포된_사이트_스크린샷.png)
+<p align="center">
+ <img alt="대문" src="https://github.com/user-attachments/assets/ea40a1bc-ffe1-4b69-92f5-8c9a69152a9d">
+</p>
+
+<br/>
 
 > **"직접 기획하고 개발하여 운영 중인 개인 기술 블로그"**
 >
@@ -47,17 +51,31 @@
 
 ### 2. 관리자 UI
 
+<p align="center">
+ <img width="400" alt="비로그인" src="https://github.com/user-attachments/assets/957cf665-8699-4357-b91e-95981aceb3f0">
+ <img width="400" alt="로그인" src="https://github.com/user-attachments/assets/90d7f9a4-a16d-4488-bb0e-e98a18a831cb">
+</p>
+
 **[Feature A] 권한 기반의 동적 UI 렌더링**
 > 로그인 상태를 감지하여 일반 사용자에게는 공개된 게시글과 로그인 페이지 이동 아이콘을, 관리자에게는 모든 게시글과 퀵메뉴를 노출하는 UI를 렌더링합니다.
 
-![Quick Menu Comparison](여기에_일반인일때_관리자일때_메뉴가_다른_비교샷.png)
-* **관련 코드:** `src/components/post/PostActionButtons.tsx` (관련 컴포넌트 링크)
+* **관련 코드:**  
+https://github.com/ProjectWJ/wjwiki/blob/main/src/components/loginMenu.tsx &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- 로그인 상태에 따른 분기 처리
+https://github.com/ProjectWJ/wjwiki/blob/main/src/components/loginDropdown.tsx &nbsp;&nbsp;&nbsp;- 관리자 퀵메뉴
+
+<br />
+
+<p align="center">
+ <img alt="수정" src="https://github.com/user-attachments/assets/bfdc9ec9-5f0c-4934-868b-50275d216da4">
+</p>
 
 **[Feature B] On-Page Management (직관적인 수정/삭제)**
 >  로그인 상태를 감지하여 일반 사용자에게는 '최상단·최하단 이동, URL 복사' 버튼만, 관리자에게는 '수정, 삭제' 옵션이 추가로 포함된 사이드바를 렌더링합니다. 별도의 대시보드 진입 없이 콘텐츠 관리가 가능합니다.
 
-![Direct Edit Demo GIF](글_상세페이지에서_수정버튼_눌러서_에디터로_가는_움짤.gif)
-* **관련 코드:** `src/components/post/PostActionButtons.tsx` (관련 컴포넌트 링크)
+* **관련 코드:**  
+https://github.com/ProjectWJ/wjwiki/blob/main/src/app/posts/%5Bid%5D/page.tsx &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- 로그인 상태 감지
+https://github.com/ProjectWJ/wjwiki/blob/main/src/components/SideBar.tsx &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- 관리자 사이드바
+https://github.com/ProjectWJ/wjwiki/blob/main/src/components/SideBarDefault.tsx &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- 방문자 사이드바
 
 
 ### 3. 시스템 아키텍처
