@@ -63,8 +63,8 @@
 > 로그인 상태를 감지하여 일반 사용자에게는 공개된 게시글과 로그인 페이지 이동 아이콘을, 관리자에게는 모든 게시글과 퀵메뉴를 노출하는 UI를 렌더링합니다.
 
 * **관련 코드:**  
-https://github.com/ProjectWJ/wjwiki/blob/main/src/components/loginMenu.tsx &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- 로그인 상태에 따른 분기 처리  
-https://github.com/ProjectWJ/wjwiki/blob/main/src/components/loginDropdown.tsx &nbsp;&nbsp;&nbsp;- 관리자 퀵메뉴
+[로그인 상태에 따른 분기 처리](https://github.com/ProjectWJ/wjwiki/blob/main/src/components/loginMenu.tsx)
+[관리자 퀵메뉴](https://github.com/ProjectWJ/wjwiki/blob/main/src/components/loginDropdown.tsx)
 
 <br/>
 <hr/>
@@ -78,9 +78,9 @@ https://github.com/ProjectWJ/wjwiki/blob/main/src/components/loginDropdown.tsx &
 >  로그인 상태를 감지하여 일반 사용자에게는 '최상단·최하단 이동, URL 복사' 버튼만, 관리자에게는 '수정, 삭제' 옵션이 추가로 포함된 사이드바를 렌더링합니다. 별도의 대시보드 진입 없이 콘텐츠 관리가 가능합니다.
 
 * **관련 코드:**  
-https://github.com/ProjectWJ/wjwiki/blob/main/src/app/posts/%5Bid%5D/page.tsx &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- 로그인 상태 감지  
-https://github.com/ProjectWJ/wjwiki/blob/main/src/components/SideBar.tsx &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- 관리자 사이드바  
-https://github.com/ProjectWJ/wjwiki/blob/main/src/components/SideBarDefault.tsx &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- 방문자 사이드바
+[로그인 상태 감지](https://github.com/ProjectWJ/wjwiki/blob/main/src/app/posts/%5Bid%5D/page.tsx)
+[관리자 사이드바](https://github.com/ProjectWJ/wjwiki/blob/main/src/components/SideBar.tsx)
+[방문자 사이드바](https://github.com/ProjectWJ/wjwiki/blob/main/src/components/SideBarDefault.tsx)
 
 <br/>
 
