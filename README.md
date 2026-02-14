@@ -16,7 +16,7 @@
 
 ## 배포 링크
 
-[WJwiki](https://wjwiki.vercel.app/)
+[WJwiki](https://wjwiki.projectwj.dev/)
 
 <br/>
 <br/>
